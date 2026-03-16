@@ -33,33 +33,48 @@
                         <div class="card mb-3 border">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start">
-                                    <div>
+                                    <div class="flex-grow-1">
                                         <h6 class="fw-bold mb-1">{{ $announcement->title }}</h6>
-                                        <p class="mb-1">{{ $announcement->content }}</p>
-                                        <small class="text-muted">
-                                            Oleh: {{ $announcement->user->name }} •
-                                            {{ $announcement->created_at->format('d M Y, H:i') }}
-                                        </small>
+                                        <p class="mb-2">{{ $announcement->content }}</p>
+                                        <div class="d-flex gap-3">
+                                            <small class="text-muted">
+                                                👤 {{ $announcement->user->name }} •
+                                                {{ $announcement->created_at->format('d M Y, H:i') }}
+                                            </small>
+                                            @if ($announcement->scheduled_at)
+                                                <small class="text-primary">
+                                                    🕐 {{ $announcement->scheduled_at->format('d M Y, H:i') }}
+                                                </small>
+                                            @endif
+                                            @if ($announcement->repeat !== 'none')
+                                                <small class="text-success">
+                                                    🔁
+                                                    {{ match ($announcement->repeat) {
+                                                        'daily' => 'Setiap Hari',
+                                                        'weekly' => 'Setiap Minggu',
+                                                        'monthly' => 'Setiap Bulan',
+                                                    } }}
+                                                </small>
+                                            @endif
+                                        </div>
                                     </div>
 
                                     @if (in_array($role, ['komti', 'pj']))
                                         <div class="d-flex gap-2 ms-3">
-                                            {{-- Tombol Edit --}}
-                                            <button class="btn btn-sm btn-outline-warning"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#modalEdit"
-                                                    data-id="{{ $announcement->id }}"
-                                                    data-title="{{ $announcement->title }}"
-                                                    data-content="{{ $announcement->content }}">
+                                            <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
+                                                data-bs-target="#modalEdit" data-id="{{ $announcement->id }}"
+                                                data-title="{{ $announcement->title }}"
+                                                data-content="{{ $announcement->content }}"
+                                                data-scheduled="{{ $announcement->scheduled_at?->format('Y-m-d\TH:i') }}"
+                                                data-repeat="{{ $announcement->repeat }}">
                                                 Edit
                                             </button>
-
-                                            {{-- Tombol Delete --}}
-                                            <form method="POST" action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}">
+                                            <form method="POST"
+                                                action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}">
                                                 @csrf
                                                 @method('DELETE')
                                                 <button class="btn btn-sm btn-outline-danger"
-                                                        onclick="return confirm('Yakin hapus?')">
+                                                    onclick="return confirm('Yakin hapus?')">
                                                     Hapus
                                                 </button>
                                             </form>
@@ -81,7 +96,6 @@
         <div class="col-md-4">
 
             @if ($role === 'komti')
-
                 {{-- Invitation Code --}}
                 <div class="card mb-4">
                     <div class="card-header fw-bold">🔑 Invitation Code</div>
@@ -90,7 +104,7 @@
                         <label class="form-label fw-semibold small">Kode PJ</label>
                         <div class="input-group mb-2">
                             <input type="text" class="form-control form-control-sm"
-                                   value="{{ $group->invitation_code_pj }}" id="code_pj" readonly>
+                                value="{{ $group->invitation_code_pj }}" id="code_pj" readonly>
                             <button class="btn btn-sm btn-outline-secondary" onclick="copyCode('code_pj')">Copy</button>
                         </div>
                         <form method="POST" action="/groups/{{ $group->id }}/generate-code" class="mb-3">
@@ -102,7 +116,7 @@
                         <label class="form-label fw-semibold small">Kode Member</label>
                         <div class="input-group mb-2">
                             <input type="text" class="form-control form-control-sm"
-                                   value="{{ $group->invitation_code_member }}" id="code_member" readonly>
+                                value="{{ $group->invitation_code_member }}" id="code_member" readonly>
                             <button class="btn btn-sm btn-outline-secondary" onclick="copyCode('code_member')">Copy</button>
                         </div>
                         <form method="POST" action="/groups/{{ $group->id }}/generate-code">
@@ -129,14 +143,13 @@
                                     <small id="bot_{{ $bot->id }}">{{ $bot->invitation_code }}</small>
                                 </div>
                                 <button class="btn btn-sm btn-outline-secondary"
-                                        onclick="copyCode('bot_{{ $bot->id }}')">Copy</button>
+                                    onclick="copyCode('bot_{{ $bot->id }}')">Copy</button>
                             </div>
                         @empty
                             <p class="text-muted small mb-0">Tidak ada bot aktif.</p>
                         @endforelse
                     </div>
                 </div>
-
             @endif
 
             {{-- Daftar Member --}}
@@ -187,11 +200,26 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label">Judul</label>
-                            <input type="text" name="title" class="form-control" placeholder="Judul Announcement" required>
+                            <input type="text" name="title" class="form-control" placeholder="Judul Announcement"
+                                required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Isi</label>
-                            <textarea name="content" class="form-control" rows="4" placeholder="Isi Announcement" required></textarea>
+                            <textarea name="content" class="form-control" rows="3" placeholder="Isi Announcement" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Jadwal Kirim</label>
+                            <input type="datetime-local" name="scheduled_at" class="form-control">
+                            <small class="text-muted">Kosongkan jika ingin langsung tampil.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Pengulangan</label>
+                            <select name="repeat" class="form-select">
+                                <option value="none">Tidak Berulang</option>
+                                <option value="daily">Setiap Hari</option>
+                                <option value="weekly">Setiap Minggu</option>
+                                <option value="monthly">Setiap Bulan</option>
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -221,7 +249,21 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Isi</label>
-                            <textarea name="content" id="editContent" class="form-control" rows="4" required></textarea>
+                            <textarea name="content" id="editContent" class="form-control" rows="3" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Jadwal Kirim</label>
+                            <input type="datetime-local" name="scheduled_at" id="editScheduled" class="form-control">
+                            <small class="text-muted">Kosongkan jika ingin langsung tampil.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Pengulangan</label>
+                            <select name="repeat" id="editRepeat" class="form-select">
+                                <option value="none">Tidak Berulang</option>
+                                <option value="daily">Setiap Hari</option>
+                                <option value="weekly">Setiap Minggu</option>
+                                <option value="monthly">Setiap Bulan</option>
+                            </select>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -237,14 +279,18 @@
         // Isi form edit saat modal dibuka
         const modalEdit = document.getElementById('modalEdit');
         modalEdit.addEventListener('show.bs.modal', function(e) {
-            const btn     = e.relatedTarget;
-            const id      = btn.getAttribute('data-id');
-            const title   = btn.getAttribute('data-title');
+            const btn = e.relatedTarget;
+            const id = btn.getAttribute('data-id');
+            const title = btn.getAttribute('data-title');
             const content = btn.getAttribute('data-content');
+            const scheduled = btn.getAttribute('data-scheduled');
+            const repeat = btn.getAttribute('data-repeat');
 
-            document.getElementById('editTitle').value   = title;
+            document.getElementById('editTitle').value = title;
             document.getElementById('editContent').value = content;
-            document.getElementById('formEdit').action   = `/groups/{{ $group->id }}/announcements/${id}`;
+            document.getElementById('editScheduled').value = scheduled ?? '';
+            document.getElementById('editRepeat').value = repeat ?? 'none';
+            document.getElementById('formEdit').action = `/groups/{{ $group->id }}/announcements/${id}`;
         });
 
         function copyCode(id) {

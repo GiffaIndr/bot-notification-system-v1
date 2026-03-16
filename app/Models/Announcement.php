@@ -8,7 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class Announcement extends Model
 {
     use HasFactory;
-    protected $fillable = ['group_id', 'user_id', 'title', 'content'];
+    protected $fillable = [
+        'group_id',
+        'user_id',
+        'title',
+        'content',
+        'scheduled_at',
+        'repeat',
+    ];
+
+    protected $casts = [
+        'scheduled_at' => 'datetime',
+    ];
 
     public function group()
     {

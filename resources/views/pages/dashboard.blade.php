@@ -1,7 +1,6 @@
 @extends('layout.cdn')
 
 @section('content')
-
     <h3 class="mb-4">Dashboard</h3>
 
     <div class="row g-4">
@@ -28,12 +27,13 @@
                             <div class="card-body py-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <h6 class="mb-0">{{ $plan->name }}</h6>
-                                    <span class="fw-bold text-primary">Rp {{ number_format($plan->price, 0, ',', '.') }}</span>
+                                    <span class="fw-bold text-primary">Rp
+                                        {{ number_format($plan->price, 0, ',', '.') }}</span>
                                 </div>
                                 <p class="text-muted small mt-1 mb-1">{{ $plan->description }}</p>
                                 <p class="text-muted small mb-2">
                                     {{ $plan->whatsapp ? '✅' : '❌' }} WhatsApp &nbsp;|&nbsp;
-                                    {{ $plan->discord  ? '✅' : '❌' }} Discord &nbsp;|&nbsp;
+                                    {{ $plan->discord ? '✅' : '❌' }} Discord &nbsp;|&nbsp;
                                     👥 Max {{ $plan->max_group }} Group
                                 </p>
                                 <button class="btn btn-sm btn-primary w-100" onclick="pay({{ $plan->id }})">
@@ -52,6 +52,7 @@
             <div class="row g-4">
 
                 {{-- Create Group --}}
+                {{-- Create Group --}}
                 <div class="col-md-6">
                     <div class="card h-100">
                         <div class="card-header fw-bold">➕ Create Group</div>
@@ -62,7 +63,6 @@
                                     <span style="font-size: 2.5rem">🔒</span>
                                     <p class="mt-2 text-muted mb-0">Subscribe untuk membuat group.</p>
                                 </div>
-
                             @elseif ($groupCount >= $maxGroup)
                                 <div class="text-center py-3">
                                     <span style="font-size: 2.5rem">🚫</span>
@@ -71,17 +71,19 @@
                                         {{ $groupCount }}/{{ $maxGroup }} — Upgrade plan untuk menambah group.
                                     </p>
                                 </div>
-
                             @else
                                 <p class="text-muted small mb-3">
                                     Group: <strong>{{ $groupCount }}/{{ $maxGroup }}</strong>
                                 </p>
-                                <form method="POST" action="/groups">
+                                <form id="formCreateGroup" method="POST" action="/groups">
                                     @csrf
                                     <div class="mb-3">
-                                        <input type="text" name="name" class="form-control" placeholder="Nama Group">
+                                        <input type="text" id="inputGroupName" name="name" class="form-control"
+                                            placeholder="Nama Group">
                                     </div>
-                                    <button class="btn btn-primary w-100">Create Group</button>
+                                    <button type="button" class="btn btn-primary w-100" onclick="submitCreateGroup()">
+                                        Create Group
+                                    </button>
                                 </form>
                             @endif
 
@@ -94,16 +96,20 @@
                     <div class="card h-100">
                         <div class="card-header fw-bold">🔗 Join Group</div>
                         <div class="card-body d-flex flex-column justify-content-center">
-                            <form method="POST" action="/join">
+                            <form id="formJoinGroup" method="POST" action="/join">
                                 @csrf
                                 <div class="mb-3">
-                                    <input type="text" name="code" class="form-control" placeholder="Invitation Code">
+                                    <input type="text" id="inputJoinCode" name="code" class="form-control"
+                                        placeholder="Invitation Code">
                                 </div>
-                                <button class="btn btn-warning w-100">Join</button>
+                                <button type="button" class="btn btn-warning w-100" onclick="submitJoinGroup()">
+                                    Join
+                                </button>
                             </form>
                         </div>
                     </div>
                 </div>
+
 
                 {{-- My Groups --}}
                 <div class="col-md-12">
@@ -133,7 +139,8 @@
                                                         <span class="badge bg-secondary">Member</span>
                                                     @endif
                                                 </p>
-                                                <a href="/groups/{{ $group->id }}" class="btn btn-sm btn-outline-primary w-100">
+                                                <a href="/groups/{{ $group->id }}"
+                                                    class="btn btn-sm btn-outline-primary w-100">
                                                     Open
                                                 </a>
                                             </div>
@@ -154,7 +161,55 @@
 
     </div>
 
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}"></script>
+    <script src="https://app.sandbox.midtrans.com/snap/snap.js" data-client-key="{{ config('midtrans.client_key') }}">
+    </script>
+    {{-- Toast --}}
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+        <div id="toast" class="toast align-items-center text-white border-0" role="alert">
+            <div class="d-flex">
+                <div class="toast-body fw-semibold" id="toastMessage"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showToast(message, type = 'danger') {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
+
+            toast.classList.remove('bg-danger', 'bg-success', 'bg-warning');
+            toast.classList.add(`bg-${type}`);
+            toastMsg.innerText = message;
+
+            const bsToast = new bootstrap.Toast(toast, {
+                delay: 3000
+            });
+            bsToast.show();
+        }
+
+        function submitCreateGroup() {
+            const name = document.getElementById('inputGroupName').value.trim();
+
+            if (!name) {
+                showToast('⚠️ Isi nama group dulu ya!', 'warning');
+                return;
+            }
+
+            document.getElementById('formCreateGroup').submit();
+        }
+
+        function submitJoinGroup() {
+            const code = document.getElementById('inputJoinCode').value.trim();
+
+            if (!code) {
+                showToast('⚠️ Masukkan invitation code dulu ya!', 'warning');
+                return;
+            }
+
+            document.getElementById('formJoinGroup').submit();
+        }
+    </script>
     <script>
         function pay(planId) {
             fetch('/payment/snap-token', {
@@ -163,7 +218,9 @@
                         'Content-Type': 'application/json',
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
-                    body: JSON.stringify({ plan_id: planId })
+                    body: JSON.stringify({
+                        plan_id: planId
+                    })
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -173,9 +230,12 @@
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                                    'X-CSRF-TOKEN': document.querySelector(
+                                        'meta[name="csrf-token"]').content
                                 },
-                                body: JSON.stringify({ order_id: result.order_id })
+                                body: JSON.stringify({
+                                    order_id: result.order_id
+                                })
                             }).then(() => location.reload());
                         },
                         onPending: function(result) {
@@ -188,5 +248,4 @@
                 });
         }
     </script>
-
 @endsection

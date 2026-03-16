@@ -20,13 +20,17 @@ class AnnouncementController extends Controller
         $request->validate([
             'title'   => 'required|string|max:255',
             'content' => 'required|string',
+            'scheduled_at' => 'nullable|date',
+            'repeat' => 'required|in:none,daily,weekly,monthly',
         ]);
 
         Announcement::create([
             'group_id' => $group->id,
-            'user_id'  => auth()->id(),
-            'title'    => $request->title,
-            'content'  => $request->content,
+            'user_id' => auth()->id(),
+            'title'  => $request->title,
+            'content' => $request->content,
+            'scheduled_at' => $request->scheduled_at,
+            'repeat' => $request->repeat,
         ]);
 
         return back()->with('success', 'Announcement berhasil dibuat.');
@@ -56,11 +60,15 @@ class AnnouncementController extends Controller
         $request->validate([
             'title'   => 'required|string|max:255',
             'content' => 'required|string',
+            'scheduled_at' => 'nullable|date',
+            'repeat' => 'required|in:none,daily,weekly,monthly',
         ]);
 
         $announcement->update([
             'title'   => $request->title,
             'content' => $request->content,
+            'scheduled_at' => $request->scheduled_at,
+            'repeat' => $request->repeat,
         ]);
 
         return redirect("/groups/{$group->id}")->with('success', 'Announcement berhasil diupdate.');
