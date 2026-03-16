@@ -20,6 +20,9 @@ return [
         'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
         'scheme' => 'https',
     ],
+    'whatsapp' => [
+        'url' => env('WHATSAPP_SERVICE_URL', 'http://localhost:3000'),
+    ],
 
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),

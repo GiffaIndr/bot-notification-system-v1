@@ -130,7 +130,7 @@
 
                 {{-- Bot Integration --}}
                 <div class="card mb-4">
-                    <div class="card-header fw-bold">🤖 Bot Integration</div>
+                    <div class="card-header fw-bold">🤖 Bot Aktif</div>
                     <div class="card-body">
                         @forelse ($group->bots as $bot)
                             <div class="d-flex justify-content-between align-items-center border rounded p-2 mb-2">

@@ -18,7 +18,7 @@ class AuthController extends Controller
     }
     public function dashboard()
     {
-         $plans = Plan::all();
+        $plans = Plan::all();
         $groups = auth()->user()->groups()->withPivot('role')->take(2)->get();
         $totalGroups  = auth()->user()->groups()->count();
         $subscription = auth()->user()->activeSubscription()->with('plan')->first();
@@ -61,7 +61,8 @@ class AuthController extends Controller
             [
                 'name' => 'required',
                 'email' => 'required|email:dns',
-                'password' => 'required',
+                'password' => 'required|min:6|confirmed',
+                'phone' => 'required|string|regex:/^62[0-9]{9,13}$//'
             ],
             [
                 'name.required' => 'Nama tidak boleh kosong',
@@ -69,14 +70,21 @@ class AuthController extends Controller
                 'email.email' => 'Format email tidak valid',
                 'email.unique' => 'Email sudah digunakan',
                 'password.required' => 'Password tidak boleh kosong',
+                'phone.required' => 'Nomber whatsapp tidak boleh kosong',
                 'password.min' => 'Password harus minimal 6 karakter',
                 'password.confirmed' => 'Konfirmasi password tidak sesuai',
             ]
         );
+        $phone = $request->phone;
+        if (str_starts_with($phone, '0')) {
+            $phone = '62' . substr($phone, 1);
+        }
+
         User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
+            'phone' => $phone,
         ]);
         return redirect('/')->with('success', 'berhasil menambah akun, silahkan login');
     }
