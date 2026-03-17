@@ -23,24 +23,24 @@ class InvitationController extends Controller
 
     public function join(Request $request)
     {
-        $code  = $request->code;
+        $code = $request->code;
 
-        // Cek kode PJ
+        // Kode Editor
         $group = Group::where('invitation_code_pj', $code)->first();
         if ($group) {
-            $pjRole = $group->roles()->where('name', 'PJ')->first();
+            $editorRole = $group->roles()->where('name', 'Editor')->first();
             GroupMember::create([
                 'group_id' => $group->id,
                 'user_id'  => auth()->id(),
-                'role_id'  => $pjRole->id,
+                'role_id'  => $editorRole->id,
             ]);
-            return back()->with('success', 'Berhasil join sebagai ' . $pjRole->name);
+            return back()->with('success', 'Berhasil join sebagai ' . $editorRole->name);
         }
 
-        // Cek kode Member
+        // Kode Member
         $group = Group::where('invitation_code_member', $code)->first();
         if ($group) {
-            $memberRole = $group->roles()->where('is_owner', false)->orderBy('id', 'desc')->first();
+            $memberRole = $group->roles()->where('name', 'Member')->first();
             GroupMember::create([
                 'group_id' => $group->id,
                 'user_id'  => auth()->id(),

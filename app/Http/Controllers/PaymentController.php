@@ -56,7 +56,12 @@ class PaymentController extends Controller
 
     private function syncGroupBots($user, $plan)
     {
-        $groups = $user->groups()->wherePivot('role', 'komti')->get();
+        // Ganti wherePivot role ke sistem baru
+        $groupIds = \App\Models\GroupMember::where('user_id', $user->id)
+            ->whereHas('role', fn($q) => $q->where('is_owner', true))
+            ->pluck('group_id');
+
+        $groups = \App\Models\Group::whereIn('id', $groupIds)->get();
 
         foreach ($groups as $group) {
             if ($plan->whatsapp) {
@@ -79,6 +84,7 @@ class PaymentController extends Controller
             }
         }
     }
+
     public function syncBotsManual(Request $request)
     {
         $payment = Payment::where('order_id', $request->order_id)
@@ -89,27 +95,25 @@ class PaymentController extends Controller
             return response()->json(['message' => 'Payment not found']);
         }
 
-        // Update status success DULU sebelum cek existing
-        $payment->update([
-            'status' => 'success',
-            'starts_at' => now(),
-            'expires_at' => now()->addMonths(6),
-        ]);
-
-        // Setelah update, baru cek apakah ada subscription lain yang aktif
-        $user = $payment->user;
+        $user     = $payment->user;
         $existing = $user->activeSubscription()
-            ->where('id', '!=', $payment->id) // exclude payment yang baru
+            ->where('id', '!=', $payment->id)
             ->with('plan')
             ->first();
 
         if ($existing) {
-            // Ada subscription lain yang masih aktif, perpanjang dari expired lama
-            $payment->update([
-                'starts_at' => $existing->expires_at,
-                'expires_at' => $existing->expires_at->copy()->addMonths(6),
-            ]);
+            $startsAt  = $existing->expires_at;
+            $expiresAt = $existing->expires_at->copy()->addMonths(6);
+        } else {
+            $startsAt  = now();
+            $expiresAt = now()->addMonths(6);
         }
+
+        $payment->update([
+            'status'     => 'success',
+            'starts_at'  => $startsAt,
+            'expires_at' => $expiresAt,
+        ]);
 
         $this->syncGroupBots($user, $payment->plan);
 

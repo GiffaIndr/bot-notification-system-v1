@@ -114,14 +114,9 @@
                             <i class="fas fa-chart-pie"></i> Dashboard
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a href="/subscription" class="nav-link {{ Request::is('subscription') ? 'active' : '' }}">
-                            <i class="fas fa-rocket"></i> Subscription
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link">
-                            <i class="fas fa-cog"></i> Settings
+                     <li class="nav-item">
+                        <a href="/groups" class="nav-link {{ Request::is('groups') ? 'active' : '' }}">
+                            <i class="fa-solid fa-chalkboard-user"></i> Groups
                         </a>
                     </li>
                 </ul>

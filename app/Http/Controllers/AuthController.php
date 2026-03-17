@@ -19,7 +19,7 @@ class AuthController extends Controller
     public function dashboard()
     {
         $plans        = Plan::all();
-        $groups       = auth()->user()->groups()->withPivot('role_id')->take(2)->get();
+        $groups       = auth()->user()->groups()->withPivot('role_id')->take(6)->get();
         $totalGroups  = auth()->user()->groups()->count();
         $subscription = auth()->user()->activeSubscription()->with('plan')->first();
 

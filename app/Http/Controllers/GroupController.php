@@ -15,8 +15,8 @@ class GroupController extends Controller
 {
     public function index()
     {
-        $groups = auth()->user()->groups()->withPivot('role')->get();
-        return view('groups.index', compact('groups'));
+        $groups = auth()->user()->groups()->withPivot('role_id')->get();
+        return view('pages.groupshow', compact('groups'));
     }
     public function logs(Group $group)
     {
@@ -57,7 +57,7 @@ class GroupController extends Controller
         // Buat 3 default role
         $ownerRole = GroupRole::create([
             'group_id' => $group->id,
-            'name' => 'Komti',
+            'name' => 'Owner',
             'color' => '#0d6efd',
             'can_create_announcement' => true,
             'can_edit_announcement' => true,
@@ -69,7 +69,7 @@ class GroupController extends Controller
 
         GroupRole::create([
             'group_id' => $group->id,
-            'name' => 'PJ',
+            'name' => 'Editor',
             'color' => '#198754',
             'can_create_announcement' => true,
             'can_edit_announcement' => true,
