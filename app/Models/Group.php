@@ -31,6 +31,11 @@ class Group extends Model
         return $this->roles()->where('is_owner', true)->first();
     }
 
+    public function activityLogs()
+    {
+        return $this->hasMany(ActivityLog::class)->latest();
+    }
+
     public function invitations()
     {
         return $this->hasMany(InvitationCode::class);

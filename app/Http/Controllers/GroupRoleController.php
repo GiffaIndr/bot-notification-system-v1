@@ -75,6 +75,27 @@ class GroupRoleController extends Controller
     {
         $this->checkPermission($group, 'can_manage_member');
 
+        // Cek apakah target user adalah owner group
+        $targetMember = GroupMember::where('group_id', $group->id)
+            ->where('user_id', $request->user_id)
+            ->with('role')
+            ->first();
+
+        if (!$targetMember) {
+            return back()->with('error', 'Member tidak ditemukan.');
+        }
+
+        // Proteksi: owner tidak bisa diubah rolenya
+        if ($targetMember->role->is_owner) {
+            return back()->with('error', 'Role owner tidak bisa diubah!');
+        }
+
+        // Proteksi: tidak bisa assign ke role owner
+        $targetRole = GroupRole::find($request->role_id);
+        if ($targetRole->is_owner) {
+            return back()->with('error', 'Tidak bisa assign role owner ke member lain!');
+        }
+
         GroupMember::where('group_id', $group->id)
             ->where('user_id', $request->user_id)
             ->update(['role_id' => $request->role_id]);

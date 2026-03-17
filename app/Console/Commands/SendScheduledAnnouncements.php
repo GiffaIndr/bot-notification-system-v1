@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Announcement;
 use App\Services\NotificationService;
+use App\Services\ActivityLogService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 
@@ -49,23 +50,48 @@ class SendScheduledAnnouncements extends Command
                     ->toArray();
 
                 if (!empty($phones)) {
-                    $notification->sendWhatsapp($phones, $message);
-                    $this->info("✅ WA terkirim ke {$announcement->group->name} ({$announcement->group->members()->count()} member)");
+                    $result = $notification->sendWhatsapp($phones, $message);
+
+                    ActivityLogService::log(
+                        groupId: $announcement->group_id,
+                        type: 'notification_sent',
+                        description: 'Notifikasi WhatsApp terkirim untuk announcement "' . $announcement->title . '"',
+                        meta: ['bot_type' => 'whatsapp', 'recipients' => count($phones), 'announcement_id' => $announcement->id],
+                        status: 'success',
+                        userId: null
+                    );
                 }
             }
 
             // Kirim Discord
             if ($status['discord']) {
-                $discordBot = $announcement->group->bots
-                    ->where('type', 'discord')
-                    ->first();
+                $discordBot = $announcement->group->bots->where('type', 'discord')->first();
 
                 if ($discordBot && $discordBot->discord_channel_id) {
-                    $notification->sendDiscord($discordBot->discord_channel_id, $message);
-                    $this->info("✅ Discord terkirim ke channel {$discordBot->discord_channel_id}");
-                } else {
-                    $this->warn("⚠️ Discord channel belum diset untuk group {$announcement->group->name}");
+                    $sent = $notification->sendDiscord($discordBot->discord_channel_id, $message);
+
+                    ActivityLogService::log(
+                        groupId: $announcement->group_id,
+                        type: 'notification_sent',
+                        description: 'Notifikasi Discord ' . ($sent ? 'terkirim' : 'gagal') . ' untuk announcement "' . $announcement->title . '"',
+                        meta: ['bot_type' => 'discord', 'channel_id' => $discordBot->discord_channel_id, 'announcement_id' => $announcement->id],
+                        status: $sent ? 'success' : 'failed',
+                        userId: null
+                    );
                 }
+            }
+            $telegramBot = $announcement->group->bots->where('type', 'telegram')->first();
+            if ($telegramBot && $telegramBot->telegram_chat_id) {
+                $sent = $notification->sendTelegram($telegramBot->telegram_chat_id, $message);
+
+                ActivityLogService::log(
+                    groupId: $announcement->group_id,
+                    type: 'notification_sent',
+                    description: 'Notifikasi Telegram ' . ($sent ? 'terkirim' : 'gagal') . ' untuk announcement "' . $announcement->title . '"',
+                    meta: ['bot_type' => 'telegram', 'chat_id' => $telegramBot->telegram_chat_id, 'announcement_id' => $announcement->id],
+                    status: $sent ? 'success' : 'failed',
+                    userId: null
+                );
             }
 
             // Update jadwal berikutnya

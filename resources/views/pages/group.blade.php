@@ -21,11 +21,16 @@
             <div class="card shadow-sm">
                 <div class="card-header fw-bold d-flex justify-content-between align-items-center bg-white border-bottom">
                     <span><i class="fa fa-bullhorn text-primary me-2"></i>Daftar Announcement</span>
-                    @if ($role->can_create_announcement)
-                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreate">
-                            <i class="fa fa-plus me-1"></i> Buat
-                        </button>
-                    @endif
+                    <div class="d-flex gap-2">
+                        <a href="/groups/{{ $group->id }}/logs" class="btn btn-sm btn-outline-secondary">
+                            <i class="fa fa-clock-rotate-left me-1"></i> Log
+                        </a>
+                        @if ($role->can_create_announcement)
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreate">
+                                <i class="fa fa-plus me-1"></i> Buat
+                            </button>
+                        @endif
+                    </div>
                 </div>
                 <div class="card-body">
                     @forelse ($announcements as $announcement)
@@ -40,19 +45,21 @@
                                                 <i class="fa fa-user me-1"></i>{{ $announcement->user->name }}
                                             </span>
                                             <span class="badge bg-light text-dark">
-                                                <i class="fa fa-clock me-1"></i>{{ $announcement->created_at->format('d M Y, H:i') }}
+                                                <i
+                                                    class="fa fa-clock me-1"></i>{{ $announcement->created_at->format('d M Y, H:i') }}
                                             </span>
                                             @if ($announcement->scheduled_at)
                                                 <span class="badge bg-primary bg-opacity-10 text-primary">
-                                                    <i class="fa fa-calendar me-1"></i>{{ $announcement->scheduled_at->format('d M Y, H:i') }}
+                                                    <i
+                                                        class="fa fa-calendar me-1"></i>{{ $announcement->scheduled_at->format('d M Y, H:i') }}
                                                 </span>
                                             @endif
                                             @if ($announcement->repeat !== 'none')
                                                 <span class="badge bg-success bg-opacity-10 text-success">
                                                     <i class="fa fa-rotate me-1"></i>
-                                                    {{ match($announcement->repeat) {
-                                                        'daily'   => 'Setiap Hari',
-                                                        'weekly'  => 'Setiap Minggu',
+                                                    {{ match ($announcement->repeat) {
+                                                        'daily' => 'Setiap Hari',
+                                                        'weekly' => 'Setiap Minggu',
                                                         'monthly' => 'Setiap Bulan',
                                                     } }}
                                                 </span>
@@ -61,24 +68,21 @@
                                     </div>
                                     @if ($role->can_edit_announcement)
                                         <div class="d-flex gap-2 ms-3">
-                                            <button class="btn btn-sm btn-outline-warning"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#modalEdit"
-                                                    data-id="{{ $announcement->id }}"
-                                                    data-title="{{ $announcement->title }}"
-                                                    data-content="{{ $announcement->content }}"
-                                                    data-scheduled="{{ $announcement->scheduled_at?->format('Y-m-d\TH:i') }}"
-                                                    data-repeat="{{ $announcement->repeat }}">
+                                            <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
+                                                data-bs-target="#modalEdit" data-id="{{ $announcement->id }}"
+                                                data-title="{{ $announcement->title }}"
+                                                data-content="{{ $announcement->content }}"
+                                                data-scheduled="{{ $announcement->scheduled_at?->format('Y-m-d\TH:i') }}"
+                                                data-repeat="{{ $announcement->repeat }}">
                                                 <i class="fa fa-pen"></i>
                                             </button>
                                             <button class="btn btn-sm btn-outline-danger"
-                                                    onclick="confirmDelete({{ $announcement->id }})">
+                                                onclick="confirmDelete({{ $announcement->id }})">
                                                 <i class="fa fa-trash"></i>
                                             </button>
-                                            <form id="deleteForm{{ $announcement->id }}"
-                                                  method="POST"
-                                                  action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}"
-                                                  class="d-none">
+                                            <form id="deleteForm{{ $announcement->id }}" method="POST"
+                                                action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}"
+                                                class="d-none">
                                                 @csrf
                                                 @method('DELETE')
                                             </form>
@@ -96,6 +100,7 @@
                 </div>
             </div>
         </div>
+
 
         {{-- Sidebar --}}
         <div class="col-md-4">
@@ -124,7 +129,7 @@
                                         </span>
                                     </div>
 
-                                {{-- Discord --}}
+                                    {{-- Discord --}}
                                 @elseif ($bot->type === 'discord')
                                     <div class="d-flex align-items-center justify-content-between mb-3">
                                         <div>
@@ -149,30 +154,32 @@
                                     </div>
 
                                     @php
-                                        $inviteUrl = 'https://discord.com/oauth2/authorize?client_id='
-                                            . config('services.discord.client_id')
-                                            . '&permissions=3072&scope=bot&state=' . $group->id
-                                            . '&redirect_uri=' . urlencode(config('services.discord.redirect_uri'))
-                                            . '&response_type=code';
+                                        $inviteUrl =
+                                            'https://discord.com/oauth2/authorize?client_id=' .
+                                            config('services.discord.client_id') .
+                                            '&permissions=3072&scope=bot&state=' .
+                                            $group->id .
+                                            '&redirect_uri=' .
+                                            urlencode(config('services.discord.redirect_uri')) .
+                                            '&response_type=code';
                                     @endphp
 
                                     <a href="{{ $inviteUrl }}" target="_blank"
-                                       onclick="showToast('Membuka halaman invite Discord...', 'info')"
-                                       class="btn btn-sm btn-outline-primary w-100 mb-3">
+                                        onclick="showToast('Membuka halaman invite Discord...', 'info')"
+                                        class="btn btn-sm btn-outline-primary w-100 mb-3">
                                         <i class="fab fa-discord me-1"></i> Invite Bot ke Server Discord
                                     </a>
 
                                     <form method="POST"
-                                          action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/channel"
-                                          onsubmit="handleChannelSave(event, this)">
+                                        action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/channel"
+                                        onsubmit="handleChannelSave(event, this)">
                                         @csrf
                                         @method('PUT')
                                         <label class="form-label small fw-semibold">Discord Channel ID</label>
                                         <div class="input-group">
                                             <input type="text" name="discord_channel_id" id="discordChannelInput"
-                                                   class="form-control form-control-sm"
-                                                   value="{{ $bot->discord_channel_id }}"
-                                                   placeholder="1234567890123456">
+                                                class="form-control form-control-sm" value="{{ $bot->discord_channel_id }}"
+                                                placeholder="1234567890123456">
                                             <button class="btn btn-sm btn-primary">
                                                 <i class="fa fa-floppy-disk"></i>
                                             </button>
@@ -183,7 +190,7 @@
                                         </small>
                                     </form>
 
-                                {{-- Telegram --}}
+                                    {{-- Telegram --}}
                                 @elseif ($bot->type === 'telegram')
                                     <div class="d-flex align-items-center justify-content-between mb-3">
                                         <div>
@@ -216,8 +223,8 @@
                                             4. Klik tombol di bawah
                                         </div>
                                         <a href="/groups/{{ $group->id }}/bots/{{ $bot->id }}/fetch-telegram-chat"
-                                           class="btn btn-sm btn-info text-white w-100 mb-3"
-                                           onclick="showToast('Mencari Chat ID...', 'info')">
+                                            class="btn btn-sm btn-info text-white w-100 mb-3"
+                                            onclick="showToast('Mencari Chat ID...', 'info')">
                                             <i class="fab fa-telegram me-1"></i> Dapatkan Chat ID Otomatis
                                         </a>
                                     @else
@@ -226,23 +233,22 @@
                                             Bot sudah terhubung ke group Telegram!
                                         </div>
                                         <a href="/groups/{{ $group->id }}/bots/{{ $bot->id }}/fetch-telegram-chat"
-                                           class="btn btn-sm btn-outline-info w-100 mb-3"
-                                           onclick="showToast('Memperbarui Chat ID...', 'info')">
+                                            class="btn btn-sm btn-outline-info w-100 mb-3"
+                                            onclick="showToast('Memperbarui Chat ID...', 'info')">
                                             <i class="fa fa-rotate me-1"></i> Perbarui Chat ID
                                         </a>
                                     @endif
 
                                     <form method="POST"
-                                          action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/telegram-chat"
-                                          onsubmit="handleTelegramSave(event, this)">
+                                        action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/telegram-chat"
+                                        onsubmit="handleTelegramSave(event, this)">
                                         @csrf
                                         @method('PUT')
                                         <label class="form-label small fw-semibold">Atau input manual</label>
                                         <div class="input-group">
                                             <input type="text" name="telegram_chat_id" id="telegramChatInput"
-                                                   class="form-control form-control-sm"
-                                                   value="{{ $bot->telegram_chat_id }}"
-                                                   placeholder="-1001234567890">
+                                                class="form-control form-control-sm" value="{{ $bot->telegram_chat_id }}"
+                                                placeholder="-1001234567890">
                                             <button class="btn btn-sm btn-info text-white">
                                                 <i class="fa fa-floppy-disk"></i>
                                             </button>
@@ -276,13 +282,13 @@
                         </label>
                         <div class="input-group mb-2">
                             <input type="text" class="form-control form-control-sm"
-                                   value="{{ $group->invitation_code_pj }}" id="code_pj" readonly>
+                                value="{{ $group->invitation_code_pj }}" id="code_pj" readonly>
                             <button class="btn btn-sm btn-outline-secondary" onclick="copyCode('code_pj')">
                                 <i class="fa fa-copy"></i>
                             </button>
                         </div>
                         <form method="POST" action="/groups/{{ $group->id }}/generate-code" class="mb-4"
-                              onsubmit="showToast('Kode PJ berhasil diperbarui!', 'success')">
+                            onsubmit="showToast('Kode PJ berhasil diperbarui!', 'success')">
                             @csrf
                             <input type="hidden" name="type" value="pj">
                             <button class="btn btn-sm btn-warning w-100">
@@ -295,13 +301,13 @@
                         </label>
                         <div class="input-group mb-2">
                             <input type="text" class="form-control form-control-sm"
-                                   value="{{ $group->invitation_code_member }}" id="code_member" readonly>
+                                value="{{ $group->invitation_code_member }}" id="code_member" readonly>
                             <button class="btn btn-sm btn-outline-secondary" onclick="copyCode('code_member')">
                                 <i class="fa fa-copy"></i>
                             </button>
                         </div>
                         <form method="POST" action="/groups/{{ $group->id }}/generate-code"
-                              onsubmit="showToast('Kode Member berhasil diperbarui!', 'success')">
+                            onsubmit="showToast('Kode Member berhasil diperbarui!', 'success')">
                             @csrf
                             <input type="hidden" name="type" value="member">
                             <button class="btn btn-sm btn-warning w-100">
@@ -315,7 +321,8 @@
             {{-- Manage Roles --}}
             @if ($role->can_manage_member)
                 <div class="card shadow-sm mb-4">
-                    <div class="card-header fw-bold bg-white border-bottom d-flex justify-content-between align-items-center">
+                    <div
+                        class="card-header fw-bold bg-white border-bottom d-flex justify-content-between align-items-center">
                         <span><i class="fa fa-shield-halved text-primary me-2"></i>Manage Roles</span>
                         <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#modalCreateRole">
                             <i class="fa fa-plus"></i>
@@ -323,36 +330,38 @@
                     </div>
                     <div class="card-body p-0">
                         @foreach ($roles as $r)
-                            <div class="d-flex align-items-center justify-content-between p-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                            <div
+                                class="d-flex align-items-center justify-content-between p-3 {{ !$loop->last ? 'border-bottom' : '' }}">
                                 <div class="d-flex align-items-center gap-2">
-                                    <span style="width:12px; height:12px; border-radius:50%; background:{{ $r->color }}; display:inline-block;"></span>
+                                    <span
+                                        style="width:12px; height:12px; border-radius:50%; background:{{ $r->color }}; display:inline-block;"></span>
                                     <span class="small fw-semibold">{{ $r->name }}</span>
                                     @if ($r->is_owner)
-                                        <span class="badge bg-primary bg-opacity-10 text-primary" style="font-size:10px">Owner</span>
+                                        <span class="badge bg-primary bg-opacity-10 text-primary"
+                                            style="font-size:10px">Owner</span>
                                     @endif
                                 </div>
                                 @if (!$r->is_owner)
                                     <div class="d-flex gap-1">
                                         <button class="btn btn-sm btn-outline-warning"
-                                                style="padding: 2px 7px; font-size: 11px"
-                                                data-bs-toggle="modal"
-                                                data-bs-target="#modalEditRole"
-                                                data-id="{{ $r->id }}"
-                                                data-name="{{ $r->name }}"
-                                                data-color="{{ $r->color }}"
-                                                data-can_create="{{ $r->can_create_announcement ? '1' : '0' }}"
-                                                data-can_edit="{{ $r->can_edit_announcement ? '1' : '0' }}"
-                                                data-can_member="{{ $r->can_manage_member ? '1' : '0' }}"
-                                                data-can_code="{{ $r->can_generate_code ? '1' : '0' }}"
-                                                data-can_bot="{{ $r->can_manage_bot ? '1' : '0' }}">
+                                            style="padding: 2px 7px; font-size: 11px" data-bs-toggle="modal"
+                                            data-bs-target="#modalEditRole" data-id="{{ $r->id }}"
+                                            data-name="{{ $r->name }}" data-color="{{ $r->color }}"
+                                            data-can_create="{{ $r->can_create_announcement ? '1' : '0' }}"
+                                            data-can_edit="{{ $r->can_edit_announcement ? '1' : '0' }}"
+                                            data-can_member="{{ $r->can_manage_member ? '1' : '0' }}"
+                                            data-can_code="{{ $r->can_generate_code ? '1' : '0' }}"
+                                            data-can_bot="{{ $r->can_manage_bot ? '1' : '0' }}">
                                             <i class="fa fa-pen"></i>
                                         </button>
-                                        <form method="POST" action="/groups/{{ $group->id }}/roles/{{ $r->id }}" class="d-inline">
+                                        <form method="POST"
+                                            action="/groups/{{ $group->id }}/roles/{{ $r->id }}"
+                                            class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button class="btn btn-sm btn-outline-danger"
-                                                    style="padding: 2px 7px; font-size: 11px"
-                                                    onclick="return confirm('Yakin hapus role ini?')">
+                                                style="padding: 2px 7px; font-size: 11px"
+                                                onclick="return confirm('Yakin hapus role ini?')">
                                                 <i class="fa fa-trash"></i>
                                             </button>
                                         </form>
@@ -391,20 +400,26 @@
                                     </td>
                                     @if ($role->can_manage_member)
                                         <td>
-                                            <form method="POST" action="/groups/{{ $group->id }}/roles/assign">
-                                                @csrf
-                                                <input type="hidden" name="user_id" value="{{ $m->user_id }}">
-                                                <select name="role_id" class="form-select form-select-sm"
+                                            @if ($m->role->is_owner)
+                                                <span class="text-muted small">
+                                                    <i class="fa fa-lock me-1"></i>Owner
+                                                </span>
+                                            @else
+                                                <form method="POST" action="/groups/{{ $group->id }}/roles/assign">
+                                                    @csrf
+                                                    <input type="hidden" name="user_id" value="{{ $m->user_id }}">
+                                                    <select name="role_id" class="form-select form-select-sm"
                                                         onchange="this.form.submit()"
                                                         style="font-size: 11px; min-width: 100px; border-color: {{ $m->role->color }}">
-                                                    @foreach ($roles as $r)
-                                                        <option value="{{ $r->id }}"
-                                                            {{ $m->role_id == $r->id ? 'selected' : '' }}>
-                                                            {{ $r->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                            </form>
+                                                        @foreach ($roles->where('is_owner', false) as $r)
+                                                            <option value="{{ $r->id }}"
+                                                                {{ $m->role_id == $r->id ? 'selected' : '' }}>
+                                                                {{ $r->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </form>
+                                            @endif
                                         </td>
                                     @endif
                                 </tr>
@@ -428,18 +443,18 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <form method="POST" action="/groups/{{ $group->id }}/announcements"
-                      onsubmit="handleCreate(event, this)">
+                    onsubmit="handleCreate(event, this)">
                     @csrf
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Judul</label>
-                            <input type="text" name="title" id="createTitle"
-                                   class="form-control" placeholder="Judul Announcement" required>
+                            <input type="text" name="title" id="createTitle" class="form-control"
+                                placeholder="Judul Announcement" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Isi</label>
-                            <textarea name="content" id="createContent" class="form-control"
-                                      rows="3" placeholder="Isi Announcement" required></textarea>
+                            <textarea name="content" id="createContent" class="form-control" rows="3" placeholder="Isi Announcement"
+                                required></textarea>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">
@@ -542,12 +557,14 @@
                     <div class="modal-body">
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Nama Role</label>
-                            <input type="text" name="name" class="form-control" placeholder="Contoh: Bendahara" required>
+                            <input type="text" name="name" class="form-control" placeholder="Contoh: Bendahara"
+                                required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Warna Role</label>
                             <div class="d-flex gap-2 align-items-center">
-                                <input type="color" name="color" class="form-control form-control-color" value="#6c757d">
+                                <input type="color" name="color" class="form-control form-control-color"
+                                    value="#6c757d">
                                 <small class="text-muted">Pilih warna untuk role ini</small>
                             </div>
                         </div>
@@ -555,31 +572,36 @@
                             <label class="form-label fw-semibold">Permission</label>
                             <div class="d-flex flex-column gap-2">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="can_create_announcement" id="cr_create">
+                                    <input class="form-check-input" type="checkbox" name="can_create_announcement"
+                                        id="cr_create">
                                     <label class="form-check-label small" for="cr_create">
                                         <i class="fa fa-plus me-1 text-primary"></i>Buat Announcement
                                     </label>
                                 </div>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="can_edit_announcement" id="cr_edit">
+                                    <input class="form-check-input" type="checkbox" name="can_edit_announcement"
+                                        id="cr_edit">
                                     <label class="form-check-label small" for="cr_edit">
                                         <i class="fa fa-pen me-1 text-warning"></i>Edit/Delete Announcement
                                     </label>
                                 </div>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="can_manage_member" id="cr_member">
+                                    <input class="form-check-input" type="checkbox" name="can_manage_member"
+                                        id="cr_member">
                                     <label class="form-check-label small" for="cr_member">
                                         <i class="fa fa-users me-1 text-success"></i>Manage Member & Role
                                     </label>
                                 </div>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="can_generate_code" id="cr_code">
+                                    <input class="form-check-input" type="checkbox" name="can_generate_code"
+                                        id="cr_code">
                                     <label class="form-check-label small" for="cr_code">
                                         <i class="fa fa-key me-1 text-warning"></i>Generate Invitation Code
                                     </label>
                                 </div>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="can_manage_bot" id="cr_bot">
+                                    <input class="form-check-input" type="checkbox" name="can_manage_bot"
+                                        id="cr_bot">
                                     <label class="form-check-label small" for="cr_bot">
                                         <i class="fa fa-robot me-1 text-info"></i>Manage Bot
                                     </label>
@@ -621,7 +643,8 @@
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Warna Role</label>
                             <div class="d-flex gap-2 align-items-center">
-                                <input type="color" name="color" id="editRoleColor" class="form-control form-control-color">
+                                <input type="color" name="color" id="editRoleColor"
+                                    class="form-control form-control-color">
                                 <small class="text-muted">Pilih warna untuk role ini</small>
                             </div>
                         </div>
@@ -629,31 +652,36 @@
                             <label class="form-label fw-semibold">Permission</label>
                             <div class="d-flex flex-column gap-2">
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="can_create_announcement" id="er_create">
+                                    <input class="form-check-input" type="checkbox" name="can_create_announcement"
+                                        id="er_create">
                                     <label class="form-check-label small" for="er_create">
                                         <i class="fa fa-plus me-1 text-primary"></i>Buat Announcement
                                     </label>
                                 </div>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="can_edit_announcement" id="er_edit">
+                                    <input class="form-check-input" type="checkbox" name="can_edit_announcement"
+                                        id="er_edit">
                                     <label class="form-check-label small" for="er_edit">
                                         <i class="fa fa-pen me-1 text-warning"></i>Edit/Delete Announcement
                                     </label>
                                 </div>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="can_manage_member" id="er_member">
+                                    <input class="form-check-input" type="checkbox" name="can_manage_member"
+                                        id="er_member">
                                     <label class="form-check-label small" for="er_member">
                                         <i class="fa fa-users me-1 text-success"></i>Manage Member & Role
                                     </label>
                                 </div>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="can_generate_code" id="er_code">
+                                    <input class="form-check-input" type="checkbox" name="can_generate_code"
+                                        id="er_code">
                                     <label class="form-check-label small" for="er_code">
                                         <i class="fa fa-key me-1 text-warning"></i>Generate Invitation Code
                                     </label>
                                 </div>
                                 <div class="form-check form-switch">
-                                    <input class="form-check-input" type="checkbox" name="can_manage_bot" id="er_bot">
+                                    <input class="form-check-input" type="checkbox" name="can_manage_bot"
+                                        id="er_bot">
                                     <label class="form-check-label small" for="er_bot">
                                         <i class="fa fa-robot me-1 text-info"></i>Manage Bot
                                     </label>
@@ -697,12 +725,14 @@
 
     <script>
         function showToast(message, type = 'success') {
-            const toast    = document.getElementById('toast');
+            const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toastMessage');
             toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'bg-primary');
             toast.classList.add(`bg-${type}`);
             toastMsg.innerText = message;
-            new bootstrap.Toast(toast, { delay: 3000 }).show();
+            new bootstrap.Toast(toast, {
+                delay: 3000
+            }).show();
         }
 
         function copyCode(id) {
@@ -719,7 +749,7 @@
         }
 
         function handleCreate(event, form) {
-            const title   = document.getElementById('createTitle').value.trim();
+            const title = document.getElementById('createTitle').value.trim();
             const content = document.getElementById('createContent').value.trim();
             if (!title || !content) {
                 event.preventDefault();
@@ -730,7 +760,7 @@
         }
 
         function handleEdit(event, form) {
-            const title   = document.getElementById('editTitle').value.trim();
+            const title = document.getElementById('editTitle').value.trim();
             const content = document.getElementById('editContent').value.trim();
             if (!title || !content) {
                 event.preventDefault();
@@ -763,32 +793,33 @@
         // Modal Edit Announcement
         const modalEdit = document.getElementById('modalEdit');
         modalEdit.addEventListener('show.bs.modal', function(e) {
-            const btn       = e.relatedTarget;
-            const id        = btn.getAttribute('data-id');
-            const title     = btn.getAttribute('data-title');
-            const content   = btn.getAttribute('data-content');
+            const btn = e.relatedTarget;
+            const id = btn.getAttribute('data-id');
+            const title = btn.getAttribute('data-title');
+            const content = btn.getAttribute('data-content');
             const scheduled = btn.getAttribute('data-scheduled');
-            const repeat    = btn.getAttribute('data-repeat');
+            const repeat = btn.getAttribute('data-repeat');
 
-            document.getElementById('editTitle').value     = title;
-            document.getElementById('editContent').value   = content;
+            document.getElementById('editTitle').value = title;
+            document.getElementById('editContent').value = content;
             document.getElementById('editScheduled').value = scheduled ?? '';
-            document.getElementById('editRepeat').value    = repeat ?? 'none';
-            document.getElementById('formEdit').action     = `/groups/{{ $group->id }}/announcements/${id}`;
+            document.getElementById('editRepeat').value = repeat ?? 'none';
+            document.getElementById('formEdit').action = `/groups/{{ $group->id }}/announcements/${id}`;
         });
 
         // Modal Edit Role
         const modalEditRole = document.getElementById('modalEditRole');
         modalEditRole.addEventListener('show.bs.modal', function(e) {
             const btn = e.relatedTarget;
-            document.getElementById('editRoleName').value  = btn.getAttribute('data-name');
+            document.getElementById('editRoleName').value = btn.getAttribute('data-name');
             document.getElementById('editRoleColor').value = btn.getAttribute('data-color');
-            document.getElementById('er_create').checked   = btn.getAttribute('data-can_create') === '1';
-            document.getElementById('er_edit').checked     = btn.getAttribute('data-can_edit') === '1';
-            document.getElementById('er_member').checked   = btn.getAttribute('data-can_member') === '1';
-            document.getElementById('er_code').checked     = btn.getAttribute('data-can_code') === '1';
-            document.getElementById('er_bot').checked      = btn.getAttribute('data-can_bot') === '1';
-            document.getElementById('formEditRole').action = `/groups/{{ $group->id }}/roles/${btn.getAttribute('data-id')}`;
+            document.getElementById('er_create').checked = btn.getAttribute('data-can_create') === '1';
+            document.getElementById('er_edit').checked = btn.getAttribute('data-can_edit') === '1';
+            document.getElementById('er_member').checked = btn.getAttribute('data-can_member') === '1';
+            document.getElementById('er_code').checked = btn.getAttribute('data-can_code') === '1';
+            document.getElementById('er_bot').checked = btn.getAttribute('data-can_bot') === '1';
+            document.getElementById('formEditRole').action =
+                `/groups/{{ $group->id }}/roles/${btn.getAttribute('data-id')}`;
         });
     </script>
 

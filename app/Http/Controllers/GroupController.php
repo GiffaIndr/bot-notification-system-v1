@@ -6,6 +6,7 @@ use App\Models\Group;
 use App\Models\GroupBot;
 use App\Models\GroupRole;
 use App\Models\GroupMember;
+use App\Services\ActivityLogService;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -16,6 +17,19 @@ class GroupController extends Controller
     {
         $groups = auth()->user()->groups()->withPivot('role')->get();
         return view('groups.index', compact('groups'));
+    }
+    public function logs(Group $group)
+    {
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
+
+        if (!$member) abort(403, 'Anda bukan anggota group ini.');
+
+        $logs = $group->activityLogs()->with('user')->paginate(20);
+
+        return view('pages.logs', compact('group', 'logs'));
     }
     public function store(Request $request)
     {
@@ -99,15 +113,20 @@ class GroupController extends Controller
     }
     public function updateBotChannel(Request $request, Group $group, GroupBot $bot)
     {
-        $member = $group->members()->where('user_id', auth()->id())->first();
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')->first();
 
-        if (!$member || $member->pivot->role !== 'komti') {
-            abort(403);
-        }
+        if (!$member || !$member->role->can_manage_bot) abort(403);
 
-        $bot->update([
-            'discord_channel_id' => $request->discord_channel_id,
-        ]);
+        $bot->update(['discord_channel_id' => $request->discord_channel_id]);
+
+        ActivityLogService::log(
+            groupId: $group->id,
+            type: 'bot_connected',
+            description: auth()->user()->name . ' menghubungkan bot Discord',
+            meta: ['bot_type' => 'discord', 'channel_id' => $request->discord_channel_id]
+        );
 
         return back()->with('success', 'Discord channel berhasil disimpan.');
     }
@@ -141,18 +160,25 @@ class GroupController extends Controller
             }
         }
 
-        return view('pages.group', compact('group', 'role', 'members', 'roles', 'announcements', 'discordChannelName', 'telegramGroupName'));
+        return view('pages.group', compact(
+            'group',
+            'role',
+            'members',
+            'roles',
+            'announcements',
+            'discordChannelName',
+            'telegramGroupName',
+        ));
     }
     public function generateCode(Request $request, Group $group)
     {
-        // Hanya komti yang boleh generate ulang kode
-        $member = $group->members()->where('user_id', auth()->id())->first();
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')->first();
 
-        if (!$member || $member->pivot->role !== 'komti') {
-            abort(403);
-        }
+        if (!$member || !$member->role->can_generate_code) abort(403);
 
-        $type = $request->type; // 'pj' atau 'member'
+        $type = $request->type;
 
         if ($type === 'pj') {
             $group->update(['invitation_code_pj' => Str::random(8)]);
@@ -160,20 +186,32 @@ class GroupController extends Controller
             $group->update(['invitation_code_member' => Str::random(8)]);
         }
 
-        return back()->with('success', 'Kode undangan berhasil diperbarui');
+        ActivityLogService::log(
+            groupId: $group->id,
+            type: 'generate_code',
+            description: auth()->user()->name . ' generate ulang kode ' . strtoupper($type),
+            meta: ['code_type' => $type]
+        );
+
+        return back()->with('success', 'Kode berhasil diperbarui.');
     }
 
     public function updateTelegramChat(Request $request, Group $group, GroupBot $bot)
     {
-        $member = $group->members()->where('user_id', auth()->id())->first();
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')->first();
 
-        if (!$member || $member->pivot->role !== 'komti') {
-            abort(403);
-        }
+        if (!$member || !$member->role->can_manage_bot) abort(403);
 
-        $bot->update([
-            'telegram_chat_id' => $request->telegram_chat_id,
-        ]);
+        $bot->update(['telegram_chat_id' => $request->telegram_chat_id]);
+
+        ActivityLogService::log(
+            groupId: $group->id,
+            type: 'bot_connected',
+            description: auth()->user()->name . ' menghubungkan bot Telegram',
+            meta: ['bot_type' => 'telegram', 'chat_id' => $request->telegram_chat_id]
+        );
 
         return back()->with('success', 'Telegram Chat ID berhasil disimpan.');
     }
