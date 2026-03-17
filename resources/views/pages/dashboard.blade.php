@@ -34,6 +34,7 @@
                                 <p class="text-muted small mb-2">
                                     {{ $plan->whatsapp ? '✅' : '❌' }} WhatsApp &nbsp;|&nbsp;
                                     {{ $plan->discord ? '✅' : '❌' }} Discord &nbsp;|&nbsp;
+                                    {{ $plan->telegram ? '✅' : '❌' }} Telegram &nbsp;|&nbsp;
                                     👥 Max {{ $plan->max_group }} Group
                                 </p>
                                 <button class="btn btn-sm btn-primary w-100" onclick="pay({{ $plan->id }})">
@@ -131,12 +132,20 @@
                                                 <h6>{{ $group->name }}</h6>
                                                 <p class="text-muted small mb-2">
                                                     Role:
-                                                    @if ($group->pivot->role === 'komti')
-                                                        <span class="badge bg-primary">Komti</span>
-                                                    @elseif ($group->pivot->role === 'pj')
-                                                        <span class="badge bg-success">PJ</span>
-                                                    @else
-                                                        <span class="badge bg-secondary">Member</span>
+                                                    @php
+                                                        $memberRole = \App\Models\GroupMember::where(
+                                                            'group_id',
+                                                            $group->id,
+                                                        )
+                                                            ->where('user_id', auth()->id())
+                                                            ->with('role')
+                                                            ->first();
+                                                    @endphp
+                                                    @if ($memberRole?->role)
+                                                        <span class="badge"
+                                                            style="background-color: {{ $memberRole->role->color }}">
+                                                            {{ $memberRole->role->name }}
+                                                        </span>
                                                     @endif
                                                 </p>
                                                 <a href="/groups/{{ $group->id }}"

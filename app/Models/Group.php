@@ -12,7 +12,23 @@ class Group extends Model
     public function members()
     {
         return $this->belongsToMany(User::class, 'group_members')
-            ->withPivot('role');
+            ->withPivot('role_id')
+            ->withTimestamps();
+    }
+
+    public function groupMembers()
+    {
+        return $this->hasMany(GroupMember::class);
+    }
+
+    public function roles()
+    {
+        return $this->hasMany(GroupRole::class);
+    }
+
+    public function ownerRole()
+    {
+        return $this->roles()->where('is_owner', true)->first();
     }
 
     public function invitations()

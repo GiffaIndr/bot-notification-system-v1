@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Group;
+use App\Models\GroupRole;
+use App\Models\GroupMember;
 use App\Models\Announcement;
 use Illuminate\Http\Request;
 
@@ -12,6 +14,7 @@ class AnnouncementController extends Controller
     public function store(Request $request, Group $group)
     {
         $role = $this->getRole($group);
+        if (!$role->can_create_announcement) abort(403);
 
         if (!in_array($role, ['komti', 'pj'])) {
             abort(403, 'Anda tidak punya akses.');
@@ -52,6 +55,7 @@ class AnnouncementController extends Controller
     public function update(Request $request, Group $group, Announcement $announcement)
     {
         $role = $this->getRole($group);
+        if (!$role->can_edit_announcement) abort(403);
 
         if (!in_array($role, ['komti', 'pj'])) {
             abort(403, 'Anda tidak punya akses.');
@@ -78,6 +82,7 @@ class AnnouncementController extends Controller
     public function destroy(Group $group, Announcement $announcement)
     {
         $role = $this->getRole($group);
+        if (!$role->can_edit_announcement) abort(403);
 
         if (!in_array($role, ['komti', 'pj'])) {
             abort(403, 'Anda tidak punya akses.');
@@ -89,14 +94,15 @@ class AnnouncementController extends Controller
     }
 
     // Helper ambil role user di group
-    private function getRole(Group $group)
+    private function getRole(Group $group): GroupRole
     {
-        $member = $group->members()->where('user_id', auth()->id())->first();
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
 
-        if (!$member) {
-            abort(403, 'Anda bukan anggota group ini.');
-        }
+        if (!$member) abort(403, 'Anda bukan anggota group ini.');
 
-        return $member->pivot->role;
+        return $member->role;
     }
 }

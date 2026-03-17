@@ -56,25 +56,24 @@ class PaymentController extends Controller
 
     private function syncGroupBots($user, $plan)
     {
-        // Ambil semua group milik user (role komti)
-        $groups = $user->groups()
-            ->wherePivot('role', 'komti')
-            ->get();
+        $groups = $user->groups()->wherePivot('role', 'komti')->get();
 
         foreach ($groups as $group) {
-
-            // Whatsapp
             if ($plan->whatsapp) {
                 GroupBot::firstOrCreate(
                     ['group_id' => $group->id, 'type' => 'whatsapp'],
                     ['invitation_code' => Str::random(10), 'is_active' => true]
                 );
             }
-
-            // Discord
             if ($plan->discord) {
                 GroupBot::firstOrCreate(
                     ['group_id' => $group->id, 'type' => 'discord'],
+                    ['invitation_code' => Str::random(10), 'is_active' => true]
+                );
+            }
+            if ($plan->telegram) {
+                GroupBot::firstOrCreate(
+                    ['group_id' => $group->id, 'type' => 'telegram'],
                     ['invitation_code' => Str::random(10), 'is_active' => true]
                 );
             }

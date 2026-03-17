@@ -18,11 +18,16 @@ class AuthController extends Controller
     }
     public function dashboard()
     {
-        $plans = Plan::all();
-        $groups = auth()->user()->groups()->withPivot('role')->take(2)->get();
+        $plans        = Plan::all();
+        $groups       = auth()->user()->groups()->withPivot('role_id')->take(2)->get();
         $totalGroups  = auth()->user()->groups()->count();
         $subscription = auth()->user()->activeSubscription()->with('plan')->first();
-        $groupCount = auth()->user()->groups()->wherePivot('role', 'komti')->count();
+
+        // Ganti ini
+        $groupCount = \App\Models\GroupMember::where('user_id', auth()->id())
+            ->whereHas('role', fn($q) => $q->where('is_owner', true))
+            ->count();
+
         $maxGroup = $subscription ? $subscription->plan->max_group : 0;
 
         return view('pages.dashboard', compact('groups', 'subscription', 'groupCount', 'maxGroup', 'plans', 'totalGroups'));

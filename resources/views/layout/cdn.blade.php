@@ -16,6 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"
         integrity="sha384-0pUGZvbkm6XF6gxjEnlmuGrJXVbNuzT9qBBavbLwCsOGabYfZo0T0to5eqruptLy" crossorigin="anonymous">
     </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <title>library</title>
 </head>
 
@@ -27,7 +28,7 @@
 
             <!-- Sidebar -->
             <div class="col-md-2 bg-dark text-white vh-100 p-3">
-
+                {{ Auth::user()->name }}
                 <h4 class="mb-4">Announcement Bot</h4>
 
                 <ul class="nav flex-column">

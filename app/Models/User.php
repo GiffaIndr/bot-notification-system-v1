@@ -31,10 +31,28 @@ class User extends Authenticatable
             ->where('expires_at', '>', now())
             ->latest();
     }
-
+    public function groupMembers()
+    {
+        return $this->hasMany(\App\Models\GroupMember::class);
+    }
     public function payments()
     {
         return $this->hasMany(Payment::class);
+    }
+    public function getGroupRole(Group $group): ?GroupRole
+    {
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', $this->id)
+            ->with('role')
+            ->first();
+
+        return $member?->role;
+    }
+
+    public function can_in_group(string $permission, Group $group): bool
+    {
+        $role = $this->getGroupRole($group);
+        return $role ? $role->$permission : false;
     }
 
     public function isSubscribed(): bool
@@ -61,7 +79,8 @@ class User extends Authenticatable
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'group_members')
-            ->withPivot('role');
+            ->withPivot('role_id')
+            ->withTimestamps();
     }
 
     /**

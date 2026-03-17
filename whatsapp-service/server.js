@@ -3,12 +3,15 @@ const {
     useMultiFileAuthState,
     DisconnectReason,
 } = require("@whiskeysockets/baileys");
+const { Client, GatewayIntentBits } = require("discord.js");
 const express = require("express");
 const qrcode = require("qrcode-terminal");
 const pino = require("pino");
-
+require("dotenv").config();
 const app = express();
 app.use(express.json());
+
+// WHATSAPP
 
 let sock = null;
 let isConnected = false;
@@ -19,8 +22,8 @@ async function connectWhatsApp() {
     sock = makeWASocket({
         auth: state,
         logger: pino({ level: "silent" }),
-        version: [2, 3000, 1015901307], // tambah ini
-        browser: ["GIBOT-v2", "Chrome", "20.0.0"], // tambah ini
+        version: [2, 3000, 1015901307],
+        browser: ["Bot", "Chrome", "20.0.0"],
     });
 
     sock.ev.on("creds.update", saveCreds);
@@ -36,17 +39,7 @@ async function connectWhatsApp() {
             isConnected = false;
             const code = lastDisconnect?.error?.output?.statusCode;
             const shouldReconnect = code !== DisconnectReason.loggedOut;
-
-            console.log("❌ Koneksi terputus, kode:", code);
-
-            if (shouldReconnect) {
-                console.log("🔄 Mencoba reconnect...");
-                connectWhatsApp();
-            } else {
-                console.log(
-                    "🚪 Logged out, hapus folder auth_info dan restart.",
-                );
-            }
+            if (shouldReconnect) connectWhatsApp();
         }
 
         if (connection === "open") {
@@ -56,7 +49,21 @@ async function connectWhatsApp() {
     });
 }
 
-// Endpoint kirim pesan
+// DISCORD
+
+const discordClient = new Client({
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
+});
+
+discordClient.once("clientReady", () => {
+    console.log(`✅ Discord Bot terhubung sebagai ${discordClient.user.tag}`);
+});
+
+discordClient.login(process.env.DISCORD_TOKEN);
+
+// ENDPOINTS
+
+// Kirim WA ke 1 nomor
 app.post("/send", async (req, res) => {
     const { phone, message } = req.body;
 
@@ -66,23 +73,16 @@ app.post("/send", async (req, res) => {
             .json({ success: false, message: "WhatsApp belum terhubung" });
     }
 
-    if (!phone || !message) {
-        return res
-            .status(400)
-            .json({ success: false, message: "phone dan message wajib diisi" });
-    }
-
     try {
         const jid = `${phone}@s.whatsapp.net`;
         await sock.sendMessage(jid, { text: message });
         return res.json({ success: true, message: "Pesan berhasil dikirim" });
     } catch (error) {
-        console.error("Error kirim pesan:", error.message);
         return res.status(500).json({ success: false, message: error.message });
     }
 });
 
-// Endpoint kirim ke banyak nomor sekaligus
+// Kirim WA ke banyak nomor
 app.post("/send-bulk", async (req, res) => {
     const { phones, message } = req.body;
 
@@ -92,22 +92,12 @@ app.post("/send-bulk", async (req, res) => {
             .json({ success: false, message: "WhatsApp belum terhubung" });
     }
 
-    if (!phones || !Array.isArray(phones) || !message) {
-        return res.status(400).json({
-            success: false,
-            message: "phones (array) dan message wajib diisi",
-        });
-    }
-
     const results = [];
-
     for (const phone of phones) {
         try {
             const jid = `${phone}@s.whatsapp.net`;
             await sock.sendMessage(jid, { text: message });
             results.push({ phone, success: true });
-
-            // Delay 1 detik antar pesan biar tidak kena spam filter WA
             await new Promise((resolve) => setTimeout(resolve, 1000));
         } catch (error) {
             results.push({ phone, success: false, error: error.message });
@@ -117,13 +107,48 @@ app.post("/send-bulk", async (req, res) => {
     return res.json({ success: true, results });
 });
 
-// Endpoint cek status
+// Kirim Discord ke channel
+app.post("/discord/send", async (req, res) => {
+    const { channel_id, message } = req.body;
+
+    try {
+        const channel = await discordClient.channels.fetch(channel_id);
+
+        if (!channel) {
+            return res
+                .status(404)
+                .json({ success: false, message: "Channel tidak ditemukan" });
+        }
+
+        await channel.send(message);
+        return res.json({
+            success: true,
+            message: "Pesan Discord berhasil dikirim",
+        });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+app.get("/discord/channel/:channel_id", async (req, res) => {
+    try {
+        const channel = await discordClient.channels.fetch(
+            req.params.channel_id,
+        );
+        return res.json({ success: true, name: channel.name });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+// Cek status
 app.get("/status", (req, res) => {
-    return res.json({ connected: isConnected });
+    return res.json({
+        whatsapp: isConnected,
+        discord: discordClient.isReady(),
+    });
 });
 
 const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`WhatsApp service running on port ${PORT}`);
+    console.log(`Service running on port ${PORT}`);
     connectWhatsApp();
 });

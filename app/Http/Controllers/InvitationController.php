@@ -23,20 +23,30 @@ class InvitationController extends Controller
 
     public function join(Request $request)
     {
-        $code = $request->code;
+        $code  = $request->code;
 
-        // Cek apakah kode cocok untuk PJ
+        // Cek kode PJ
         $group = Group::where('invitation_code_pj', $code)->first();
         if ($group) {
-            $group->members()->attach(auth()->id(), ['role' => 'pj']);
-            return back()->with('success', 'Berhasil join sebagai PJ');
+            $pjRole = $group->roles()->where('name', 'PJ')->first();
+            GroupMember::create([
+                'group_id' => $group->id,
+                'user_id'  => auth()->id(),
+                'role_id'  => $pjRole->id,
+            ]);
+            return back()->with('success', 'Berhasil join sebagai ' . $pjRole->name);
         }
 
-        // Cek apakah kode cocok untuk Member
+        // Cek kode Member
         $group = Group::where('invitation_code_member', $code)->first();
         if ($group) {
-            $group->members()->attach(auth()->id(), ['role' => 'member']);
-            return back()->with('success', 'Berhasil join sebagai Member');
+            $memberRole = $group->roles()->where('is_owner', false)->orderBy('id', 'desc')->first();
+            GroupMember::create([
+                'group_id' => $group->id,
+                'user_id'  => auth()->id(),
+                'role_id'  => $memberRole->id,
+            ]);
+            return back()->with('success', 'Berhasil join sebagai ' . $memberRole->name);
         }
 
         return back()->with('error', 'Kode undangan tidak valid');

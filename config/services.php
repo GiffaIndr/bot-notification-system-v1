@@ -28,6 +28,15 @@ return [
         'token' => env('POSTMARK_TOKEN'),
     ],
 
+    'discord' => [
+        'client_id' => env('DISCORD_CLIENT_ID'),
+    ],
+
+    'telegram' => [
+        'token'    => env('TELEGRAM_BOT_TOKEN'),
+        'username' => env('TELEGRAM_BOT_USERNAME'),
+    ],
+
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
