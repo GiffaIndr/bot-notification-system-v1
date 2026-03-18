@@ -67,7 +67,7 @@ class AuthController extends Controller
                 'name' => 'required',
                 'email' => 'required|email:dns',
                 'password' => 'required|min:6|confirmed',
-                'phone' => 'required|string|regex:/^62[0-9]{9,13}$//'
+                'phone' => 'required|string|regex:/^62[0-9]{9,13}$/'
             ],
             [
                 'name.required' => 'Nama tidak boleh kosong',
@@ -97,9 +97,14 @@ class AuthController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(auth $auth)
+    public function logout(Request $request)
     {
-        //
+        Auth::logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect('/');
     }
 
     /**

@@ -1,6 +1,6 @@
 @extends('layout.cdn')
 
-@section('content')
+@section('content2')
 
 <div class="container">
     <div class="row justify-content-center align-items-center min-vh-100">

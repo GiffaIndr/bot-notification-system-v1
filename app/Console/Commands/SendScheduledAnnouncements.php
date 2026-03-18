@@ -107,18 +107,18 @@ class SendScheduledAnnouncements extends Command
                 $announcement->update(['scheduled_at' => null]);
             }
 
-            if ($status['whatsapp'] || true) { // telegram tidak perlu cek status koneksi
-                $telegramBot = $announcement->group->bots
-                    ->where('type', 'telegram')
-                    ->first();
+            // if ($status['whatsapp'] || true) { // telegram tidak perlu cek status koneksi
+            //     $telegramBot = $announcement->group->bots
+            //         ->where('type', 'telegram')
+            //         ->first();
 
-                if ($telegramBot && $telegramBot->telegram_chat_id) {
-                    $notification->sendTelegram($telegramBot->telegram_chat_id, $message);
-                    $this->info("✅ Telegram terkirim ke chat {$telegramBot->telegram_chat_id}");
-                } else {
-                    $this->warn("⚠️ Telegram chat ID belum diset untuk group {$announcement->group->name}");
-                }
-            }
+            //     if ($telegramBot && $telegramBot->telegram_chat_id) {
+            //         $notification->sendTelegram($telegramBot->telegram_chat_id, $message);
+            //         $this->info("✅ Telegram terkirim ke chat {$telegramBot->telegram_chat_id}");
+            //     } else {
+            //         $this->warn("⚠️ Telegram chat ID belum diset untuk group {$announcement->group->name}");
+            //     }
+            // }
         }
 
         $this->info('🎉 Selesai!');

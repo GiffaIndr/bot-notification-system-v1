@@ -14,6 +14,7 @@ Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login/auth', [AuthController::class, 'Auth'])->name('auth');
 Route::post('/register/create', [AuthController::class, 'registration'])->name('register.auth');
 
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware('auth')->group(function () {
 
     Route::get('/subscribe/{plan}', [SubscriptionController::class, 'subscribe']);
@@ -39,4 +40,8 @@ Route::middleware('auth')->group(function () {
     Route::put('/groups/{group}/roles/{role}', [GroupRoleController::class, 'update']);
     Route::delete('/groups/{group}/roles/{role}', [GroupRoleController::class, 'destroy']);
     Route::get('/groups/{group}/logs', [GroupController::class, 'logs']);
+
+    Route::get('/payment/receipt/{orderId}', [PaymentController::class, 'receipt']);
+    Route::get('/payment/receipt/{orderId}/print', [PaymentController::class, 'printReceipt']);
+    Route::get('/paymentlogs', [PaymentController::class, 'logs']);
 });

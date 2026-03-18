@@ -25,27 +25,50 @@ class InvitationController extends Controller
     {
         $code = $request->code;
 
-        // Kode Editor
+        // Kode PJ/Editor
         $group = Group::where('invitation_code_pj', $code)->first();
         if ($group) {
-            $editorRole = $group->roles()->where('name', 'Editor')->first();
+            $pjRole = $group->roles()
+                ->where('is_owner', false)
+                ->orderBy('id', 'asc')
+                ->first();
+
+            if (!$pjRole) {
+                return back()->with('error', 'Role tidak ditemukan di group ini.');
+            }
+
             GroupMember::create([
                 'group_id' => $group->id,
                 'user_id'  => auth()->id(),
-                'role_id'  => $editorRole->id,
+                'role_id'  => $pjRole->id,
             ]);
-            return back()->with('success', 'Berhasil join sebagai ' . $editorRole->name);
+
+            return back()->with('success', 'Berhasil join sebagai ' . $pjRole->name);
         }
 
         // Kode Member
         $group = Group::where('invitation_code_member', $code)->first();
         if ($group) {
-            $memberRole = $group->roles()->where('name', 'Member')->first();
+            $memberRole = $group->roles()
+                ->where('is_owner', false)
+                ->orderBy('id', 'asc')
+                ->skip(1)
+                ->first();
+
+            if (!$memberRole) {
+                $memberRole = $group->roles()->where('is_owner', false)->first();
+            }
+
+            if (!$memberRole) {
+                return back()->with('error', 'Role tidak ditemukan di group ini.');
+            }
+
             GroupMember::create([
                 'group_id' => $group->id,
                 'user_id'  => auth()->id(),
                 'role_id'  => $memberRole->id,
             ]);
+
             return back()->with('success', 'Berhasil join sebagai ' . $memberRole->name);
         }
 

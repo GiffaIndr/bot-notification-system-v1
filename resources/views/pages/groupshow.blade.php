@@ -1,4 +1,4 @@
-@extends('layout.cdn')
+@extends('layout.sidebar')
 
 @section('content')
 

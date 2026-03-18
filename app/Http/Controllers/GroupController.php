@@ -70,13 +70,13 @@ class GroupController extends Controller
         GroupRole::create([
             'group_id' => $group->id,
             'name' => 'Editor',
-            'color' => '#198754',
+            'color'  => '#198754',
             'can_create_announcement' => true,
             'can_edit_announcement' => true,
-            'can_manage_member'  => false,
+            'can_manage_member' => false,
             'can_generate_code' => false,
             'can_manage_bot' => false,
-            'is_owner'  => false,
+            'is_owner' > false,
         ]);
 
         GroupRole::create([
@@ -217,9 +217,12 @@ class GroupController extends Controller
     }
     public function fetchTelegramChat(Request $request, Group $group, GroupBot $bot)
     {
-        $member = $group->members()->where('user_id', auth()->id())->first();
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
 
-        if (!$member || $member->pivot->role !== 'komti') {
+        if (!$member || !$member->role->can_manage_bot) {
             abort(403);
         }
 
@@ -236,7 +239,6 @@ class GroupController extends Controller
             return back()->with('error', 'Tidak ada update dari Telegram. Pastikan sudah ketik /start di group Telegram kamu.');
         }
 
-        // Ambil chat ID terbaru dari group (bukan private)
         $chatId = null;
         foreach (array_reverse($updates) as $update) {
             $chat = $update['message']['chat'] ?? null;
@@ -252,6 +254,6 @@ class GroupController extends Controller
 
         $bot->update(['telegram_chat_id' => $chatId]);
 
-        return back()->with('success', "Chat ID berhasil didapat: {$chatId}");
+        return back()->with('success', "Berhasil terhubung ke group Telegram!");
     }
 }

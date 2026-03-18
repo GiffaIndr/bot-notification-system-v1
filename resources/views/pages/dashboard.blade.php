@@ -1,4 +1,4 @@
-@extends('layout.cdn')
+@extends('layout.sidebar')
 
 @section('content')
     <style>
@@ -79,6 +79,7 @@
                                         <small class="d-block">Aktif hingga:</small>
                                         <strong>{{ $subscription->expires_at->format('d M Y') }}</strong>
                                     </div>
+
                                 </div>
                             </div>
                         @else
@@ -350,7 +351,10 @@
                                 body: JSON.stringify({
                                     order_id: result.order_id
                                 })
-                            }).then(() => location.reload());
+                            }).then(() => {
+                                // Redirect ke halaman receipt setelah sync
+                                window.location.href = '/payment/receipt/' + result.order_id;
+                            });
                         }
                     });
                 });

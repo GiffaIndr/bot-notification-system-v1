@@ -11,73 +11,142 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
-        /* Custom Styling for Fun & Modern Sidebar */
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
         :root {
-            --sidebar-gradient: linear-gradient(180deg, #4e73df 0%, #224abe 100%);
-            --accent-color: #f8f9fc;
-            --hover-bg: rgba(255, 255, 255, 0.2);
+            --sidebar-bg: #ffffff;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --hover-bg: #f7fafc;
+            /* Icon Colors */
+            --color-dashboard: #6366f1;
+            --color-groups: #ec4899;
+            --color-payments: #10b981;
+            --color-logout: #f43f5e;
         }
 
         body {
-            background-color: #f4f7f6;
-            font-family: 'Nunito', sans-serif;
+            background-color: #f3f4f6;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         .sidebar {
-            background: var(--sidebar-gradient);
+            background: var(--sidebar-bg);
             min-height: 100vh;
-            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.03);
+            border-right: 1px solid #edf2f7;
+            padding: 1.5rem 1rem !important;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar-brand {
             font-weight: 800;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            color: #fff;
-            padding: 1.5rem 1rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 1.25rem;
+            color: var(--text-main);
+            padding: 1rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-brand i {
+            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 1.5rem;
         }
 
         .user-section {
+            background: #f8fafc;
             padding: 1rem;
-            background: rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
-            margin: 1rem;
-            font-size: 0.9rem;
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            border: 1px solid #f1f5f9;
+        }
+
+        .user-section strong {
+            color: var(--text-main);
+            display: block;
+        }
+
+        .nav-item {
+            margin-bottom: 0.5rem;
         }
 
         .nav-link {
-            color: rgba(255, 255, 255, 0.8) !important;
+            color: var(--text-muted) !important;
             font-weight: 600;
-            padding: 0.8rem 1.2rem !important;
-            margin: 0.2rem 1rem;
-            border-radius: 8px;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .nav-link:hover {
-            background-color: var(--hover-bg);
-            color: #fff !important;
-            transform: translateX(5px);
-        }
-
-        .nav-link.active {
-            background-color: #fff !important;
-            color: #4e73df !important;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 0.8rem 1rem !important;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
         }
 
         .nav-link i {
-            margin-right: 10px;
-            width: 20px;
-            text-align: center;
+            margin-right: 12px;
+            font-size: 1.1rem;
+            transition: transform 0.3s ease;
         }
 
-        /* Responsive Tweaks */
+        /* Hover Effects with Individual Colors */
+        .nav-link:hover {
+            background-color: var(--hover-bg);
+            color: var(--text-main) !important;
+            transform: translateX(4px);
+        }
+
+        /* Active States */
+        .link-dashboard.active {
+            background: #eef2ff !important;
+            color: var(--color-dashboard) !important;
+        }
+
+        .link-groups.active {
+            background: #fdf2f8 !important;
+            color: var(--color-groups) !important;
+        }
+
+        .link-payments.active {
+            background: #ecfdf5 !important;
+            color: var(--color-payments) !important;
+        }
+
+        /* Icon Colors per Menu */
+        .link-dashboard i {
+            color: var(--color-dashboard);
+        }
+
+        .link-groups i {
+            color: var(--color-groups);
+        }
+
+        .link-payments i {
+            color: var(--color-payments);
+        }
+
+        .btn-logout {
+            margin-top: auto;
+            color: var(--color-logout) !important;
+            border: 1px solid transparent;
+            background: #fff1f2;
+            width: 100%;
+            text-align: left;
+            border-radius: 12px;
+            font-weight: 700;
+        }
+
+        .btn-logout:hover {
+            background: var(--color-logout);
+            color: white !important;
+        }
+
         @media (max-width: 768px) {
             .sidebar {
                 min-height: auto;
+                margin-bottom: 20px;
             }
         }
     </style>
@@ -87,49 +156,7 @@
 
 <body>
 
-    <div class="container-fluid">
-        <div class="row">
-
-            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse p-0">
-                <div class="sidebar-brand text-center">
-                    <i class="fas fa-robot me-2"></i>AnnounceBot
-                </div>
-
-                <div class="user-section text-white text-center">
-                    @auth
-                        <small class="d-block opacity-75">Welcome back,</small>
-                        <strong>{{ Auth::user()->name }}</strong>
-                    @endauth
-
-                    @guest
-                        <a href="{{ route('login') }}" class="btn btn-light btn-sm mt-2">
-                            Login
-                        </a>
-                    @endguest
-                </div>
-
-                <ul class="nav flex-column mt-3">
-                    <li class="nav-item">
-                        <a href="/dashboard" class="nav-link {{ Request::is('dashboard') ? 'active' : '' }}">
-                            <i class="fas fa-chart-pie"></i> Dashboard
-                        </a>
-                    </li>
-                     <li class="nav-item">
-                        <a href="/groups" class="nav-link {{ Request::is('groups') ? 'active' : '' }}">
-                            <i class="fa-solid fa-chalkboard-user"></i> Groups
-                        </a>
-                    </li>
-                </ul>
-            </nav>
-
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-                <div class="pt-4">
-                    @yield('content')
-                </div>
-            </main>
-
-        </div>
-    </div>
+    @yield('content2')
 
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>

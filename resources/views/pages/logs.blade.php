@@ -1,102 +1,171 @@
-@extends('layout.cdn')
+@extends('layout.sidebar')
 
 @section('content')
+<style>
+    /* Timeline styling */
+    .activity-log-container {
+        position: relative;
+    }
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    /* Garis vertikal timeline */
+    .activity-log-container::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 48px; /* Sesuaikan dengan posisi ikon */
+        width: 2px;
+        background: #eef2f7;
+    }
+
+    .log-item {
+        position: relative;
+        z-index: 1;
+        transition: all 0.2s ease;
+        border-radius: 12px;
+        margin-bottom: 5px;
+    }
+
+    .log-item:hover {
+        background-color: #f8fafc;
+        transform: scale(1.01);
+    }
+
+    .icon-box {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    /* Soft UI Badges */
+    .badge-soft {
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .meta-tag {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        color: #64748b;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+    }
+</style>
+    <div class="d-flex justify-content-between align-items-end mb-4">
         <div>
-            <a href="/groups/{{ $group->id }}" class="text-muted text-decoration-none">
-                <i class="fa fa-arrow-left me-1"></i> {{ $group->name }}
-            </a>
-            <h3 class="mt-1 mb-0 fw-bold">Activity Log</h3>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a href="/groups" class="text-decoration-none text-muted">Groups</a></li>
+                    <li class="breadcrumb-item active text-primary fw-bold" aria-current="page">{{ $group->name }}</li>
+                </ol>
+            </nav>
+            <h3 class="fw-800 mb-0" style="color: #1e293b;">Activity Log</h3>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                <i class="fa fa-layer-group me-1"></i> {{ $group->name }}
+            </span>
         </div>
     </div>
 
-    <div class="card shadow-sm">
-        <div class="card-header fw-bold bg-white border-bottom d-flex justify-content-between align-items-center">
-            <span><i class="fa fa-clock-rotate-left text-secondary me-2"></i>Semua Aktivitas</span>
-            <small class="text-muted">{{ $logs->total() }} aktivitas</small>
+    <div class="card border-0 shadow-sm" style="border-radius: 20px; overflow: hidden;">
+        <div class="card-header bg-white py-3 border-bottom border-light d-flex justify-content-between align-items-center">
+            <span class="fw-bold text-dark">
+                <i class="fa fa-clock-rotate-left text-primary me-2"></i>History Aktivitas
+            </span>
+            <span class="text-muted small fw-medium">{{ $logs->total() }} record ditemukan</span>
         </div>
-        <div class="card-body p-0">
+
+        <div class="card-body p-4 activity-log-container">
             @forelse ($logs as $log)
-                <div class="d-flex align-items-start gap-3 p-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                @php
+                    // Map warna dan ikon yang lebih "soft"
+                    $config = match($log->type) {
+                        'create_announcement' => ['icon' => 'fa-plus', 'color' => '#6366f1', 'bg' => '#eef2ff'],
+                        'edit_announcement'   => ['icon' => 'fa-pen', 'color' => '#f59e0b', 'bg' => '#fffbeb'],
+                        'delete_announcement' => ['icon' => 'fa-trash', 'color' => '#ef4444', 'bg' => '#fef2f2'],
+                        'bot_connected'       => ['icon' => 'fa-robot', 'color' => '#06b6d4', 'bg' => '#ecfeff'],
+                        'generate_code'       => ['icon' => 'fa-key', 'color' => '#8b5cf6', 'bg' => '#f5f3ff'],
+                        'notification_sent'   => ['icon' => 'fa-paper-plane', 'color' => '#10b981', 'bg' => '#ecfdf5'],
+                        default               => ['icon' => 'fa-info-circle', 'color' => '#64748b', 'bg' => '#f8fafc'],
+                    };
+                @endphp
 
-                    @php
-                        $iconClass = match($log->type) {
-                            'create_announcement' => 'fa-plus bg-primary',
-                            'edit_announcement'   => 'fa-pen bg-warning',
-                            'delete_announcement' => 'fa-trash bg-danger',
-                            'bot_connected'       => 'fa-robot bg-info',
-                            'generate_code'       => 'fa-key bg-warning',
-                            'notification_sent'   => 'fa-paper-plane bg-success',
-                            default               => 'fa-circle-info bg-secondary',
-                        };
-                    @endphp
-
-                    {{-- Icon --}}
+                <div class="log-item d-flex gap-4 p-3">
                     <div class="flex-shrink-0">
-                        <span class="d-inline-flex align-items-center justify-content-center rounded-circle text-white {{ explode(' ', $iconClass)[1] }}"
-                              style="width: 36px; height: 36px;">
-                            <i class="fa {{ explode(' ', $iconClass)[0] }}"></i>
-                        </span>
+                        <div class="icon-box" style="background-color: {{ $config['bg'] }}; color: {{ $config['color'] }};">
+                            <i class="fa {{ $config['icon'] }}"></i>
+                        </div>
                     </div>
 
-                    {{-- Isi --}}
                     <div class="flex-grow-1">
-                        <p class="mb-0 fw-semibold small">{{ $log->description }}</p>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="mb-1 fw-bold text-dark" style="font-size: 0.95rem;">{{ $log->description }}</h6>
 
-                        {{-- Meta info --}}
-                        @if ($log->meta)
-                            <div class="d-flex gap-2 flex-wrap mt-1">
-                                @foreach ($log->meta as $key => $value)
-                                    <span class="badge bg-light text-dark" style="font-size: 10px">
-                                        {{ str_replace('_', ' ', $key) }}: {{ $value }}
-                                    </span>
-                                @endforeach
+                                {{-- Meta Tags --}}
+                                @if ($log->meta)
+                                    <div class="d-flex gap-2 flex-wrap my-2">
+                                        @foreach ($log->meta as $key => $value)
+                                            <span class="meta-tag">
+                                                <span class="text-uppercase opacity-75" style="font-size: 9px">{{ str_replace('_', ' ', $key) }}:</span>
+                                                <span class="fw-bold">{{ $value }}</span>
+                                            </span>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                <div class="d-flex align-items-center gap-3 text-muted" style="font-size: 0.8rem;">
+                                    <span><i class="fa fa-circle-user me-1 text-primary opacity-50"></i> {{ $log->user?->name ?? 'System' }}</span>
+                                    <span><i class="fa fa-calendar me-1 opacity-50"></i> {{ $log->created_at->format('d M, H:i') }}</span>
+                                    <span class="fw-medium text-primary"><i class="fa fa-stopwatch me-1 opacity-50"></i>{{ $log->created_at->diffForHumans() }}</span>
+                                </div>
                             </div>
-                        @endif
 
-                        <small class="text-muted mt-1 d-block">
-                            <i class="fa fa-user me-1"></i>{{ $log->user?->name ?? 'System' }}
-                            &nbsp;•&nbsp;
-                            <i class="fa fa-clock me-1"></i>{{ $log->created_at->format('d M Y, H:i') }}
-                            &nbsp;•&nbsp;
-                            {{ $log->created_at->diffForHumans() }}
-                        </small>
+                            <div class="ms-3">
+                                @if ($log->status === 'success')
+                                    <span class="badge-soft bg-success bg-opacity-10 text-success">
+                                        <i class="fa fa-check-circle me-1"></i> Success
+                                    </span>
+                                @elseif ($log->status === 'failed')
+                                    <span class="badge-soft bg-danger bg-opacity-10 text-danger">
+                                        <i class="fa fa-times-circle me-1"></i> Failed
+                                    </span>
+                                @else
+                                    <span class="badge-soft bg-warning bg-opacity-10 text-warning">
+                                        <i class="fa fa-clock me-1"></i> Pending
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
                     </div>
-
-                    {{-- Status --}}
-                    <div class="flex-shrink-0">
-                        @if ($log->status === 'success')
-                            <span class="badge bg-success bg-opacity-10 text-success">
-                                <i class="fa fa-circle-check me-1"></i>Sukses
-                            </span>
-                        @elseif ($log->status === 'failed')
-                            <span class="badge bg-danger bg-opacity-10 text-danger">
-                                <i class="fa fa-circle-xmark me-1"></i>Gagal
-                            </span>
-                        @else
-                            <span class="badge bg-warning bg-opacity-10 text-warning">
-                                <i class="fa fa-clock me-1"></i>Pending
-                            </span>
-                        @endif
-                    </div>
-
                 </div>
             @empty
                 <div class="text-center py-5">
-                    <i class="fa fa-clock-rotate-left fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">Belum ada aktivitas.</p>
+                    <div class="mb-3">
+                        <i class="fa-solid fa-inbox fa-4x text-light"></i>
+                    </div>
+                    <h5 class="text-muted">Tidak ada aktivitas ditemukan</h5>
+                    <p class="text-muted small">Semua aktivitas bot akan muncul di sini secara otomatis.</p>
                 </div>
             @endforelse
         </div>
 
-        {{-- Pagination --}}
         @if ($logs->hasPages())
-            <div class="card-footer bg-white">
+            <div class="card-footer bg-white border-0 p-4">
                 {{ $logs->links() }}
             </div>
         @endif
-
     </div>
 
 @endsection

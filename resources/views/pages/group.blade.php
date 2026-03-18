@@ -1,4 +1,4 @@
-    @extends('layout.cdn')
+    @extends('layout.sidebar')
 
     @section('content')
 
@@ -265,164 +265,160 @@
 
                 {{-- Bot Integration --}}
                 @if ($role->can_manage_bot)
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header fw-bold bg-white border-bottom">
-                            <i class="fa fa-robot text-primary me-2"></i>Bot Integration
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; overflow: hidden;">
+                        <div class="card-header bg-white py-3 border-bottom-0">
+                            <div class="d-flex align-items-center">
+                                <div class="p-2 bg-primary bg-opacity-10 rounded-3 me-3">
+                                    <i class="fa fa-robot text-primary"></i>
+                                </div>
+                                <h6 class="fw-bold mb-0" style="color: #334155;">Bot Integration</h6>
+                            </div>
                         </div>
+
                         <div class="card-body p-0">
                             @forelse ($group->bots as $bot)
-                                <div class="p-3 {{ !$loop->last ? 'border-bottom' : '' }}">
+                                <div class="p-4 {{ !$loop->last ? 'border-bottom' : '' }}" style="background: #fcfcfd;">
 
-                                    {{-- WhatsApp --}}
-                                    @if ($bot->type === 'whatsapp')
-                                        <div class="d-flex align-items-center justify-content-between">
-                                            <div>
-                                                <span class="badge bg-success me-2">
-                                                    <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                                    {{-- Header Row: Badge & Status --}}
+                                    <div class="d-flex align-items-center justify-content-between mb-4">
+                                        <div>
+                                            @if ($bot->type === 'whatsapp')
+                                                <span class="badge rounded-pill px-3 py-2"
+                                                    style="background: linear-gradient(45deg, #25D366, #128C7E); box-shadow: 0 4px 10px rgba(37, 211, 102, 0.2);">
+                                                    <i class="fab fa-whatsapp me-1"></i> WhatsApp
                                                 </span>
-                                                <small class="text-muted">Otomatis ke semua member</small>
-                                            </div>
-                                            <span class="badge bg-success bg-opacity-10 text-success">
-                                                <i class="fa fa-circle-check me-1"></i>Aktif
-                                            </span>
-                                        </div>
-
-                                        {{-- Discord --}}
-                                    @elseif ($bot->type === 'discord')
-                                        <div class="d-flex align-items-center justify-content-between mb-3">
-                                            <div>
-                                                <span class="badge bg-primary me-2">
-                                                    <i class="fab fa-discord me-1"></i>Discord
+                                            @elseif ($bot->type === 'discord')
+                                                <span class="badge rounded-pill px-3 py-2"
+                                                    style="background: linear-gradient(45deg, #5865F2, #404EED); box-shadow: 0 4px 10px rgba(88, 101, 242, 0.2);">
+                                                    <i class="fab fa-discord me-1"></i> Discord
                                                 </span>
-                                                @if ($bot->discord_channel_id)
-                                                    <small class="text-muted">#{{ $discordChannelName }}</small>
-                                                @else
-                                                    <small class="text-muted">Belum terhubung</small>
-                                                @endif
-                                            </div>
-                                            @if ($bot->discord_channel_id)
-                                                <span class="badge bg-success bg-opacity-10 text-success">
-                                                    <i class="fa fa-circle-check me-1"></i>Aktif
-                                                </span>
-                                            @else
-                                                <span class="badge bg-warning bg-opacity-10 text-warning">
-                                                    <i class="fa fa-triangle-exclamation me-1"></i>Belum Setup
+                                            @elseif ($bot->type === 'telegram')
+                                                <span class="badge rounded-pill px-3 py-2"
+                                                    style="background: linear-gradient(45deg, #0088cc, #0077b5); box-shadow: 0 4px 10px rgba(0, 136, 204, 0.2);">
+                                                    <i class="fab fa-telegram me-1"></i> Telegram
                                                 </span>
                                             @endif
                                         </div>
 
+                                        {{-- Status Pill --}}
                                         @php
-                                            $inviteUrl =
-                                                'https://discord.com/oauth2/authorize?client_id=' .
-                                                config('services.discord.client_id') .
-                                                '&permissions=3072&scope=bot&state=' .
-                                                $group->id .
-                                                '&redirect_uri=' .
-                                                urlencode(config('services.discord.redirect_uri')) .
-                                                '&response_type=code';
+                                            $isActive =
+                                                $bot->type === 'whatsapp' ||
+                                                ($bot->type === 'discord' && $bot->discord_channel_id) ||
+                                                ($bot->type === 'telegram' && $bot->telegram_chat_id);
                                         @endphp
+                                        <span
+                                            class="badge {{ $isActive ? 'text-success' : 'text-warning' }} d-flex align-items-center fw-medium"
+                                            style="background: {{ $isActive ? '#ecfdf5' : '#fffbeb' }}; font-size: 11px; border: 1px solid currentColor;">
+                                            <i
+                                                class="fa {{ $isActive ? 'fa-circle-check' : 'fa-triangle-exclamation' }} me-1"></i>
+                                            {{ $isActive ? 'Aktif' : 'Belum Setup' }}
+                                        </span>
+                                    </div>
 
-                                        <a href="{{ $inviteUrl }}" target="_blank"
-                                            onclick="showToast('Membuka halaman invite Discord...', 'info')"
-                                            class="btn btn-sm btn-outline-primary w-100 mb-3">
-                                            <i class="fab fa-discord me-1"></i> Invite Bot ke Server Discord
-                                        </a>
-
-                                        <form method="POST"
-                                            action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/channel"
-                                            onsubmit="handleChannelSave(event, this)">
-                                            @csrf
-                                            @method('PUT')
-                                            <label class="form-label small fw-semibold">Discord Channel ID</label>
-                                            <div class="input-group">
-                                                <input type="text" name="discord_channel_id" id="discordChannelInput"
-                                                    class="form-control form-control-sm"
-                                                    value="{{ $bot->discord_channel_id }}"
-                                                    placeholder="1234567890123456">
-                                                <button class="btn btn-sm btn-primary">
-                                                    <i class="fa fa-floppy-disk"></i>
-                                                </button>
+                                    {{-- Content Section --}}
+                                    <div class="content-body">
+                                        @if ($bot->type === 'whatsapp')
+                                            <div class="text-center p-3 bg-white border rounded-3 border-dashed">
+                                                <small class="text-muted d-block">Notifikasi otomatis terkirim ke semua
+                                                    nomor member yang terdaftar.</small>
                                             </div>
-                                            <small class="text-muted">
-                                                <i class="fa fa-circle-info me-1"></i>
-                                                Klik kanan channel → Copy Channel ID
-                                            </small>
-                                        </form>
+                                        @elseif ($bot->type === 'discord')
+                                            @php
+                                                $inviteUrl =
+                                                    'https://discord.com/oauth2/authorize?client_id=' .
+                                                    config('services.discord.client_id') .
+                                                    '&permissions=3072&scope=bot&state=' .
+                                                    $group->id .
+                                                    '&redirect_uri=' .
+                                                    urlencode(config('services.discord.redirect_uri')) .
+                                                    '&response_type=code';
+                                            @endphp
 
-                                        {{-- Telegram --}}
-                                    @elseif ($bot->type === 'telegram')
-                                        <div class="d-flex align-items-center justify-content-between mb-3">
-                                            <div>
-                                                <span class="badge bg-info me-2">
-                                                    <i class="fab fa-telegram me-1"></i>Telegram
-                                                </span>
-                                                @if ($bot->telegram_chat_id)
-                                                    <small class="text-muted">{{ $telegramGroupName }}</small>
+                                            <div class="mb-3 p-3 bg-white border rounded-3 shadow-xs">
+                                                <div class="d-flex align-items-center mb-3">
+                                                    <div class="small fw-bold text-dark flex-grow-1">
+                                                        <i class="fa fa-hashtag text-muted me-1"></i>
+                                                        {{ $discordChannelName ?? 'Channel belum diset' }}
+                                                    </div>
+                                                    <a href="{{ $inviteUrl }}" target="_blank"
+                                                        onclick="showToast('Membuka halaman invite...', 'info')"
+                                                        class="text-primary small text-decoration-none fw-bold">
+                                                        Invite Bot <i class="fa fa-external-link ms-1"
+                                                            style="font-size: 10px;"></i>
+                                                    </a>
+                                                </div>
+
+                                                <form method="POST"
+                                                    action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/channel"
+                                                    onsubmit="handleChannelSave(event, this)">
+                                                    @csrf @method('PUT')
+                                                    <div class="input-group">
+                                                        <input type="text" name="discord_channel_id"
+                                                            class="form-control form-control-sm border-end-0 bg-light"
+                                                            style="font-size: 12px;"
+                                                            value="{{ $bot->discord_channel_id }}"
+                                                            placeholder="Channel ID (misal: 12345...)">
+                                                        <button class="btn btn-sm btn-primary px-3 shadow-none"><i
+                                                                class="fa fa-floppy-disk"></i></button>
+                                                    </div>
+                                                    <small class="text-muted mt-2 d-block"
+                                                        style="font-size: 10px;">Gunakan Developer Mode di Discord untuk
+                                                        menyalin ID Channel.</small>
+                                                </form>
+                                            </div>
+                                        @elseif ($bot->type === 'telegram')
+                                            <div class="p-3 bg-white border rounded-3">
+                                                @if (!$bot->telegram_chat_id)
+                                                    <div
+                                                        class="bg-light p-2 rounded-2 mb-3 small border-start border-info border-4">
+                                                        <ol class="mb-0 ps-3">
+                                                            <li>Tambahkan
+                                                                <strong>{{ config('services.telegram.username') }}</strong>
+                                                                ke grup.</li>
+                                                            <li>Ketik <code>/start</code> di grup tersebut.</li>
+                                                        </ol>
+                                                    </div>
                                                 @else
-                                                    <small class="text-muted">Belum terhubung</small>
+                                                    <div class="d-flex align-items-center mb-2 small fw-bold text-success">
+                                                        <i class="fa fa-check-circle me-2"></i>
+                                                        {{ $telegramGroupName ?? 'Terhubung' }}
+                                                    </div>
                                                 @endif
-                                            </div>
-                                            @if ($bot->telegram_chat_id)
-                                                <span class="badge bg-success bg-opacity-10 text-success">
-                                                    <i class="fa fa-circle-check me-1"></i>Aktif
-                                                </span>
-                                            @else
-                                                <span class="badge bg-warning bg-opacity-10 text-warning">
-                                                    <i class="fa fa-triangle-exclamation me-1"></i>Belum Setup
-                                                </span>
-                                            @endif
-                                        </div>
 
-                                        @if (!$bot->telegram_chat_id)
-                                            <div class="alert alert-info py-2 small mb-3">
-                                                <strong><i class="fa fa-list-ol me-1"></i>Langkah-langkah:</strong><br>
-                                                1. Buat group di Telegram<br>
-                                                2. Add bot <strong>{{ config('services.telegram.username') }}</strong><br>
-                                                3. Ketik <code>/start</code> di group<br>
-                                                4. Klik tombol di bawah
+                                                <div class="d-grid mb-3">
+                                                    <a href="/groups/{{ $group->id }}/bots/{{ $bot->id }}/fetch-telegram-chat"
+                                                        class="btn btn-sm {{ !$bot->telegram_chat_id ? 'btn-info text-white' : 'btn-outline-info' }} fw-bold"
+                                                        onclick="showToast('Mencari Chat ID...', 'info')">
+                                                        <i class="fa fa-sync-alt me-1"></i>
+                                                        {{ !$bot->telegram_chat_id ? 'Hubungkan Otomatis' : 'Perbarui Koneksi' }}
+                                                    </a>
+                                                </div>
+
+                                                <form method="POST"
+                                                    action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/telegram-chat"
+                                                    onsubmit="handleTelegramSave(event, this)">
+                                                    @csrf @method('PUT')
+                                                    <label class="small fw-bold text-muted mb-1"
+                                                        style="font-size: 10px;">INPUT MANUAL ID</label>
+                                                    <div class="input-group">
+                                                        <input type="text" name="telegram_chat_id"
+                                                            class="form-control form-control-sm bg-light"
+                                                            value="{{ $bot->telegram_chat_id }}"
+                                                            placeholder="-100xxxxxxx">
+                                                        <button class="btn btn-sm btn-info text-white px-3 shadow-none"><i
+                                                                class="fa fa-floppy-disk"></i></button>
+                                                    </div>
+                                                </form>
                                             </div>
-                                            <a href="/groups/{{ $group->id }}/bots/{{ $bot->id }}/fetch-telegram-chat"
-                                                class="btn btn-sm btn-info text-white w-100 mb-3"
-                                                onclick="showToast('Mencari Chat ID...', 'info')">
-                                                <i class="fab fa-telegram me-1"></i> Dapatkan Chat ID Otomatis
-                                            </a>
-                                        @else
-                                            <div class="alert alert-success py-2 small mb-3">
-                                                <i class="fa fa-circle-check me-1"></i>
-                                                Bot sudah terhubung ke group Telegram!
-                                            </div>
-                                            <a href="/groups/{{ $group->id }}/bots/{{ $bot->id }}/fetch-telegram-chat"
-                                                class="btn btn-sm btn-outline-info w-100 mb-3"
-                                                onclick="showToast('Memperbarui Chat ID...', 'info')">
-                                                <i class="fa fa-rotate me-1"></i> Perbarui Chat ID
-                                            </a>
                                         @endif
-
-                                        <form method="POST"
-                                            action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/telegram-chat"
-                                            onsubmit="handleTelegramSave(event, this)">
-                                            @csrf
-                                            @method('PUT')
-                                            <label class="form-label small fw-semibold">Atau input manual</label>
-                                            <div class="input-group">
-                                                <input type="text" name="telegram_chat_id" id="telegramChatInput"
-                                                    class="form-control form-control-sm"
-                                                    value="{{ $bot->telegram_chat_id }}" placeholder="-1001234567890">
-                                                <button class="btn btn-sm btn-info text-white">
-                                                    <i class="fa fa-floppy-disk"></i>
-                                                </button>
-                                            </div>
-                                            <small class="text-muted">
-                                                <i class="fa fa-circle-info me-1"></i>
-                                                Chat ID group diawali minus (-)
-                                            </small>
-                                        </form>
-                                    @endif
+                                    </div>
                                 </div>
                             @empty
-                                <div class="text-center py-4">
-                                    <i class="fa fa-robot fa-2x text-muted mb-2"></i>
-                                    <p class="text-muted small mb-0">Tidak ada bot aktif.</p>
+                                <div class="text-center py-5">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" alt="No Bot"
+                                        style="width: 60px; opacity: 0.3; filter: grayscale(1);">
+                                    <p class="text-muted small mt-3 mb-0">Belum ada integrasi bot yang aktif.</p>
                                 </div>
                             @endforelse
                         </div>
@@ -592,399 +588,399 @@
                 </div>
 
             </div>
-        </div>
 
-        {{-- Modal Create Announcement --}}
-        <div class="modal fade" id="modalCreate" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="fa fa-bullhorn me-2 text-primary"></i>Buat Announcement
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form method="POST" action="/groups/{{ $group->id }}/announcements"
-                        onsubmit="handleCreate(event, this)">
-                        @csrf
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Judul</label>
-                                <input type="text" name="title" id="createTitle" class="form-control"
-                                    placeholder="Judul Announcement" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Isi</label>
-                                <textarea name="content" id="createContent" class="form-control" rows="3" placeholder="Isi Announcement"
-                                    required></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">
-                                    <i class="fa fa-calendar me-1"></i>Jadwal Kirim
-                                </label>
-                                <input type="datetime-local" name="scheduled_at" class="form-control">
-                                <small class="text-muted">Kosongkan jika ingin langsung tampil.</small>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">
-                                    <i class="fa fa-rotate me-1"></i>Pengulangan
-                                </label>
-                                <select name="repeat" class="form-select">
-                                    <option value="none">Tidak Berulang</option>
-                                    <option value="daily">Setiap Hari</option>
-                                    <option value="weekly">Setiap Minggu</option>
-                                    <option value="monthly">Setiap Bulan</option>
-                                </select>
-                            </div>
+            {{-- Modal Create Announcement --}}
+            <div class="modal fade" id="modalCreate" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fa fa-bullhorn me-2 text-primary"></i>Buat Announcement
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="fa fa-xmark me-1"></i>Batal
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fa fa-paper-plane me-1"></i>Kirim
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        {{-- Modal Edit Announcement --}}
-        <div class="modal fade" id="modalEdit" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="fa fa-pen me-2 text-warning"></i>Edit Announcement
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form method="POST" id="formEdit" onsubmit="handleEdit(event, this)">
-                        @csrf
-                        @method('PUT')
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Judul</label>
-                                <input type="text" name="title" id="editTitle" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Isi</label>
-                                <textarea name="content" id="editContent" class="form-control" rows="3" required></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">
-                                    <i class="fa fa-calendar me-1"></i>Jadwal Kirim
-                                </label>
-                                <input type="datetime-local" name="scheduled_at" id="editScheduled"
-                                    class="form-control">
-                                <small class="text-muted">Kosongkan jika ingin langsung tampil.</small>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">
-                                    <i class="fa fa-rotate me-1"></i>Pengulangan
-                                </label>
-                                <select name="repeat" id="editRepeat" class="form-select">
-                                    <option value="none">Tidak Berulang</option>
-                                    <option value="daily">Setiap Hari</option>
-                                    <option value="weekly">Setiap Minggu</option>
-                                    <option value="monthly">Setiap Bulan</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="fa fa-xmark me-1"></i>Batal
-                            </button>
-                            <button type="submit" class="btn btn-warning">
-                                <i class="fa fa-floppy-disk me-1"></i>Update
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        {{-- Modal Create Role --}}
-        <div class="modal fade" id="modalCreateRole" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="fa fa-shield-halved me-2 text-primary"></i>Buat Role Baru
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form method="POST" action="/groups/{{ $group->id }}/roles">
-                        @csrf
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Nama Role</label>
-                                <input type="text" name="name" class="form-control"
-                                    placeholder="Contoh: Bendahara" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Warna Role</label>
-                                <div class="d-flex gap-2 align-items-center">
-                                    <input type="color" name="color" class="form-control form-control-color"
-                                        value="#6c757d">
-                                    <small class="text-muted">Pilih warna untuk role ini</small>
+                        <form method="POST" action="/groups/{{ $group->id }}/announcements"
+                            onsubmit="handleCreate(event, this)">
+                            @csrf
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Judul</label>
+                                    <input type="text" name="title" id="createTitle" class="form-control"
+                                        placeholder="Judul Announcement" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Isi</label>
+                                    <textarea name="content" id="createContent" class="form-control" rows="3" placeholder="Isi Announcement"
+                                        required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fa fa-calendar me-1"></i>Jadwal Kirim
+                                    </label>
+                                    <input type="datetime-local" name="scheduled_at" class="form-control">
+                                    <small class="text-muted">Kosongkan jika ingin langsung tampil.</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fa fa-rotate me-1"></i>Pengulangan
+                                    </label>
+                                    <select name="repeat" class="form-select">
+                                        <option value="none">Tidak Berulang</option>
+                                        <option value="daily">Setiap Hari</option>
+                                        <option value="weekly">Setiap Minggu</option>
+                                        <option value="monthly">Setiap Bulan</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Permission</label>
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="can_create_announcement"
-                                            id="cr_create">
-                                        <label class="form-check-label small" for="cr_create">
-                                            <i class="fa fa-plus me-1 text-primary"></i>Buat Announcement
-                                        </label>
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="can_edit_announcement"
-                                            id="cr_edit">
-                                        <label class="form-check-label small" for="cr_edit">
-                                            <i class="fa fa-pen me-1 text-warning"></i>Edit/Delete Announcement
-                                        </label>
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="can_manage_member"
-                                            id="cr_member">
-                                        <label class="form-check-label small" for="cr_member">
-                                            <i class="fa fa-users me-1 text-success"></i>Manage Member & Role
-                                        </label>
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="can_generate_code"
-                                            id="cr_code">
-                                        <label class="form-check-label small" for="cr_code">
-                                            <i class="fa fa-key me-1 text-warning"></i>Generate Invitation Code
-                                        </label>
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="can_manage_bot"
-                                            id="cr_bot">
-                                        <label class="form-check-label small" for="cr_bot">
-                                            <i class="fa fa-robot me-1 text-info"></i>Manage Bot
-                                        </label>
-                                    </div>
-                                </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fa fa-xmark me-1"></i>Batal
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-paper-plane me-1"></i>Kirim
+                                </button>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="fa fa-xmark me-1"></i>Batal
-                            </button>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="fa fa-plus me-1"></i>Buat Role
-                            </button>
-                        </div>
-                    </form>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Modal Edit Role --}}
-        <div class="modal fade" id="modalEditRole" tabindex="-1">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">
-                            <i class="fa fa-pen me-2 text-warning"></i>Edit Role
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <form method="POST" id="formEditRole">
-                        @csrf
-                        @method('PUT')
-                        <div class="modal-body">
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Nama Role</label>
-                                <input type="text" name="name" id="editRoleName" class="form-control" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Warna Role</label>
-                                <div class="d-flex gap-2 align-items-center">
-                                    <input type="color" name="color" id="editRoleColor"
-                                        class="form-control form-control-color">
-                                    <small class="text-muted">Pilih warna untuk role ini</small>
+            {{-- Modal Edit Announcement --}}
+            <div class="modal fade" id="modalEdit" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fa fa-pen me-2 text-warning"></i>Edit Announcement
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="POST" id="formEdit" onsubmit="handleEdit(event, this)">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Judul</label>
+                                    <input type="text" name="title" id="editTitle" class="form-control" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Isi</label>
+                                    <textarea name="content" id="editContent" class="form-control" rows="3" required></textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fa fa-calendar me-1"></i>Jadwal Kirim
+                                    </label>
+                                    <input type="datetime-local" name="scheduled_at" id="editScheduled"
+                                        class="form-control">
+                                    <small class="text-muted">Kosongkan jika ingin langsung tampil.</small>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fa fa-rotate me-1"></i>Pengulangan
+                                    </label>
+                                    <select name="repeat" id="editRepeat" class="form-select">
+                                        <option value="none">Tidak Berulang</option>
+                                        <option value="daily">Setiap Hari</option>
+                                        <option value="weekly">Setiap Minggu</option>
+                                        <option value="monthly">Setiap Bulan</option>
+                                    </select>
                                 </div>
                             </div>
-                            <div class="mb-3">
-                                <label class="form-label fw-semibold">Permission</label>
-                                <div class="d-flex flex-column gap-2">
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="can_create_announcement"
-                                            id="er_create">
-                                        <label class="form-check-label small" for="er_create">
-                                            <i class="fa fa-plus me-1 text-primary"></i>Buat Announcement
-                                        </label>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fa fa-xmark me-1"></i>Batal
+                                </button>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fa fa-floppy-disk me-1"></i>Update
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Modal Create Role --}}
+            <div class="modal fade" id="modalCreateRole" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fa fa-shield-halved me-2 text-primary"></i>Buat Role Baru
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="POST" action="/groups/{{ $group->id }}/roles">
+                            @csrf
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Nama Role</label>
+                                    <input type="text" name="name" class="form-control"
+                                        placeholder="Contoh: Bendahara" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Warna Role</label>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <input type="color" name="color" class="form-control form-control-color"
+                                            value="#6c757d">
+                                        <small class="text-muted">Pilih warna untuk role ini</small>
                                     </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="can_edit_announcement"
-                                            id="er_edit">
-                                        <label class="form-check-label small" for="er_edit">
-                                            <i class="fa fa-pen me-1 text-warning"></i>Edit/Delete Announcement
-                                        </label>
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="can_manage_member"
-                                            id="er_member">
-                                        <label class="form-check-label small" for="er_member">
-                                            <i class="fa fa-users me-1 text-success"></i>Manage Member & Role
-                                        </label>
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="can_generate_code"
-                                            id="er_code">
-                                        <label class="form-check-label small" for="er_code">
-                                            <i class="fa fa-key me-1 text-warning"></i>Generate Invitation Code
-                                        </label>
-                                    </div>
-                                    <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" name="can_manage_bot"
-                                            id="er_bot">
-                                        <label class="form-check-label small" for="er_bot">
-                                            <i class="fa fa-robot me-1 text-info"></i>Manage Bot
-                                        </label>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Permission</label>
+                                    <div class="d-flex flex-column gap-2">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox"
+                                                name="can_create_announcement" id="cr_create">
+                                            <label class="form-check-label small" for="cr_create">
+                                                <i class="fa fa-plus me-1 text-primary"></i>Buat Announcement
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="can_edit_announcement"
+                                                id="cr_edit">
+                                            <label class="form-check-label small" for="cr_edit">
+                                                <i class="fa fa-pen me-1 text-warning"></i>Edit/Delete Announcement
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="can_manage_member"
+                                                id="cr_member">
+                                            <label class="form-check-label small" for="cr_member">
+                                                <i class="fa fa-users me-1 text-success"></i>Manage Member & Role
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="can_generate_code"
+                                                id="cr_code">
+                                            <label class="form-check-label small" for="cr_code">
+                                                <i class="fa fa-key me-1 text-warning"></i>Generate Invitation Code
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="can_manage_bot"
+                                                id="cr_bot">
+                                            <label class="form-check-label small" for="cr_bot">
+                                                <i class="fa fa-robot me-1 text-info"></i>Manage Bot
+                                            </label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="fa fa-xmark me-1"></i>Batal
-                            </button>
-                            <button type="submit" class="btn btn-warning">
-                                <i class="fa fa-floppy-disk me-1"></i>Update
-                            </button>
-                        </div>
-                    </form>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fa fa-xmark me-1"></i>Batal
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-plus me-1"></i>Buat Role
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        {{-- Toast --}}
-        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
-            <div id="toast" class="toast align-items-center text-white border-0" role="alert">
-                <div class="d-flex">
-                    <div class="toast-body fw-semibold" id="toastMessage"></div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto"
-                        data-bs-dismiss="toast"></button>
+            {{-- Modal Edit Role --}}
+            <div class="modal fade" id="modalEditRole" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fa fa-pen me-2 text-warning"></i>Edit Role
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="POST" id="formEditRole">
+                            @csrf
+                            @method('PUT')
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Nama Role</label>
+                                    <input type="text" name="name" id="editRoleName" class="form-control"
+                                        required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Warna Role</label>
+                                    <div class="d-flex gap-2 align-items-center">
+                                        <input type="color" name="color" id="editRoleColor"
+                                            class="form-control form-control-color">
+                                        <small class="text-muted">Pilih warna untuk role ini</small>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Permission</label>
+                                    <div class="d-flex flex-column gap-2">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox"
+                                                name="can_create_announcement" id="er_create">
+                                            <label class="form-check-label small" for="er_create">
+                                                <i class="fa fa-plus me-1 text-primary"></i>Buat Announcement
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="can_edit_announcement"
+                                                id="er_edit">
+                                            <label class="form-check-label small" for="er_edit">
+                                                <i class="fa fa-pen me-1 text-warning"></i>Edit/Delete Announcement
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="can_manage_member"
+                                                id="er_member">
+                                            <label class="form-check-label small" for="er_member">
+                                                <i class="fa fa-users me-1 text-success"></i>Manage Member & Role
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="can_generate_code"
+                                                id="er_code">
+                                            <label class="form-check-label small" for="er_code">
+                                                <i class="fa fa-key me-1 text-warning"></i>Generate Invitation Code
+                                            </label>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="can_manage_bot"
+                                                id="er_bot">
+                                            <label class="form-check-label small" for="er_bot">
+                                                <i class="fa fa-robot me-1 text-info"></i>Manage Bot
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fa fa-xmark me-1"></i>Batal
+                                </button>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fa fa-floppy-disk me-1"></i>Update
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        @if (session('success'))
+            {{-- Toast --}}
+            <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
+                <div id="toast" class="toast align-items-center text-white border-0" role="alert">
+                    <div class="d-flex">
+                        <div class="toast-body fw-semibold" id="toastMessage"></div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                            data-bs-dismiss="toast"></button>
+                    </div>
+                </div>
+            </div>
+
+            @if (session('success'))
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => showToast('{{ session('success') }}', 'success'));
+                </script>
+            @endif
+            @if (session('error'))
+                <script>
+                    document.addEventListener('DOMContentLoaded', () => showToast('{{ session('error') }}', 'danger'));
+                </script>
+            @endif
+
             <script>
-                document.addEventListener('DOMContentLoaded', () => showToast('{{ session('success') }}', 'success'));
+                function showToast(message, type = 'success') {
+                    const toast = document.getElementById('toast');
+                    const toastMsg = document.getElementById('toastMessage');
+                    toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'bg-primary');
+                    toast.classList.add(`bg-${type}`);
+                    toastMsg.innerText = message;
+                    new bootstrap.Toast(toast, {
+                        delay: 3000
+                    }).show();
+                }
+
+                function copyCode(id) {
+                    const el = document.getElementById(id);
+                    navigator.clipboard.writeText(el.value || el.innerText);
+                    showToast('Kode berhasil disalin!', 'success');
+                }
+
+                function confirmDelete(id) {
+                    if (confirm('Yakin hapus announcement ini?')) {
+                        showToast('Menghapus announcement...', 'danger');
+                        setTimeout(() => document.getElementById('deleteForm' + id).submit(), 500);
+                    }
+                }
+
+                function handleCreate(event, form) {
+                    const title = document.getElementById('createTitle').value.trim();
+                    const content = document.getElementById('createContent').value.trim();
+                    if (!title || !content) {
+                        event.preventDefault();
+                        showToast('Judul dan isi wajib diisi!', 'warning');
+                        return;
+                    }
+                    showToast('Membuat announcement...', 'primary');
+                }
+
+                function handleEdit(event, form) {
+                    const title = document.getElementById('editTitle').value.trim();
+                    const content = document.getElementById('editContent').value.trim();
+                    if (!title || !content) {
+                        event.preventDefault();
+                        showToast('Judul dan isi wajib diisi!', 'warning');
+                        return;
+                    }
+                    showToast('Menyimpan perubahan...', 'primary');
+                }
+
+                function handleChannelSave(event, form) {
+                    const channelId = document.getElementById('discordChannelInput').value.trim();
+                    if (!channelId) {
+                        event.preventDefault();
+                        showToast('Channel ID wajib diisi!', 'warning');
+                        return;
+                    }
+                    showToast('Menyimpan Channel ID...', 'primary');
+                }
+
+                function handleTelegramSave(event, form) {
+                    const chatId = document.getElementById('telegramChatInput').value.trim();
+                    if (!chatId) {
+                        event.preventDefault();
+                        showToast('Chat ID wajib diisi!', 'warning');
+                        return;
+                    }
+                    showToast('Menyimpan Chat ID...', 'primary');
+                }
+
+                // Modal Edit Announcement
+                const modalEdit = document.getElementById('modalEdit');
+                modalEdit.addEventListener('show.bs.modal', function(e) {
+                    const btn = e.relatedTarget;
+                    const id = btn.getAttribute('data-id');
+                    const title = btn.getAttribute('data-title');
+                    const content = btn.getAttribute('data-content');
+                    const scheduled = btn.getAttribute('data-scheduled');
+                    const repeat = btn.getAttribute('data-repeat');
+
+                    document.getElementById('editTitle').value = title;
+                    document.getElementById('editContent').value = content;
+                    document.getElementById('editScheduled').value = scheduled ?? '';
+                    document.getElementById('editRepeat').value = repeat ?? 'none';
+                    document.getElementById('formEdit').action = `/groups/{{ $group->id }}/announcements/${id}`;
+                });
+
+                // Modal Edit Role
+                const modalEditRole = document.getElementById('modalEditRole');
+                modalEditRole.addEventListener('show.bs.modal', function(e) {
+                    const btn = e.relatedTarget;
+                    document.getElementById('editRoleName').value = btn.getAttribute('data-name');
+                    document.getElementById('editRoleColor').value = btn.getAttribute('data-color');
+                    document.getElementById('er_create').checked = btn.getAttribute('data-can_create') === '1';
+                    document.getElementById('er_edit').checked = btn.getAttribute('data-can_edit') === '1';
+                    document.getElementById('er_member').checked = btn.getAttribute('data-can_member') === '1';
+                    document.getElementById('er_code').checked = btn.getAttribute('data-can_code') === '1';
+                    document.getElementById('er_bot').checked = btn.getAttribute('data-can_bot') === '1';
+                    document.getElementById('formEditRole').action =
+                        `/groups/{{ $group->id }}/roles/${btn.getAttribute('data-id')}`;
+                });
             </script>
-        @endif
-        @if (session('error'))
-            <script>
-                document.addEventListener('DOMContentLoaded', () => showToast('{{ session('error') }}', 'danger'));
-            </script>
-        @endif
 
-        <script>
-            function showToast(message, type = 'success') {
-                const toast = document.getElementById('toast');
-                const toastMsg = document.getElementById('toastMessage');
-                toast.classList.remove('bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'bg-primary');
-                toast.classList.add(`bg-${type}`);
-                toastMsg.innerText = message;
-                new bootstrap.Toast(toast, {
-                    delay: 3000
-                }).show();
-            }
-
-            function copyCode(id) {
-                const el = document.getElementById(id);
-                navigator.clipboard.writeText(el.value || el.innerText);
-                showToast('Kode berhasil disalin!', 'success');
-            }
-
-            function confirmDelete(id) {
-                if (confirm('Yakin hapus announcement ini?')) {
-                    showToast('Menghapus announcement...', 'danger');
-                    setTimeout(() => document.getElementById('deleteForm' + id).submit(), 500);
-                }
-            }
-
-            function handleCreate(event, form) {
-                const title = document.getElementById('createTitle').value.trim();
-                const content = document.getElementById('createContent').value.trim();
-                if (!title || !content) {
-                    event.preventDefault();
-                    showToast('Judul dan isi wajib diisi!', 'warning');
-                    return;
-                }
-                showToast('Membuat announcement...', 'primary');
-            }
-
-            function handleEdit(event, form) {
-                const title = document.getElementById('editTitle').value.trim();
-                const content = document.getElementById('editContent').value.trim();
-                if (!title || !content) {
-                    event.preventDefault();
-                    showToast('Judul dan isi wajib diisi!', 'warning');
-                    return;
-                }
-                showToast('Menyimpan perubahan...', 'primary');
-            }
-
-            function handleChannelSave(event, form) {
-                const channelId = document.getElementById('discordChannelInput').value.trim();
-                if (!channelId) {
-                    event.preventDefault();
-                    showToast('Channel ID wajib diisi!', 'warning');
-                    return;
-                }
-                showToast('Menyimpan Channel ID...', 'primary');
-            }
-
-            function handleTelegramSave(event, form) {
-                const chatId = document.getElementById('telegramChatInput').value.trim();
-                if (!chatId) {
-                    event.preventDefault();
-                    showToast('Chat ID wajib diisi!', 'warning');
-                    return;
-                }
-                showToast('Menyimpan Chat ID...', 'primary');
-            }
-
-            // Modal Edit Announcement
-            const modalEdit = document.getElementById('modalEdit');
-            modalEdit.addEventListener('show.bs.modal', function(e) {
-                const btn = e.relatedTarget;
-                const id = btn.getAttribute('data-id');
-                const title = btn.getAttribute('data-title');
-                const content = btn.getAttribute('data-content');
-                const scheduled = btn.getAttribute('data-scheduled');
-                const repeat = btn.getAttribute('data-repeat');
-
-                document.getElementById('editTitle').value = title;
-                document.getElementById('editContent').value = content;
-                document.getElementById('editScheduled').value = scheduled ?? '';
-                document.getElementById('editRepeat').value = repeat ?? 'none';
-                document.getElementById('formEdit').action = `/groups/{{ $group->id }}/announcements/${id}`;
-            });
-
-            // Modal Edit Role
-            const modalEditRole = document.getElementById('modalEditRole');
-            modalEditRole.addEventListener('show.bs.modal', function(e) {
-                const btn = e.relatedTarget;
-                document.getElementById('editRoleName').value = btn.getAttribute('data-name');
-                document.getElementById('editRoleColor').value = btn.getAttribute('data-color');
-                document.getElementById('er_create').checked = btn.getAttribute('data-can_create') === '1';
-                document.getElementById('er_edit').checked = btn.getAttribute('data-can_edit') === '1';
-                document.getElementById('er_member').checked = btn.getAttribute('data-can_member') === '1';
-                document.getElementById('er_code').checked = btn.getAttribute('data-can_code') === '1';
-                document.getElementById('er_bot').checked = btn.getAttribute('data-can_bot') === '1';
-                document.getElementById('formEditRole').action =
-                    `/groups/{{ $group->id }}/roles/${btn.getAttribute('data-id')}`;
-            });
-        </script>
-
-    @endsection
+        @endsection

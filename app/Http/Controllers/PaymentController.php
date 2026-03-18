@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use Midtrans\Snap;
 use Midtrans\Config;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
 use App\Models\Payment;
+use App\Models\PaymentLog;
 use App\Models\Plan;
 use App\Models\GroupBot;
+use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
@@ -117,7 +120,51 @@ class PaymentController extends Controller
 
         $this->syncGroupBots($user, $payment->plan);
 
+        // Log payment
+        PaymentLog::create([
+            'user_id'    => $user->id,
+            'payment_id' => $payment->id,
+            'plan_id'    => $payment->plan_id,
+            'order_id'   => $payment->order_id,
+            'amount'     => $payment->amount,
+            'starts_at'  => $startsAt,
+            'expires_at' => $expiresAt,
+            'status'     => 'success',
+        ]);
+
         return response()->json(['message' => 'ok']);
+    }
+
+    public function logs()
+    {
+        $logs = PaymentLog::where('user_id', auth()->id())
+            ->with('plan')
+            ->latest()
+            ->paginate(10);
+
+        return view('pages.paymentLogs', compact('logs'));
+    }
+    public function receipt(string $orderId)
+    {
+        $payment = Payment::where('order_id', $orderId)
+            ->where('user_id', auth()->id())
+            ->with('plan')
+            ->firstOrFail();
+
+        return view('pages.receipt', compact('payment'));
+    }
+
+    public function printReceipt(string $orderId)
+    {
+        $payment = Payment::where('order_id', $orderId)
+            ->where('user_id', auth()->id())
+            ->with('plan')
+            ->firstOrFail();
+
+        $pdf = Pdf::loadView('pages.receipt-pdf', compact('payment'))
+            ->setPaper('a5', 'portrait');
+
+        return $pdf->stream("receipt-{$orderId}.pdf");
     }
     public function snapToken(Request $request)
     {
