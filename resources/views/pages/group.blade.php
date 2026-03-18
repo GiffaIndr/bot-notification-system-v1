@@ -375,7 +375,8 @@
                                                         <ol class="mb-0 ps-3">
                                                             <li>Tambahkan
                                                                 <strong>{{ config('services.telegram.username') }}</strong>
-                                                                ke grup.</li>
+                                                                ke grup.
+                                                            </li>
                                                             <li>Ketik <code>/start</code> di grup tersebut.</li>
                                                         </ol>
                                                     </div>
@@ -427,165 +428,248 @@
 
                 {{-- Invitation Code --}}
                 @if ($role->can_generate_code)
-                    <div class="card shadow-sm mb-4">
-                        <div class="card-header fw-bold bg-white border-bottom">
-                            <i class="fa fa-key text-warning me-2"></i>Invitation Code
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px;">
+                        <div class="card-header bg-white py-3 border-bottom-0">
+                            <div class="d-flex align-items-center">
+                                <div class="p-2 bg-warning bg-opacity-10 rounded-3 me-3">
+                                    <i class="fa fa-key text-warning"></i>
+                                </div>
+                                <h6 class="fw-bold mb-0" style="color: #334155;">Access Invitation</h6>
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <label class="form-label fw-semibold small">
-                                <i class="fa fa-user-tie me-1 text-success"></i>Kode Editor
-                            </label>
-                            <div class="input-group mb-2">
-                                <input type="text" class="form-control form-control-sm"
-                                    value="{{ $group->invitation_code_pj }}" id="code_pj" readonly>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="copyCode('code_pj')">
-                                    <i class="fa fa-copy"></i>
-                                </button>
-                            </div>
-                            <form method="POST" action="/groups/{{ $group->id }}/generate-code" class="mb-4"
-                                onsubmit="showToast('Kode PJ berhasil diperbarui!', 'success')">
-                                @csrf
-                                <input type="hidden" name="type" value="pj">
-                                <button class="btn btn-sm btn-warning w-100">
-                                    <i class="fa fa-rotate me-1"></i> Generate Ulang
-                                </button>
-                            </form>
 
-                            <label class="form-label fw-semibold small">
-                                <i class="fa fa-user me-1 text-secondary"></i>Kode Member
-                            </label>
-                            <div class="input-group mb-2">
-                                <input type="text" class="form-control form-control-sm"
-                                    value="{{ $group->invitation_code_member }}" id="code_member" readonly>
-                                <button class="btn btn-sm btn-outline-secondary" onclick="copyCode('code_member')">
-                                    <i class="fa fa-copy"></i>
-                                </button>
+                        <div class="card-body pt-0">
+                            {{-- Slot Kode Editor --}}
+                            <div class="p-3 mb-4 rounded-4"
+                                style="background-color: #fffbeb; border: 1px dashed #fef3c7;">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label class="fw-bold small text-warning text-uppercase"
+                                        style="letter-spacing: 0.5px;">
+                                        <i class="fa fa-user-tie me-1"></i> Editor Access
+                                    </label>
+                                    <span class="badge bg-warning text-dark shadow-xs" style="font-size: 10px;">High
+                                        Privilege</span>
+                                </div>
+
+                                <div class="input-group mb-3 shadow-sm">
+                                    <input type="text" class="form-control border-0 bg-white fw-bold text-center"
+                                        style="font-family: 'Monaco', 'Consolas', monospace; letter-spacing: 2px; color: #92400e;"
+                                        value="{{ $group->invitation_code_pj }}" id="code_pj" readonly>
+                                    <button class="btn btn-white border-0 text-warning px-3" type="button"
+                                        onclick="copyCode('code_pj')">
+                                        <i class="fa fa-copy"></i>
+                                    </button>
+                                </div>
+
+                                <form method="POST" action="/groups/{{ $group->id }}/generate-code"
+                                    onsubmit="showToast('Kode Editor berhasil diperbarui!', 'success')">
+                                    @csrf
+                                    <input type="hidden" name="type" value="pj">
+                                    <button class="btn btn-sm btn-warning w-100 fw-bold shadow-xs text-white"
+                                        style="border-radius: 8px;">
+                                        <i class="fa fa-rotate me-1"></i> Refresh Editor Code
+                                    </button>
+                                </form>
                             </div>
-                            <form method="POST" action="/groups/{{ $group->id }}/generate-code"
-                                onsubmit="showToast('Kode Member berhasil diperbarui!', 'success')">
-                                @csrf
-                                <input type="hidden" name="type" value="member">
-                                <button class="btn btn-sm btn-warning w-100">
-                                    <i class="fa fa-rotate me-1"></i> Generate Ulang
-                                </button>
-                            </form>
+
+                            {{-- Slot Kode Member --}}
+                            <div class="p-3 rounded-4" style="background-color: #f8fafc; border: 1px solid #e2e8f0;">
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label class="fw-bold small text-secondary text-uppercase"
+                                        style="letter-spacing: 0.5px;">
+                                        <i class="fa fa-user me-1"></i> Member Access
+                                    </label>
+                                    <span class="badge bg-secondary bg-opacity-10 text-secondary"
+                                        style="font-size: 10px;">General</span>
+                                </div>
+
+                                <div class="input-group mb-3 shadow-sm">
+                                    <input type="text"
+                                        class="form-control border-0 bg-white fw-bold text-center text-secondary"
+                                        style="font-family: 'Monaco', 'Consolas', monospace; letter-spacing: 2px;"
+                                        value="{{ $group->invitation_code_member }}" id="code_member" readonly>
+                                    <button class="btn btn-white border-0 text-secondary px-3" type="button"
+                                        onclick="copyCode('code_member')">
+                                        <i class="fa fa-copy"></i>
+                                    </button>
+                                </div>
+
+                                <form method="POST" action="/groups/{{ $group->id }}/generate-code"
+                                    onsubmit="showToast('Kode Member berhasil diperbarui!', 'success')">
+                                    @csrf
+                                    <input type="hidden" name="type" value="member">
+                                    <button class="btn btn-sm btn-outline-secondary w-100 fw-bold"
+                                        style="border-radius: 8px; border-style: dashed;">
+                                        <i class="fa fa-rotate me-1"></i> Refresh Member Code
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div class="mt-3 text-center">
+                                <small class="text-muted" style="font-size: 11px;">
+                                    <i class="fa fa-shield-alt me-1"></i> Bagikan kode ini hanya kepada orang yang
+                                    dipercaya.
+                                </small>
+                            </div>
                         </div>
                     </div>
                 @endif
 
                 {{-- Manage Roles --}}
                 @if ($role->can_manage_member)
-                    <div class="card shadow-sm mb-4">
+                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 16px; overflow: hidden;">
                         <div
-                            class="card-header fw-bold bg-white border-bottom d-flex justify-content-between align-items-center">
-                            <span><i class="fa fa-shield-halved text-primary me-2"></i>Manage Roles</span>
-                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal"
+                            class="card-header bg-white py-3 border-bottom-0 d-flex justify-content-between align-items-center">
+                            <div class="d-flex align-items-center">
+                                <div class="p-2 bg-primary bg-opacity-10 rounded-3 me-3">
+                                    <i class="fa fa-shield-halved text-primary"></i>
+                                </div>
+                                <h6 class="fw-bold mb-0" style="color: #334155;">Manage Roles</h6>
+                            </div>
+                            <button class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal"
                                 data-bs-target="#modalCreateRole">
-                                <i class="fa fa-plus"></i>
+                                <i class="fa fa-plus me-1"></i> Role
                             </button>
                         </div>
+
                         <div class="card-body p-0">
-                            @foreach ($roles as $r)
-                                <div
-                                    class="d-flex align-items-center justify-content-between p-3 {{ !$loop->last ? 'border-bottom' : '' }}">
-                                    <div class="d-flex align-items-center gap-2">
-                                        <span
-                                            style="width:12px; height:12px; border-radius:50%; background:{{ $r->color }}; display:inline-block;"></span>
-                                        <span class="small fw-semibold">{{ $r->name }}</span>
-                                        @if ($r->is_owner)
-                                            <span class="badge bg-primary bg-opacity-10 text-primary"
-                                                style="font-size:10px">Owner</span>
+                            <div class="list-group list-group-flush">
+                                @foreach ($roles as $r)
+                                    <div class="list-group-item d-flex align-items-center justify-content-between py-3 px-4 border-0 {{ !$loop->last ? 'border-bottom' : '' }}"
+                                        style="transition: background 0.2s;">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div
+                                                style="width: 14px; height: 14px; border-radius: 50%; background: {{ $r->color }}; box-shadow: 0 0 8px {{ $r->color }}80; border: 2px solid white;">
+                                            </div>
+
+                                            <div class="d-flex flex-column">
+                                                <span class="small fw-bold text-dark">{{ $r->name }}</span>
+                                                @if ($r->is_owner)
+                                                    <span class="badge bg-primary bg-opacity-10 text-primary fw-medium"
+                                                        style="font-size: 9px; width: fit-content;">
+                                                        <i class="fa fa-crown me-1" style="font-size: 8px;"></i>System
+                                                        Owner
+                                                    </span>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        @if (!$r->is_owner)
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-sm btn-light text-warning border shadow-xs"
+                                                    style="border-radius: 8px; padding: 4px 8px;" data-bs-toggle="modal"
+                                                    data-bs-target="#modalEditRole" data-id="{{ $r->id }}"
+                                                    data-name="{{ $r->name }}" data-color="{{ $r->color }}"
+                                                    data-can_create="{{ $r->can_create_announcement ? '1' : '0' }}"
+                                                    data-can_edit="{{ $r->can_edit_announcement ? '1' : '0' }}"
+                                                    data-can_member="{{ $r->can_manage_member ? '1' : '0' }}"
+                                                    data-can_code="{{ $r->can_generate_code ? '1' : '0' }}"
+                                                    data-can_bot="{{ $r->can_manage_bot ? '1' : '0' }}">
+                                                    <i class="fa fa-pen" style="font-size: 11px;"></i>
+                                                </button>
+
+                                                <form method="POST"
+                                                    action="/groups/{{ $group->id }}/roles/{{ $r->id }}"
+                                                    class="d-inline">
+                                                    @csrf @method('DELETE')
+                                                    <button class="btn btn-sm btn-light text-danger border shadow-xs"
+                                                        style="border-radius: 8px; padding: 4px 8px;"
+                                                        onclick="return confirm('Yakin hapus role ini?')">
+                                                        <i class="fa fa-trash" style="font-size: 11px;"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @else
+                                            <div class="text-muted small px-2">
+                                                <i class="fa fa-lock" title="Fixed Role"></i>
+                                            </div>
                                         @endif
                                     </div>
-                                    @if (!$r->is_owner)
-                                        <div class="d-flex gap-1">
-                                            <button class="btn btn-sm btn-outline-warning"
-                                                style="padding: 2px 7px; font-size: 11px" data-bs-toggle="modal"
-                                                data-bs-target="#modalEditRole" data-id="{{ $r->id }}"
-                                                data-name="{{ $r->name }}" data-color="{{ $r->color }}"
-                                                data-can_create="{{ $r->can_create_announcement ? '1' : '0' }}"
-                                                data-can_edit="{{ $r->can_edit_announcement ? '1' : '0' }}"
-                                                data-can_member="{{ $r->can_manage_member ? '1' : '0' }}"
-                                                data-can_code="{{ $r->can_generate_code ? '1' : '0' }}"
-                                                data-can_bot="{{ $r->can_manage_bot ? '1' : '0' }}">
-                                                <i class="fa fa-pen"></i>
-                                            </button>
-                                            <form method="POST"
-                                                action="/groups/{{ $group->id }}/roles/{{ $r->id }}"
-                                                class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button class="btn btn-sm btn-outline-danger"
-                                                    style="padding: 2px 7px; font-size: 11px"
-                                                    onclick="return confirm('Yakin hapus role ini?')">
-                                                    <i class="fa fa-trash"></i>
-                                                </button>
-                                            </form>
-                                        </div>
-                                    @endif
-                                </div>
-                            @endforeach
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-light border-0 py-2 text-center">
+                            <small class="text-muted" style="font-size: 10px; letter-spacing: 0.5px;">URUTAN ROLE
+                                MENENTUKAN HIERARKI</small>
                         </div>
                     </div>
                 @endif
 
                 {{-- Daftar Member --}}
-                <div class="card shadow-sm">
-                    <div class="card-header fw-bold bg-white border-bottom">
-                        <i class="fa fa-users text-primary me-2"></i>Anggota Group
-                    </div>
-                    <div class="card-body p-0">
-                        <table class="table table-hover mb-0">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Nama</th>
-                                    <th>Role</th>
-                                    @if ($role->can_manage_member)
-                                        <th>Ubah Role</th>
+                <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; overflow: hidden;">
+    <div class="card-header bg-white py-2 border-bottom-0">
+        <div class="d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center">
+                <i class="fa fa-users text-primary me-2" style="font-size: 14px;"></i>
+                <span class="fw-bold mb-0" style="color: #334155; font-size: 13px;">Anggota Group</span>
+            </div>
+            <span class="badge bg-light text-secondary border-0" style="font-size: 10px;">{{ $members->count() }} User</span>
+        </div>
+    </div>
+
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0" style="font-size: 12px;">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-3 py-2 border-0 text-secondary fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.3px;">Nama</th>
+                        <th class="py-2 border-0 text-secondary fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.3px;">Role</th>
+                        @if ($role->can_manage_member)
+                            <th class="py-2 border-0 text-secondary fw-bold text-uppercase text-end pe-3" style="font-size: 10px; letter-spacing: 0.3px;">Ubah Role</th>
+                        @endif
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($members as $m)
+                        <tr class="border-bottom-0" style="border-bottom: 1px solid #f1f5f9 !important;">
+                            <td class="ps-3 py-2">
+                                <div class="d-flex align-items-center">
+                                    <div class="me-2 d-flex align-items-center justify-content-center fw-bold text-white"
+                                         style="width: 28px; height: 28px; border-radius: 6px; background: linear-gradient(45deg, #6366f1, #a855f7); font-size: 10px;">
+                                        {{ strtoupper(substr($m->user->name, 0, 1)) }}
+                                    </div>
+                                    <span class="fw-medium text-dark">{{ $m->user->name }}</span>
+                                </div>
+                            </td>
+                            <td class="py-2">
+                                <span class="badge"
+                                      style="background-color: {{ $m->role->color }}; font-size: 9px; padding: 3px 8px;">
+                                    {{ $m->role->name }}
+                                </span>
+                            </td>
+                            @if ($role->can_manage_member)
+                                <td class="py-2 text-end pe-3">
+                                    @if ($m->role->is_owner)
+                                        <small class="text-muted" style="font-size: 10px;"><i class="fa fa-lock me-1"></i>Owner</small>
+                                    @else
+                                        <form method="POST" action="/groups/{{ $group->id }}/roles/assign" class="d-inline-block">
+                                            @csrf
+                                            <input type="hidden" name="user_id" value="{{ $m->user_id }}">
+                                            <select name="role_id" class="form-select form-select-sm py-0"
+                                                    onchange="this.form.submit()"
+                                                    style="font-size: 10px; height: 26px; width: 110px; border-radius: 6px; background-color: #f8fafc;">
+                                                @foreach ($roles->where('is_owner', false) as $r)
+                                                    <option value="{{ $r->id }}" {{ $m->role_id == $r->id ? 'selected' : '' }}>
+                                                        {{ $r->name }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </form>
                                     @endif
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($members as $m)
-                                    <tr>
-                                        <td class="small">{{ $m->user->name }}</td>
-                                        <td>
-                                            <span class="badge" style="background-color: {{ $m->role->color }}">
-                                                {{ $m->role->name }}
-                                            </span>
-                                        </td>
-                                        @if ($role->can_manage_member)
-                                            <td>
-                                                @if ($m->role->is_owner)
-                                                    <span class="text-muted small">
-                                                        <i class="fa fa-lock me-1"></i>Owner
-                                                    </span>
-                                                @else
-                                                    <form method="POST"
-                                                        action="/groups/{{ $group->id }}/roles/assign">
-                                                        @csrf
-                                                        <input type="hidden" name="user_id"
-                                                            value="{{ $m->user_id }}">
-                                                        <select name="role_id" class="form-select form-select-sm"
-                                                            onchange="this.form.submit()"
-                                                            style="font-size: 11px; min-width: 100px; border-color: {{ $m->role->color }}">
-                                                            @foreach ($roles->where('is_owner', false) as $r)
-                                                                <option value="{{ $r->id }}"
-                                                                    {{ $m->role_id == $r->id ? 'selected' : '' }}>
-                                                                    {{ $r->name }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </form>
-                                                @endif
-                                            </td>
-                                        @endif
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+                                </td>
+                            @endif
+                        </tr>
+                    @endforeach
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+      <div class="card-footer bg-light border-0 py-2 text-center">
+                            <small class="text-muted" style="font-size: 10px; letter-spacing: 0.5px;">URUTAN MEMBER</small>
+                        </div>
+</div>
 
             </div>
 
