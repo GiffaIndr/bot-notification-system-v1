@@ -257,8 +257,273 @@
                         @endforelse
                     </div>
                 </div>
+                {{-- Poll Section --}}
+                <div class="card announcement-container shadow-sm mt-4">
+                    <div
+                        class="card-header fw-bold d-flex justify-content-between align-items-center bg-white border-bottom">
+                        <span><i class="fa fa-chart-bar text-primary me-2"></i>Poll & Voting</span>
+                        @if ($role->can_create_poll)
+                            <button class="btn btn-sm btn-primary fw-bold px-3 shadow-sm" data-bs-toggle="modal"
+                                data-bs-target="#modalCreatePoll">
+                                <i class="fa fa-plus me-1"></i> Buat Poll
+                            </button>
+                        @endif
+                    </div>
+                    <div class="card-body">
+                        @forelse ($polls as $poll)
+                            <div class="card mb-3 border-0 shadow-sm">
+                                <div class="card-body">
+
+                                    {{-- Header poll --}}
+                                    <div class="d-flex justify-content-between align-items-start mb-3">
+                                        <div>
+                                            <h6 class="fw-bold mb-1">{{ $poll->question }}</h6>
+                                            <div class="d-flex gap-2">
+                                                <small class="text-muted">
+                                                    <i class="fa fa-user me-1"></i>{{ $poll->user->name }}
+                                                </small>
+                                                @if ($poll->is_anonymous)
+                                                    <span class="badge bg-secondary bg-opacity-10 text-secondary"
+                                                        style="font-size:10px">
+                                                        <i class="fa fa-eye-slash me-1"></i>Anonymous
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-info bg-opacity-10 text-info"
+                                                        style="font-size:10px">
+                                                        <i class="fa fa-eye me-1"></i>Publik
+                                                    </span>
+                                                @endif
+                                                @if ($poll->is_closed || $poll->isExpired())
+                                                    <span class="badge bg-danger bg-opacity-10 text-danger"
+                                                        style="font-size:10px">
+                                                        <i class="fa fa-lock me-1"></i>Ditutup
+                                                    </span>
+                                                @else
+                                                    <span class="badge bg-success bg-opacity-10 text-success"
+                                                        style="font-size:10px">
+                                                        <i class="fa fa-circle me-1"></i>Aktif
+                                                    </span>
+                                                @endif
+                                                @if ($poll->closes_at && !$poll->is_closed)
+                                                    <small class="text-muted">
+                                                        <i class="fa fa-clock me-1"></i>Tutup
+                                                        {{ $poll->closes_at->format('d M Y, H:i') }}
+                                                    </small>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        @if ($role->can_create_poll)
+                                            <div class="d-flex gap-1">
+                                                @if (!$poll->is_closed && !$poll->isExpired())
+                                                    <form method="POST"
+                                                        action="/groups/{{ $group->id }}/polls/{{ $poll->id }}/close">
+                                                        @csrf
+                                                        <button class="btn btn-sm btn-outline-warning"
+                                                            onclick="return confirm('Tutup poll ini?')"
+                                                            title="Tutup Poll">
+                                                            <i class="fa fa-lock"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                                <form method="POST"
+                                                    action="/groups/{{ $group->id }}/polls/{{ $poll->id }}">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button class="btn btn-sm btn-outline-danger"
+                                                        onclick="return confirm('Hapus poll ini?')" title="Hapus Poll">
+                                                        <i class="fa fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                    {{-- Options & Vote --}}
+                                    @php
+                                        $totalVotes = $poll->votes->count();
+                                        $userVote = $poll->votes->where('user_id', auth()->id())->first();
+                                        $isClosed = $poll->is_closed || $poll->isExpired();
+                                    @endphp
+
+                                    <div class="d-flex flex-column gap-2">
+                                        @foreach ($poll->options as $option)
+                                            @php
+                                                $optionVotes = $option->votes->count();
+                                                $percent =
+                                                    $totalVotes > 0 ? round(($optionVotes / $totalVotes) * 100) : 0;
+                                                $isMyVote = $userVote?->poll_option_id === $option->id;
+                                            @endphp
+
+                                            <div>
+                                                @if (!$userVote && !$isClosed)
+                                                    {{-- Belum vote & poll aktif --}}
+                                                    <form method="POST"
+                                                        action="/groups/{{ $group->id }}/polls/{{ $poll->id }}/vote">
+                                                        @csrf
+                                                        <input type="hidden" name="option_id"
+                                                            value="{{ $option->id }}">
+                                                        <button type="submit"
+                                                            class="btn btn-sm w-100 text-start {{ $isMyVote ? 'btn-primary' : 'btn-outline-secondary' }}"
+                                                            style="border-radius: 8px;">
+                                                            <i
+                                                                class="fa fa-circle{{ $isMyVote ? '-check' : '' }} me-2"></i>
+                                                            {{ $option->label }}
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    {{-- Sudah vote atau poll closed, tampilkan hasil --}}
+                                                    <div class="position-relative mb-1">
+                                                        <div class="progress" style="height: 28px; border-radius: 8px;">
+                                                            <div class="progress-bar {{ $isMyVote ? 'bg-primary' : 'bg-secondary bg-opacity-25' }}"
+                                                                style="width: {{ $percent }}%; border-radius: 8px;">
+                                                            </div>
+                                                        </div>
+                                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center px-3"
+                                                            style="font-size: 12px;">
+                                                            <span
+                                                                class="{{ $isMyVote ? 'text-white fw-bold' : 'text-dark' }}">
+                                                                @if ($isMyVote)
+                                                                    <i class="fa fa-circle-check me-1"></i>
+                                                                @endif
+                                                                {{ $option->label }}
+                                                            </span>
+                                                            <span
+                                                                class="ms-auto {{ $isMyVote ? 'text-white' : 'text-muted' }}">
+                                                                {{ $percent }}%
+                                                                @if (!$poll->is_anonymous || $isClosed)
+                                                                    ({{ $optionVotes }})
+                                                                @endif
+                                                            </span>
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- Tampilkan siapa yang vote (kalau publik & sudah vote/closed) --}}
+                                                    @if (!$poll->is_anonymous && $optionVotes > 0)
+                                                        <div class="d-flex flex-wrap gap-1 mb-1">
+                                                            @foreach ($option->votes as $vote)
+                                                                <span class="badge bg-light text-dark border"
+                                                                    style="font-size: 9px;">
+                                                                    {{ $vote->user->name }}
+                                                                </span>
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    <small class="text-muted mt-2 d-block">
+                                        <i class="fa fa-users me-1"></i>{{ $totalVotes }} vote
+                                    </small>
+
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center py-4">
+                                <i class="fa fa-chart-bar fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Belum ada poll.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
             </div>
 
+
+            {{-- Modal Create Poll --}}
+            <div class="modal fade" id="modalCreatePoll" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                                <i class="fa fa-chart-bar me-2 text-primary"></i>Buat Poll
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <form method="POST" action="/groups/{{ $group->id }}/polls">
+                            @csrf
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Pertanyaan</label>
+                                    <input type="text" name="question" class="form-control"
+                                        placeholder="Contoh: Setuju dengan jadwal meeting?" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Tipe Poll</label>
+                                    <select name="type" id="pollType" class="form-select"
+                                        onchange="togglePollOptions()">
+                                        <option value="yes_no">Ya / Tidak</option>
+                                        <option value="multiple_choice">Pilihan Ganda</option>
+                                    </select>
+                                </div>
+
+                                {{-- Options untuk multiple choice --}}
+                                <div id="pollOptions" class="mb-3 d-none">
+                                    <label class="form-label fw-semibold">Pilihan</label>
+                                    <div id="optionList">
+                                        <div class="input-group mb-2">
+                                            <input type="text" name="options[]" class="form-control form-control-sm"
+                                                placeholder="Pilihan 1">
+                                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                                onclick="removeOption(this)">
+                                                <i class="fa fa-xmark"></i>
+                                            </button>
+                                        </div>
+                                        <div class="input-group mb-2">
+                                            <input type="text" name="options[]" class="form-control form-control-sm"
+                                                placeholder="Pilihan 2">
+                                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                                onclick="removeOption(this)">
+                                                <i class="fa fa-xmark"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addOption()">
+                                        <i class="fa fa-plus me-1"></i>Tambah Pilihan
+                                    </button>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        <i class="fa fa-clock me-1"></i>Tutup Otomatis (opsional)
+                                    </label>
+                                    <input type="datetime-local" name="closes_at" class="form-control">
+                                    <small class="text-muted">Kosongkan jika tidak ada batas waktu.</small>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">Visibilitas Vote</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="is_anonymous"
+                                                id="publik" value="0" checked>
+                                            <label class="form-check-label small" for="publik">
+                                                <i class="fa fa-eye me-1 text-info"></i>Publik
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="is_anonymous"
+                                                id="anonymous" value="1">
+                                            <label class="form-check-label small" for="anonymous">
+                                                <i class="fa fa-eye-slash me-1 text-secondary"></i>Anonymous
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fa fa-xmark me-1"></i>Batal
+                                </button>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-paper-plane me-1"></i>Buat Poll
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
 
             {{-- Sidebar --}}
             <div class="col-md-4">
@@ -1113,6 +1378,77 @@
                     document.getElementById('er_bot').checked = btn.getAttribute('data-can_bot') === '1';
                     document.getElementById('formEditRole').action =
                         `/groups/{{ $group->id }}/roles/${btn.getAttribute('data-id')}`;
+                });
+
+                function togglePollOptions() {
+                    const type = document.getElementById('pollType').value;
+                    const options = document.getElementById('pollOptions');
+                    const inputs = options.querySelectorAll('input');
+
+                    if (type === 'multiple_choice') {
+                        options.classList.remove('d-none');
+                        inputs.forEach(input => input.disabled = false);
+                    } else {
+                        options.classList.add('d-none');
+                        inputs.forEach(input => input.disabled = true); // ← disable saat yes_no
+                    }
+                }
+
+                function addOption() {
+                    const list = document.getElementById('optionList');
+                    const count = list.children.length + 1;
+                    const div = document.createElement('div');
+                    div.className = 'input-group mb-2';
+                    div.innerHTML = `
+        <input type="text" name="options[]" class="form-control form-control-sm"
+               placeholder="Pilihan ${count}">
+        <button type="button" class="btn btn-outline-danger btn-sm" onclick="removeOption(this)">
+            <i class="fa fa-xmark"></i>
+        </button>
+    `;
+                    list.appendChild(div);
+                }
+
+                function removeOption(btn) {
+                    const list = document.getElementById('optionList');
+                    if (list.children.length > 2) {
+                        btn.closest('.input-group').remove();
+                    } else {
+                        showToast('Minimal 2 pilihan!', 'warning');
+                    }
+                }
+            </script>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    calculatePrice();
+                    checkPendingPayment();
+                });
+
+                function checkPendingPayment(attempt = 0) {
+                    if (attempt > 10) return; // max 10x cek (50 detik)
+
+                    fetch('/payment/check-pending', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            if (data.synced) {
+                                window.location.href = '/payment/receipt/' + data.order_id;
+                            } else if (data.has_pending) {
+                                // Ada payment pending, cek lagi 5 detik kemudian
+                                setTimeout(() => checkPendingPayment(attempt + 1), 5000);
+                            }
+                        })
+                        .catch(() => {});
+                }
+            </script>
+            <script>
+                document.getElementById('modalCreatePoll').addEventListener('show.bs.modal', function() {
+                    togglePollOptions();
                 });
             </script>
 

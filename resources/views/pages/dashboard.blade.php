@@ -543,11 +543,10 @@
                 });
         }
 
-        // Cek payment pending saat halaman pertama kali dibuka
         document.addEventListener('DOMContentLoaded', function() {
             calculatePrice();
 
-            // Auto cek payment pending
+            // Auto cek payment pending setiap kali halaman dibuka
             fetch('/payment/check-pending', {
                     method: 'POST',
                     headers: {
@@ -560,8 +559,8 @@
                     if (data.synced) {
                         window.location.href = '/payment/receipt/' + data.order_id;
                     }
-                });
+                })
+                .catch(() => {});
         });
-        document.addEventListener('DOMContentLoaded', calculatePrice);
     </script>
 @endsection

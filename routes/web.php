@@ -8,6 +8,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\GroupRoleController;
+use App\Http\Controllers\PollController;
 
 Route::get('/', [AuthController::class, 'index'])->name('login');
 Route::get('/register', [AuthController::class, 'register'])->name('register');
@@ -47,4 +48,9 @@ Route::middleware('auth')->group(function () {
     Route::delete('/groups/{group}/members/{member}', [GroupController::class, 'kickMember']);
     Route::post('/payment/check-pending', [PaymentController::class, 'checkPending']);
     Route::put('/groups/{group}', [GroupController::class, 'update']);
+
+    Route::post('/groups/{group}/polls', [PollController::class, 'store']);
+    Route::post('/groups/{group}/polls/{poll}/vote', [PollController::class, 'vote']);
+    Route::post('/groups/{group}/polls/{poll}/close', [PollController::class, 'close']);
+    Route::delete('/groups/{group}/polls/{poll}', [PollController::class, 'destroy']);
 });

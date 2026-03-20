@@ -12,6 +12,7 @@ use App\Models\PricingComponent;
 use App\Models\Subscription;
 use App\Models\Plan;
 use App\Models\GroupBot;
+use Illuminate\Support\Facades\Log;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
@@ -22,7 +23,9 @@ class PaymentController extends Controller
         $orderId = $request->order_id;
         $status  = $request->transaction_status;
 
-        $payment = Payment::where('order_id', $orderId)->with('plan')->first();
+        $payment = Payment::where('order_id', $orderId)
+            ->with('subscription')
+            ->first();
 
         if (!$payment) {
             return response()->json(['message' => 'Payment not found']);
@@ -30,13 +33,24 @@ class PaymentController extends Controller
 
         if ($status == 'settlement' || $status == 'capture') {
 
-            $user     = $payment->user;
-            $existing = $user->activeSubscription()->with('plan')->first();
+            $user         = $payment->user;
+            $subscription = $payment->subscription;
+
+            if (!$subscription) {
+                return response()->json(['message' => 'Subscription not found']);
+            }
+
+            $existing = Subscription::where('user_id', $user->id)
+                ->where('id', '!=', $subscription->id)
+                ->whereNotNull('starts_at')
+                ->where('expires_at', '>', now())
+                ->latest('expires_at')
+                ->first();
 
             if ($existing) {
-                // Perpanjang dari expired lama
-                $startsAt  = $existing->expires_at;
+                $startsAt  = now();
                 $expiresAt = $existing->expires_at->copy()->addMonths(6);
+                $existing->delete();
             } else {
                 $startsAt  = now();
                 $expiresAt = now()->addMonths(6);
@@ -48,8 +62,14 @@ class PaymentController extends Controller
                 'expires_at' => $expiresAt,
             ]);
 
-            // Sync bot untuk semua group milik user
-            $this->syncGroupBots($user, $payment->plan);
+            $subscription->update([
+                'starts_at'  => $startsAt,
+                'expires_at' => $expiresAt,
+            ]);
+
+            $this->syncGroupBots($user, $subscription);
+
+            Log::info('Callback payment success', ['order_id' => $orderId]);
         } elseif ($status == 'pending') {
             $payment->update(['status' => 'pending']);
         } elseif ($status == 'expire' || $status == 'cancel') {
@@ -91,6 +111,16 @@ class PaymentController extends Controller
 
     public function syncBotsManual(Request $request)
     {
+        Log::info('syncBotsManual called', ['order_id' => $request->order_id]);
+
+        $payment = Payment::where('order_id', $request->order_id)
+            ->with('subscription')
+            ->first();
+
+        Log::info('payment found', ['payment' => $payment?->toArray()]);
+        Log::info('subscription', ['sub' => $payment?->subscription?->toArray()]);
+
+        // ... rest of code
         $payment = Payment::where('order_id', $request->order_id)
             ->with('subscription')
             ->first();
@@ -163,7 +193,7 @@ class PaymentController extends Controller
     {
         $payment = Payment::where('order_id', $orderId)
             ->where('user_id', auth()->id())
-            ->with('plan')
+
             ->firstOrFail();
 
         $pdf = Pdf::loadView('pages.receipt-pdf', compact('payment'))
@@ -239,25 +269,33 @@ class PaymentController extends Controller
 
     public function checkPending(Request $request)
     {
-        // Cari payment terbaru user yang status-nya masih pending
         $payment = Payment::where('user_id', auth()->id())
             ->where('status', 'pending')
             ->latest()
+            ->with('subscription')
             ->first();
 
         if (!$payment) {
-            return response()->json(['synced' => false]);
+            return response()->json(['synced' => false, 'has_pending' => false]);
+        }
+        if (!$payment->subscription) {
+            return response()->json(['synced' => false, 'has_pending' => false]);
         }
 
-        // Cek ke Midtrans apakah sudah dibayar
         Config::$serverKey    = config('midtrans.server_key');
         Config::$isProduction = false;
 
         try {
+            /** @var object $status */
             $status = \Midtrans\Transaction::status($payment->order_id);
 
+            Log::info('Midtrans status check', [
+                'order_id' => $payment->order_id,
+                'status'   => $status->transaction_status
+            ]);
+
             if ($status->transaction_status === 'settlement' || $status->transaction_status === 'capture') {
-                // Payment sudah success, sync sekarang
+
                 $user         = $payment->user;
                 $subscription = $payment->subscription;
 
@@ -291,14 +329,20 @@ class PaymentController extends Controller
                 $this->syncGroupBots($user, $subscription);
 
                 return response()->json([
-                    'synced'   => true,
-                    'order_id' => $payment->order_id,
+                    'synced'      => true,
+                    'has_pending' => false,
+                    'order_id'    => $payment->order_id,
                 ]);
             }
-        } catch (\Exception $e) {
-            return response()->json(['synced' => false]);
-        }
 
-        return response()->json(['synced' => false]);
+            // Status masih pending di Midtrans
+            return response()->json([
+                'synced'      => false,
+                'has_pending' => true, // ← kasih tau JS untuk cek lagi
+            ]);
+        } catch (\Exception $e) {
+            Log::error('checkPending error: ' . $e->getMessage());
+            return response()->json(['synced' => false, 'has_pending' => false]);
+        }
     }
 }

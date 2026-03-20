@@ -63,6 +63,7 @@ class GroupController extends Controller
             'can_manage_member'       => true,
             'can_generate_code'       => true,
             'can_manage_bot'          => true,
+            'can_create_poll'         => true,
             'is_owner'                => true,
         ]);
 
@@ -75,7 +76,8 @@ class GroupController extends Controller
             'can_manage_member'       => false,
             'can_generate_code'       => false,
             'can_manage_bot'          => false,
-            'is_owner'                => false, // ← fix typo 'is_owner' > false jadi => false
+            'can_create_poll'         => true,
+            'is_owner'                => false,
         ]);
 
         GroupRole::create([
@@ -87,9 +89,11 @@ class GroupController extends Controller
             'can_manage_member'       => false,
             'can_generate_code'       => false,
             'can_manage_bot'          => false,
+            'can_create_poll'         => false,
             'is_owner'                => false,
         ]);
 
+        // Owner otomatis jadi member dengan role owner
         GroupMember::create([
             'group_id' => $group->id,
             'user_id'  => auth()->id(),
@@ -98,13 +102,28 @@ class GroupController extends Controller
 
         // Generate bot sesuai subscription
         if ($subscription->has_whatsapp) {
-            GroupBot::create(['group_id' => $group->id, 'type' => 'whatsapp', 'invitation_code' => Str::random(10), 'is_active' => true]);
+            GroupBot::create([
+                'group_id'        => $group->id,
+                'type'            => 'whatsapp',
+                'invitation_code' => Str::random(10),
+                'is_active'       => true,
+            ]);
         }
         if ($subscription->has_discord) {
-            GroupBot::create(['group_id' => $group->id, 'type' => 'discord', 'invitation_code' => Str::random(10), 'is_active' => true]);
+            GroupBot::create([
+                'group_id'        => $group->id,
+                'type'            => 'discord',
+                'invitation_code' => Str::random(10),
+                'is_active'       => true,
+            ]);
         }
         if ($subscription->has_telegram) {
-            GroupBot::create(['group_id' => $group->id, 'type' => 'telegram', 'invitation_code' => Str::random(10), 'is_active' => true]);
+            GroupBot::create([
+                'group_id'        => $group->id,
+                'type'            => 'telegram',
+                'invitation_code' => Str::random(10),
+                'is_active'       => true,
+            ]);
         }
 
         return back()->with('success', 'Group berhasil dibuat!');
@@ -182,6 +201,7 @@ class GroupController extends Controller
                 $telegramGroupName = $notification->getTelegramChatName($telegramBot->telegram_chat_id);
             }
         }
+        $polls = $group->polls()->with(['options.votes', 'votes', 'user'])->get();
 
         return view('pages.group', compact(
             'group',
@@ -190,6 +210,7 @@ class GroupController extends Controller
             'roles',
             'announcements',
             'discordChannelName',
+            'polls',
             'telegramGroupName',
         ));
     }

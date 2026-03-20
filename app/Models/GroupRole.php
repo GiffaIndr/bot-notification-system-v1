@@ -14,6 +14,7 @@ class GroupRole extends Model
         'can_edit_announcement',
         'can_manage_member',
         'can_generate_code',
+        'can_create_poll',
         'can_manage_bot',
         'is_owner',
     ];
@@ -24,6 +25,7 @@ class GroupRole extends Model
         'can_manage_member' => 'boolean',
         'can_generate_code' => 'boolean',
         'can_manage_bot' => 'boolean',
+        'can_create_poll' => 'boolean',
         'is_owner'  => 'boolean',
     ];
 

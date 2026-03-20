@@ -20,6 +20,10 @@ class Group extends Model
     {
         return $this->hasMany(GroupMember::class);
     }
+    public function polls()
+    {
+        return $this->hasMany(Poll::class)->latest();
+    }
 
     public function roles()
     {
