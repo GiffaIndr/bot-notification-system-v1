@@ -151,7 +151,7 @@
         }
     </style>
 
-    <title>Library App</title>
+    <title>Annoucement Bot</title>
 </head>
 
 <body>

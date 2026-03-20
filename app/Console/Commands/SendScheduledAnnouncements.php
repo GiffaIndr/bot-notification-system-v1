@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Announcement;
+use App\Models\GroupMember;
 use App\Services\NotificationService;
 use App\Services\ActivityLogService;
 use Carbon\Carbon;
@@ -36,11 +37,56 @@ class SendScheduledAnnouncements extends Command
         }
 
         foreach ($announcements as $announcement) {
+            $pickedNames = '';
+            if ($announcement->use_picker) {
+
+                if ($announcement->picked_result && count($announcement->picked_result) > 0) {
+                    // Pakai hasil undian yang sudah disimpan
+                    $pickedNames = "\n\n🎰 *Yang Kena Giliran:*\n"
+                        . collect($announcement->picked_result)
+                        ->values()
+                        ->map(fn($name, $i) => ($i + 1) . ". {$name}")
+                        ->join("\n");
+                } else {
+                    // Belum diundi, pick random saat kirim
+                    if ($announcement->picker_mode === 'custom') {
+                        $list   = collect($announcement->custom_pick_list)->filter()->values()->shuffle(mt_rand());
+                        $picked = $list->take($announcement->pick_count)->values();
+                    } else {
+                        $members = GroupMember::where('group_id', $announcement->group_id)
+                            ->with('user')
+                            ->get()
+                            ->shuffle(mt_rand());
+                        $picked  = $members->take($announcement->pick_count)
+                            ->pluck('user.name')
+                            ->values();
+                    }
+
+                    $pickedNames = "\n\n🎲 *Yang Kena Giliran:*\n"
+                        . $picked->map(fn($name, $i) => ($i + 1) . ". {$name}")->join("\n");
+
+                    // Simpan ke DB
+                    $announcement->picked_result = $picked->toArray();
+                    $announcement->save();
+                }
+            }
+
+            $reactionSummary = '';
+            $reactions = \App\Models\AnnouncementReaction::where('announcement_id', $announcement->id)
+                ->selectRaw('emoji, COUNT(*) as count')
+                ->groupBy('emoji')
+                ->get();
+
+            if ($reactions->isNotEmpty()) {
+                $reactionSummary = "\n\n" . $reactions->map(fn($r) => "{$r->emoji} {$r->count}")->join('  ');
+            }
 
             $message = "📢 *{$announcement->title}*\n\n"
-                . "{$announcement->content}\n\n"
-                . "🏢 _{$announcement->group->name}_\n"
-                . "🕐 _" . $announcement->scheduled_at->format('d M Y, H:i') . "_";
+                . "{$announcement->content}"
+                . $pickedNames
+                . "\n\n🏢 _{$announcement->group->name}_\n"
+                . "🕐 _" . $announcement->scheduled_at->format('d M Y, H:i') . "_"
+                . $reactionSummary;
 
             // Kirim WhatsApp
             if ($status['whatsapp']) {
@@ -107,6 +153,7 @@ class SendScheduledAnnouncements extends Command
                 $announcement->update(['scheduled_at' => null]);
             }
 
+
             // if ($status['whatsapp'] || true) { // telegram tidak perlu cek status koneksi
             //     $telegramBot = $announcement->group->bots
             //         ->where('type', 'telegram')
@@ -120,7 +167,6 @@ class SendScheduledAnnouncements extends Command
             //     }
             // }
         }
-
         $this->info('🎉 Selesai!');
     }
 }

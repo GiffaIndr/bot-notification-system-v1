@@ -216,18 +216,87 @@
                                                         } }}
                                                     </span>
                                                 @endif
+                                                <div class="">
+                                                    {{-- Reactions --}}
+                                                    <div class="d-flex gap-1 flex-wrap mt-2"
+                                                        id="reactions-{{ $announcement->id }}">
+                                                        @php
+                                                            $emojis = ['👍', '❤️', '😂', '😮', '😢', '😡'];
+                                                            $reactionCounts = $announcement->reactions->groupBy(
+                                                                'emoji',
+                                                            );
+                                                            $myReactions = $announcement->reactions
+                                                                ->where('user_id', auth()->id())
+                                                                ->pluck('emoji')
+                                                                ->toArray();
+                                                        @endphp
+
+                                                        @foreach ($emojis as $emoji)
+                                                            @php
+                                                                $count = $reactionCounts->get($emoji)?->count() ?? 0;
+                                                                $reacted = in_array($emoji, $myReactions);
+                                                            @endphp
+                                                            <button
+                                                                class="btn btn-sm reaction-btn {{ $reacted ? 'btn-primary' : 'btn-outline-secondary' }}"
+                                                                style="font-size: 12px; padding: 2px 8px; border-radius: 20px;"
+                                                                onclick="react({{ $announcement->id }}, '{{ $emoji }}', this)"
+                                                                data-announcement="{{ $announcement->id }}"
+                                                                data-emoji="{{ $emoji }}">
+                                                                {{ $emoji }}
+                                                                <span class="reaction-count ms-1" style="font-size: 11px;">
+                                                                    {{ $count > 0 ? $count : '' }}
+                                                                </span>
+                                                            </button>
+                                                        @endforeach
+                                                    </div>
+
+                                                </div>
                                             </div>
+                                            @if ($announcement->use_picker)
+                                                <div class="mt-2" data-announcement-id="{{ $announcement->id }}"
+                                                    data-picked-result="{{ json_encode($announcement->picked_result) }}">
+                                                    <span class="badge bg-warning bg-opacity-10 text-warning me-2">
+                                                        <i class="fa fa-dice me-1"></i>
+                                                        Random Pick {{ $announcement->pick_count }}
+                                                        {{ $announcement->picker_mode === 'custom' ? 'dari custom list' : 'member' }}
+                                                        @if ($announcement->pickRole)
+                                                            ({{ $announcement->pickRole->name }})
+                                                        @endif
+                                                    </span>
+                                                    <button
+                                                        class="btn btn-sm {{ $announcement->picked_result ? 'btn-warning' : 'btn-outline-warning' }}"
+                                                        id="btnPick-{{ $announcement->id }}"
+                                                        onclick="previewPick({{ $announcement->id }})">
+                                                        <i
+                                                            class="fa fa-{{ $announcement->picked_result ? 'rotate' : 'shuffle' }} me-1"></i>
+                                                        {{ $announcement->picked_result ? 'Undi Ulang' : 'Undi' }}
+                                                    </button>
+                                                    <div id="pickResult-{{ $announcement->id }}"
+                                                        class="{{ $announcement->picked_result ? '' : 'd-none' }}">
+                                                        <div id="spinner-{{ $announcement->id }}" class="text-muted small">
+                                                            {{ $announcement->picked_result ? '🎉 Terpilih!' : '' }}
+                                                        </div>
+                                                        <div id="names-{{ $announcement->id }}"
+                                                            class="d-flex flex-wrap gap-2 mt-2 justify-content-start">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            @endif
                                         </div>
 
                                         @if ($role->can_edit_announcement)
                                             <div class="d-flex flex-column gap-2 ms-3">
-                                                <button class="btn btn-sm btn-outline-warning btn-action-round"
-                                                    data-bs-toggle="modal" data-bs-target="#modalEdit"
-                                                    data-id="{{ $announcement->id }}"
+                                                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
+                                                    data-bs-target="#modalEdit" data-id="{{ $announcement->id }}"
                                                     data-title="{{ $announcement->title }}"
                                                     data-content="{{ $announcement->content }}"
                                                     data-scheduled="{{ $announcement->scheduled_at?->format('Y-m-d\TH:i') }}"
-                                                    data-repeat="{{ $announcement->repeat }}" title="Edit">
+                                                    data-repeat="{{ $announcement->repeat }}"
+                                                    data-use_picker="{{ $announcement->use_picker ? '1' : '0' }}"
+                                                    data-picker_mode="{{ $announcement->picker_mode ?? 'members' }}"
+                                                    data-pick_count="{{ $announcement->pick_count ?? 1 }}"
+                                                    data-pick_role_id="{{ $announcement->pick_role_id ?? '' }}"
+                                                    data-custom_list="{{ $announcement->custom_pick_list ? implode("\n", $announcement->custom_pick_list) : '' }}">
                                                     <i class="fa fa-pen"></i>
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-danger btn-action-round"
@@ -257,8 +326,100 @@
                         @endforelse
                     </div>
                 </div>
+                {{-- Random Picker --}}
+                <div class="card announcement-container shadow-sm mt-4">
+                    <div
+                        class="card-header fw-bold d-flex justify-content-between align-items-center bg-white border-bottom">
+                        <span><i class="fa fa-shuffle text-warning me-2"></i>Random Picker</span>
+                    </div>
+                    <div class="card-body">
+
+                        <div class="row g-3">
+
+                            {{-- Input --}}
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small">Mode</label>
+                                    <div class="d-flex gap-3">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="picker_mode_standalone"
+                                                id="standaloneModeMembers" value="members" checked
+                                                onchange="toggleStandaloneMode()">
+                                            <label class="form-check-label small" for="standaloneModeMembers">
+                                                <i class="fa fa-users me-1 text-primary"></i>Dari Member Group
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="picker_mode_standalone"
+                                                id="standaloneModeCustom" value="custom"
+                                                onchange="toggleStandaloneMode()">
+                                            <label class="form-check-label small" for="standaloneModeCustom">
+                                                <i class="fa fa-list me-1 text-success"></i>Custom List
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {{-- Mode members --}}
+                                <div id="standaloneMemberOptions">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small">Filter Role (opsional)</label>
+                                        <select id="standaloneRoleId" class="form-select form-select-sm">
+                                            <option value="">Semua Member</option>
+                                            @foreach ($roles as $r)
+                                                <option value="{{ $r->id }}">{{ $r->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {{-- Mode custom --}}
+                                <div id="standaloneCustomOptions" class="d-none">
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold small">Daftar Nama</label>
+                                        <textarea id="standaloneCustomList" class="form-control form-control-sm" rows="6"
+                                            placeholder="Tulis satu per baris:&#10;Budi&#10;Ani&#10;Cici&#10;Kelompok 1&#10;Kelompok 2"></textarea>
+                                        <small class="text-muted">Satu nama per baris</small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold small">Jumlah yang Dipick</label>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button class="btn btn-sm btn-outline-secondary"
+                                            onclick="changeStandaloneCount(-1)">-</button>
+                                        <input type="number" id="standalonePickCount"
+                                            class="form-control form-control-sm text-center" value="1"
+                                            min="1" max="50" style="width: 60px">
+                                        <button class="btn btn-sm btn-outline-secondary"
+                                            onclick="changeStandaloneCount(1)">+</button>
+                                    </div>
+                                </div>
+
+                                <button class="btn btn-warning w-100 fw-bold" id="btnStandalonePick"
+                                    onclick="standalonePick()">
+                                    <i class="fa fa-shuffle me-1"></i>Undi Sekarang!
+                                </button>
+                            </div>
+
+                            {{-- Hasil --}}
+                            <div class="col-md-6">
+                                <div class="card border-0 bg-light h-100 p-3 text-center d-flex flex-column justify-content-center"
+                                    id="standaloneResult" style="min-height: 200px;">
+                                    <div id="standaloneSpinner" class="text-muted">
+                                        <i class="fa fa-dice fa-3x mb-3 opacity-25"></i>
+                                        <p class="mb-0 small">Pencet "Undi Sekarang!" untuk mulai</p>
+                                    </div>
+                                    <div id="standaloneNames" class="d-flex flex-wrap gap-2 justify-content-center"></div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
                 {{-- Poll Section --}}
                 <div class="card announcement-container shadow-sm mt-4">
+
                     <div
                         class="card-header fw-bold d-flex justify-content-between align-items-center bg-white border-bottom">
                         <span><i class="fa fa-chart-bar text-primary me-2"></i>Poll & Voting</span>
@@ -427,7 +588,9 @@
                             </div>
                         @endforelse
                     </div>
+
                 </div>
+
             </div>
 
 
@@ -1029,7 +1192,75 @@
                                         <option value="monthly">Setiap Bulan</option>
                                     </select>
                                 </div>
+                                {{-- Random Picker --}}
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <label class="form-check-label fw-semibold" for="usePicker">
+                                            <i class="fa fa-dice me-1 text-warning"></i>Gunakan Random Picker
+                                            <input class="form-check-input form-control ml-3" type="checkbox"
+                                                name="use_picker" id="usePicker" onchange="togglePicker('create')">
+                                        </label>
+                                    </div>
+                                </div>
+                                <div id="pickerOptions" class="d-none">
+                                    <div class="card border-0 bg-light p-3 mb-3">
+
+                                        {{-- Mode --}}
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold small">Mode Picker</label>
+                                            <div class="d-flex gap-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="picker_mode"
+                                                        id="modeMembers" value="members" checked
+                                                        onchange="togglePickerMode('create')">
+                                                    <label class="form-check-label small" for="modeMembers">
+                                                        <i class="fa fa-users me-1 text-primary"></i>Dari Member Group
+                                                    </label>
+                                                </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="picker_mode"
+                                                        id="modeCustom" value="custom"
+                                                        onchange="togglePickerMode('create')">
+                                                    <label class="form-check-label small" for="modeCustom">
+                                                        <i class="fa fa-list me-1 text-success"></i>Custom List
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Jumlah pick --}}
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold small">Jumlah yang Dipick</label>
+                                            <input type="number" name="pick_count" class="form-control form-control-sm"
+                                                value="1" min="1" max="50">
+                                        </div>
+
+                                        {{-- Filter role (mode members) --}}
+                                        <div id="pickerRoleFilter" class="mb-3">
+                                            <label class="form-label fw-semibold small">Filter Role (opsional)</label>
+                                            <select name="pick_role_id" class="form-select form-select-sm">
+                                                <option value="">Semua Member</option>
+                                                @foreach ($roles as $r)
+                                                    <option value="{{ $r->id }}">{{ $r->name }}</option>
+                                                @endforeach
+                                            </select>
+                                            <small class="text-muted">Kosongkan untuk pick dari semua member</small>
+                                        </div>
+
+                                        {{-- Custom list (mode custom) --}}
+                                        <div id="pickerCustomList" class="mb-3 d-none">
+                                            <label class="form-label fw-semibold small">Daftar Pilihan</label>
+                                            <textarea name="custom_pick_list" class="form-control form-control-sm" rows="5"
+                                                placeholder="Tulis satu per baris, contoh:&#10;Kelompok 1&#10;Kelompok 2&#10;Kelompok 3"></textarea>
+                                            <small class="text-muted">Satu item per baris</small>
+                                        </div>
+
+                                    </div>
+                                </div>
                             </div>
+
+
+
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                     <i class="fa fa-xmark me-1"></i>Batal
@@ -1083,6 +1314,77 @@
                                         <option value="weekly">Setiap Minggu</option>
                                         <option value="monthly">Setiap Bulan</option>
                                     </select>
+                                </div>
+                                <div class="mb-3">
+                                    {{-- Random Picker --}}
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="use_picker"
+                                                id="editUsePicker" onchange="toggleEditPicker()">
+                                            <label class="form-check-label fw-semibold" for="editUsePicker">
+                                                <i class="fa fa-dice me-1 text-warning"></i>Gunakan Random Picker
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div id="editPickerOptions" class="d-none">
+                                        <div class="card border-0 bg-light p-3 mb-3">
+
+                                            {{-- Mode --}}
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold small">Mode Picker</label>
+                                                <div class="d-flex gap-3">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="picker_mode"
+                                                            id="editModeMembers" value="members" checked
+                                                            onchange="toggleEditPickerMode()">
+                                                        <label class="form-check-label small" for="editModeMembers">
+                                                            <i class="fa fa-users me-1 text-primary"></i>Dari Member Group
+                                                        </label>
+                                                    </div>
+                                                    <div class="form-check">
+                                                        <input class="form-check-input" type="radio" name="picker_mode"
+                                                            id="editModeCustom" value="custom"
+                                                            onchange="toggleEditPickerMode()">
+                                                        <label class="form-check-label small" for="editModeCustom">
+                                                            <i class="fa fa-list me-1 text-success"></i>Custom List
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {{-- Jumlah pick --}}
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold small">Jumlah yang Dipick</label>
+                                                <input type="number" name="pick_count" id="editPickCount"
+                                                    class="form-control form-control-sm" value="1" min="1"
+                                                    max="50">
+                                            </div>
+
+                                            {{-- Filter role (mode members) --}}
+                                            <div id="editPickerRoleFilter" class="mb-3">
+                                                <label class="form-label fw-semibold small">Filter Role (opsional)</label>
+                                                <select name="pick_role_id" id="editPickRoleId"
+                                                    class="form-select form-select-sm">
+                                                    <option value="">Semua Member</option>
+                                                    @foreach ($roles as $r)
+                                                        <option value="{{ $r->id }}">{{ $r->name }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                <small class="text-muted">Kosongkan untuk pick dari semua member</small>
+                                            </div>
+
+                                            {{-- Custom list (mode custom) --}}
+                                            <div id="editPickerCustomList" class="mb-3 d-none">
+                                                <label class="form-label fw-semibold small">Daftar Pilihan</label>
+                                                <textarea name="custom_pick_list" id="editCustomPickList" class="form-control form-control-sm" rows="5"
+                                                    placeholder="Tulis satu per baris, contoh:&#10;Kelompok 1&#10;Kelompok 2&#10;Kelompok 3"></textarea>
+                                                <small class="text-muted">Satu item per baris</small>
+                                            </div>
+
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             <div class="modal-footer">
@@ -1357,12 +1659,35 @@
                     const content = btn.getAttribute('data-content');
                     const scheduled = btn.getAttribute('data-scheduled');
                     const repeat = btn.getAttribute('data-repeat');
+                    const usePicker = btn.getAttribute('data-use_picker') === '1';
+                    const pickerMode = btn.getAttribute('data-picker_mode') ?? 'members';
+                    const pickCount = btn.getAttribute('data-pick_count') ?? 1;
+                    const pickRoleId = btn.getAttribute('data-pick_role_id') ?? '';
+                    const customList = btn.getAttribute('data-custom_list') ?? '';
 
                     document.getElementById('editTitle').value = title;
                     document.getElementById('editContent').value = content;
                     document.getElementById('editScheduled').value = scheduled ?? '';
                     document.getElementById('editRepeat').value = repeat ?? 'none';
                     document.getElementById('formEdit').action = `/groups/{{ $group->id }}/announcements/${id}`;
+
+                    // Picker
+                    document.getElementById('editUsePicker').checked = usePicker;
+                    document.getElementById('editPickerOptions').classList.toggle('d-none', !usePicker);
+                    document.getElementById('editPickCount').value = pickCount;
+                    document.getElementById('editPickRoleId').value = pickRoleId;
+                    document.getElementById('editCustomPickList').value = customList;
+
+                    // Set mode
+                    if (pickerMode === 'custom') {
+                        document.getElementById('editModeCustom').checked = true;
+                        document.getElementById('editPickerRoleFilter').classList.add('d-none');
+                        document.getElementById('editPickerCustomList').classList.remove('d-none');
+                    } else {
+                        document.getElementById('editModeMembers').checked = true;
+                        document.getElementById('editPickerRoleFilter').classList.remove('d-none');
+                        document.getElementById('editPickerCustomList').classList.add('d-none');
+                    }
                 });
 
                 // Modal Edit Role
@@ -1394,6 +1719,153 @@
                     }
                 }
 
+                function react(announcementId, emoji, btn) {
+                    fetch(`/groups/{{ $group->id }}/announcements/${announcementId}/react`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({
+                                emoji: emoji
+                            })
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            // Update semua tombol reaction untuk announcement ini
+                            const container = document.getElementById(`reactions-${announcementId}`);
+                            const buttons = container.querySelectorAll('.reaction-btn');
+
+                            buttons.forEach(button => {
+                                const btnEmoji = button.getAttribute('data-emoji');
+                                const count = data.reactions[btnEmoji] ?? 0;
+                                const isMyReact = btnEmoji === emoji && data.reacted;
+
+                                // Update style
+                                button.classList.remove('btn-primary', 'btn-outline-secondary');
+                                button.classList.add(isMyReact ? 'btn-primary' : 'btn-outline-secondary');
+
+                                // Update count
+                                button.querySelector('.reaction-count').innerText = count > 0 ? count : '';
+                            });
+                        });
+                }
+
+                function togglePicker(prefix) {
+                    const checked = document.getElementById('usePicker').checked;
+                    document.getElementById('pickerOptions').classList.toggle('d-none', !checked);
+                }
+
+                function togglePickerMode(prefix) {
+                    const mode = document.querySelector('input[name="picker_mode"]:checked').value;
+                    const roleFilter = document.getElementById('pickerRoleFilter');
+                    const customList = document.getElementById('pickerCustomList');
+
+                    if (mode === 'custom') {
+                        roleFilter.classList.add('d-none');
+                        customList.classList.remove('d-none');
+                    } else {
+                        roleFilter.classList.remove('d-none');
+                        customList.classList.add('d-none');
+                    }
+                }
+
+                function previewPick(announcementId) {
+                    const resultDiv = document.getElementById(`pickResult-${announcementId}`);
+                    const spinner = document.getElementById(`spinner-${announcementId}`);
+                    const namesDiv = document.getElementById(`names-${announcementId}`);
+                    const btn = document.getElementById(`btnPick-${announcementId}`);
+
+                    resultDiv.classList.remove('d-none');
+                    namesDiv.innerHTML = '';
+                    namesDiv.className = "d-flex flex-wrap gap-2 mt-2 justify-content-start";
+                    spinner.innerText = '🎰 Mengundi...';
+
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i>Mengundi...';
+
+                    fetch(`/groups/{{ $group->id }}/announcements/${announcementId}/pick`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            }
+                        })
+                        .then(res => {
+                            if (!res.ok) throw new Error('HTTP error ' + res.status);
+                            return res.json();
+                        })
+                        .then(data => {
+                            console.log('pick result:', data); // ← cek di console
+
+                            const spinEmojis = ['🎰', '🎲', '🎯', '🎱', '🎪'];
+                            let i = 0;
+                            const interval = setInterval(() => {
+                                spinner.innerText = spinEmojis[i % spinEmojis.length] + ' Mengundi...';
+                                i++;
+                            }, 150);
+
+                            setTimeout(() => {
+                                clearInterval(interval);
+                                renderPickResult(announcementId, data.picked);
+                            }, 2000);
+                        })
+                        .catch(err => {
+                            console.error('pick error:', err);
+                            spinner.innerText = '❌ Error: ' + err.message;
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fa fa-shuffle me-1"></i>Undi';
+                        });
+                }
+
+                function renderPickResult(announcementId, picked) {
+                    const spinner = document.getElementById(`spinner-${announcementId}`);
+                    const namesDiv = document.getElementById(`names-${announcementId}`);
+                    const resultDiv = document.getElementById(`pickResult-${announcementId}`);
+                    const btn = document.getElementById(`btnPick-${announcementId}`);
+
+                    if (!resultDiv || !spinner || !namesDiv || !btn) return;
+
+                    resultDiv.classList.remove('d-none');
+                    namesDiv.className = "d-flex flex-wrap gap-2 mt-2 justify-content-start";
+                    spinner.innerText = '🎉 Terpilih!';
+
+                    const colors = ['primary', 'success', 'danger', 'info', 'dark', 'secondary'];
+                    namesDiv.innerHTML = picked.map((name, index) => {
+                        const color = colors[Math.floor(Math.random() * colors.length)];
+                        return `
+            <div class="badge bg-${color} text-white px-3 py-2 d-flex align-items-center shadow-sm"
+                 style="font-size:14px; border-radius: 50px; min-height: 35px;">
+                <span class="opacity-75 me-1">#${index + 1}</span> 🎯 ${name}
+            </div>`;
+                    }).join('');
+
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa fa-rotate me-1"></i>Undi Ulang';
+                    btn.classList.remove('btn-outline-warning');
+                    btn.classList.add('btn-warning');
+                }
+
+                function restorePickResults() {
+                    document.querySelectorAll('[data-picked-result]').forEach(el => {
+                        const announcementId = el.getAttribute('data-announcement-id');
+                        const saved = el.getAttribute('data-picked-result');
+
+                        if (saved && saved !== 'null' && saved !== '[]') {
+                            try {
+                                const picked = JSON.parse(saved);
+                                if (picked && picked.length > 0) {
+                                    renderPickResult(announcementId, picked);
+                                }
+                            } catch (e) {
+                                console.log('parse error:', e);
+                            }
+                        }
+                    });
+                }
+
+                restorePickResults();
+
                 function addOption() {
                     const list = document.getElementById('optionList');
                     const count = list.children.length + 1;
@@ -1416,6 +1888,127 @@
                     } else {
                         showToast('Minimal 2 pilihan!', 'warning');
                     }
+                }
+
+                function toggleEditPicker() {
+                    const checked = document.getElementById('editUsePicker').checked;
+                    document.getElementById('editPickerOptions').classList.toggle('d-none', !checked);
+                }
+
+                function toggleEditPickerMode() {
+                    const mode = document.querySelector('input[name="picker_mode"]:checked')?.value;
+                    const roleFilter = document.getElementById('editPickerRoleFilter');
+                    const customList = document.getElementById('editPickerCustomList');
+
+                    if (mode === 'custom') {
+                        roleFilter.classList.add('d-none');
+                        customList.classList.remove('d-none');
+                    } else {
+                        roleFilter.classList.remove('d-none');
+                        customList.classList.add('d-none');
+                    }
+                }
+
+                function toggleStandaloneMode() {
+                    const mode = document.querySelector('input[name="picker_mode_standalone"]:checked').value;
+                    const members = document.getElementById('standaloneMemberOptions');
+                    const custom = document.getElementById('standaloneCustomOptions');
+
+                    if (mode === 'custom') {
+                        members.classList.add('d-none');
+                        custom.classList.remove('d-none');
+                    } else {
+                        members.classList.remove('d-none');
+                        custom.classList.add('d-none');
+                    }
+                }
+
+                function changeStandaloneCount(delta) {
+                    const input = document.getElementById('standalonePickCount');
+                    const newVal = parseInt(input.value) + delta;
+                    if (newVal >= 1 && newVal <= 50) input.value = newVal;
+                }
+
+                function standalonePick() {
+                    const mode = document.querySelector('input[name="picker_mode_standalone"]:checked').value;
+                    const count = parseInt(document.getElementById('standalonePickCount').value);
+                    const roleId = document.getElementById('standaloneRoleId')?.value ?? '';
+                    const spinner = document.getElementById('standaloneSpinner');
+                    const names = document.getElementById('standaloneNames');
+                    const btn = document.getElementById('btnStandalonePick');
+
+                    names.innerHTML = '';
+                    spinner.innerHTML = '🎰 Mengundi...';
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fa fa-spinner fa-spin me-1"></i>Mengundi...';
+
+                    let body = {
+                        count,
+                        role_id: roleId,
+                        mode
+                    };
+
+                    if (mode === 'custom') {
+                        const list = document.getElementById('standaloneCustomList').value
+                            .split('\n')
+                            .map(s => s.trim())
+                            .filter(s => s !== '');
+
+                        if (list.length === 0) {
+                            spinner.innerHTML = '<p class="text-danger small">Daftar nama kosong!</p>';
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fa fa-shuffle me-1"></i>Undi Sekarang!';
+                            return;
+                        }
+
+                        if (count > list.length) {
+                            spinner.innerHTML =
+                                `<p class="text-danger small">Jumlah pick (${count}) melebihi daftar (${list.length})!</p>`;
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fa fa-shuffle me-1"></i>Undi Sekarang!';
+                            return;
+                        }
+
+                        body.custom_list = list;
+                    }
+
+                    fetch(`/groups/{{ $group->id }}/picker`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify(body)
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            const spinEmojis = ['🎰', '🎲', '🎯', '🎱', '🎪'];
+                            let i = 0;
+                            const interval = setInterval(() => {
+                                spinner.innerText = spinEmojis[i % spinEmojis.length] + ' Mengundi...';
+                                i++;
+                            }, 150);
+
+                            setTimeout(() => {
+                                clearInterval(interval);
+                                spinner.innerText = '🎉 Terpilih!';
+
+                                const colors = ['primary', 'success', 'danger', 'info', 'dark', 'secondary'];
+                                names.innerHTML = data.picked.map((name, index) => {
+                                    const color = colors[Math.floor(Math.random() * colors.length)];
+                                    return `
+                    <div class="badge bg-${color} text-white px-3 py-2 d-flex align-items-center shadow-sm"
+                         style="font-size:14px; border-radius: 50px; min-height: 35px;">
+                        <span class="opacity-75 me-1">#${index + 1}</span> 🎯 ${name}
+                    </div>`;
+                                }).join('');
+
+                                btn.disabled = false;
+                                btn.innerHTML = '<i class="fa fa-rotate me-1"></i>Undi Ulang!';
+                                btn.classList.remove('btn-warning');
+                                btn.classList.add('btn-success');
+                            }, 2000);
+                        });
                 }
             </script>
             <script>

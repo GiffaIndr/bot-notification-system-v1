@@ -53,4 +53,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/groups/{group}/polls/{poll}/vote', [PollController::class, 'vote']);
     Route::post('/groups/{group}/polls/{poll}/close', [PollController::class, 'close']);
     Route::delete('/groups/{group}/polls/{poll}', [PollController::class, 'destroy']);
+    Route::post('/groups/{group}/announcements/{announcement}/react', [AnnouncementController::class, 'react']);
+    Route::post('/groups/{group}/announcements/{announcement}/pick', [AnnouncementController::class, 'previewPick']);
+    Route::post('/groups/{group}/picker', [GroupController::class, 'picker']);
 });
