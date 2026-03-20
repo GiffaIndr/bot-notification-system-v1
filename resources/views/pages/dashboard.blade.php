@@ -65,83 +65,136 @@
 
         <div class="row g-4">
             {{-- Subscription Plans --}}
-            <div class="col-lg-4">
-                <div class="card h-100 border-top border-primary border-5">
-                    <div class="card-header fw-bold d-flex align-items-center">
-                        <i class="fas fa-crown text-warning me-2"></i> Subscription Plan
+
+            <div class="col-md-4">
+                <div class="card h-100">
+                    <div class="card-header fw-bold">
+                        <i class="fa fa-credit-card text-primary me-2"></i>Langganan
                     </div>
                     <div class="card-body">
-                        @if ($subscription)
-                            <div class="alert alert-success border-0 shadow-sm mb-4">
-                                <div class="d-flex align-items-center">
-                                    <i class="fas fa-check-circle me-2 fs-4"></i>
-                                    <div>
-                                        <small class="d-block">Aktif hingga:</small>
-                                        <strong>{{ $subscription->expires_at->format('d M Y') }}</strong>
-                                    </div>
 
-                                </div>
+                        @if ($subscription)
+                            <div class="alert alert-success py-2">
+                                ✅ Aktif hingga: <strong>{{ $subscription->expires_at->format('d M Y') }}</strong>
+                            </div>
+                            <div class="small text-muted mb-3">
+                                <div>{{ $subscription->has_whatsapp ? '✅' : '❌' }} WhatsApp Bot</div>
+                                <div>{{ $subscription->has_discord ? '✅' : '❌' }} Discord Bot</div>
+                                <div>{{ $subscription->has_telegram ? '✅' : '❌' }} Telegram Bot</div>
+                                <div>👥 Max {{ $subscription->max_groups }} Group</div>
+                                <div>👤 Max {{ $subscription->max_members }} Member/Group</div>
                             </div>
                         @else
-                            <div class="alert alert-warning border-0 shadow-sm mb-4 text-dark">
-                                <i class="fas fa-exclamation-triangle me-2"></i> Belum berlangganan.
-                            </div>
+                            <div class="alert alert-warning py-2">⚠️ Belum berlangganan.</div>
                         @endif
 
-                        <div class="plan-list mt-3">
-                            @foreach ($plans as $plan)
-                                <div class="card plan-card mb-3 border-0 shadow-sm">
-                                    <div class="card-body p-3">
-
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <h6 class="fw-bold mb-0 text-dark">{{ $plan->name }}</h6>
-                                            <span class="badge bg-primary-subtle text-primary rounded-pill fw-bold"
-                                                style="font-size: 0.75rem;">
-                                                Rp {{ number_format($plan->price, 0, ',', '.') }}
-                                            </span>
-                                        </div>
-
-                                        <p class="text-muted mb-3" style="font-size: 0.82rem; line-height: 1.4;">
-                                            {{ $plan->description }}
-                                        </p>
-
-                                        <hr class="my-2 opacity-25">
-                                        <div class="d-flex align-items-center mb-3">
-                                            <div class="d-flex gap-2">
-                                                <span title="WhatsApp">
-                                                    {!! $plan->whatsapp
-                                                        ? '<i class="fab fa-whatsapp text-success"></i>'
-                                                        : '<i class="fas fa-times text-danger opacity-25"></i>' !!}
-                                                </span>
-                                                <span title="Discord">
-                                                    {!! $plan->discord
-                                                        ? '<i class="fab fa-discord text-primary"></i>'
-                                                        : '<i class="fas fa-times text-danger opacity-25"></i>' !!}
-                                                </span>
-                                                <span title="Telegram">
-                                                    {!! $plan->telegram
-                                                        ? '<i class="fab fa-telegram text-info"></i>'
-                                                        : '<i class="fas fa-times text-danger opacity-25"></i>' !!}
-                                                </span>
-                                            </div>
-
-                                            <div class="ms-auto">
-                                                <small class="fw-bold text-secondary" style="font-size: 0.75rem;">
-                                                    <i class="fas fa-layer-group me-1"></i>Max {{ $plan->max_group }} Groups
-                                                </small>
-                                            </div>
-                                        </div>
-
-                                        <button class="btn btn-sm btn-upgrade w-100 fw-bold py-2 shadow-sm rounded-3"
-                                            onclick="pay({{ $plan->id }})">
-                                            <i class="fas fa-shopping-cart me-1"></i>
-                                            {{ $subscription ? 'Upgrade Plan' : 'Subscribe Now' }}
-                                        </button>
-
-                                    </div>
+                        <hr>
+                        <h6 class="fw-bold mb-3">Buat Langganan Baru</h6>
+                        {{-- Bot Notifikasi --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Bot Notifikasi</label>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="chk_wa"
+                                        onchange="calculatePrice()"
+                                        {{ $subscription?->has_whatsapp ? 'checked disabled' : '' }}>
+                                    <label class="form-check-label small" for="chk_wa">
+                                        <i class="fab fa-whatsapp text-success me-1"></i>
+                                        WhatsApp — <strong>Rp
+                                            {{ number_format($pricing['whatsapp'], 0, ',', '.') }}</strong>
+                                        @if ($subscription?->has_whatsapp)
+                                            <span class="badge bg-success bg-opacity-10 text-success ms-1"
+                                                style="font-size:10px">Aktif</span>
+                                        @endif
+                                    </label>
                                 </div>
-                            @endforeach
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="chk_discord"
+                                        onchange="calculatePrice()"
+                                        {{ $subscription?->has_discord ? 'checked disabled' : '' }}>
+                                    <label class="form-check-label small" for="chk_discord">
+                                        <i class="fab fa-discord text-primary me-1"></i>
+                                        Discord — <strong>Rp {{ number_format($pricing['discord'], 0, ',', '.') }}</strong>
+                                        @if ($subscription?->has_discord)
+                                            <span class="badge bg-success bg-opacity-10 text-success ms-1"
+                                                style="font-size:10px">Aktif</span>
+                                        @endif
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="chk_telegram"
+                                        onchange="calculatePrice()"
+                                        {{ $subscription?->has_telegram ? 'checked disabled' : '' }}>
+                                    <label class="form-check-label small" for="chk_telegram">
+                                        <i class="fab fa-telegram text-info me-1"></i>
+                                        Telegram — <strong>Rp
+                                            {{ number_format($pricing['telegram'], 0, ',', '.') }}</strong>
+                                        @if ($subscription?->has_telegram)
+                                            <span class="badge bg-success bg-opacity-10 text-success ms-1"
+                                                style="font-size:10px">Aktif</span>
+                                        @endif
+                                    </label>
+                                </div>
+                            </div>
                         </div>
+
+                        {{-- Group --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">
+                                Jumlah Group
+                                <span class="text-muted">(Rp
+                                    {{ number_format($pricing['per_group'], 0, ',', '.') }}/group)</span>
+                            </label>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    onclick="changeValue('input_groups', -1)">-</button>
+                                <input type="number" id="input_groups" class="form-control form-control-sm text-center"
+                                    value="{{ $subscription ? $subscription->max_groups : 1 }}"
+                                    min="{{ $subscription ? $subscription->max_groups : 1 }}" max="20"
+                                    onchange="calculatePrice()" style="width: 60px">
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    onclick="changeValue('input_groups', 1)">+</button>
+                            </div>
+                            @if ($subscription)
+                                <small class="text-muted">Minimum {{ $subscription->max_groups }} (sudah dipunya)</small>
+                            @endif
+                        </div>
+
+                        {{-- Member --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">
+                                Max Member per Group
+                                <span class="text-muted">(Rp
+                                    {{ number_format($pricing['per_member'], 0, ',', '.') }}/member)</span>
+                            </label>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    onclick="changeValue('input_members', -5)">-</button>
+                                <input type="number" id="input_members" class="form-control form-control-sm text-center"
+                                    value="{{ $subscription ? $subscription->max_members : 10 }}"
+                                    min="{{ $subscription ? $subscription->max_members : 5 }}" max="500"
+                                    step="5" onchange="calculatePrice()" style="width: 70px">
+                                <button class="btn btn-sm btn-outline-secondary"
+                                    onclick="changeValue('input_members', 5)">+</button>
+                            </div>
+                            @if ($subscription)
+                                <small class="text-muted">Minimum {{ $subscription->max_members }} (sudah dipunya)</small>
+                            @endif
+                        </div>
+
+                        {{-- Total --}}
+                        <div class="alert alert-primary py-2 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="small fw-semibold">Total / 6 bulan</span>
+                                <span class="fw-bold" id="totalPrice">Rp 0</span>
+                            </div>
+                        </div>
+
+                        <button class="btn btn-primary w-100" onclick="pay()">
+                            <i class="fa fa-credit-card me-1"></i>
+                            {{ $subscription ? 'Perpanjang / Upgrade' : 'Berlangganan' }}
+                        </button>
+
                     </div>
                 </div>
             </div>
@@ -169,25 +222,6 @@
                                         <p class="text-danger small mb-0">Batas group tercapai
                                             ({{ $groupCount }}/{{ $maxGroup }})</p>
                                         <p class="text-muted x-small">Upgrade plan untuk menambah.</p>
-
-                                        {{-- Cek apakah ada upgrade pending yang bisa nambah kuota --}}
-                                        @php
-                                            $pendingUpgrade = \App\Models\Payment::where('user_id', auth()->id())
-                                                ->where('status', 'success')
-                                                ->where('starts_at', '>', now())
-                                                ->with('plan')
-                                                ->latest()
-                                                ->first();
-                                        @endphp
-
-                                        @if ($pendingUpgrade && $pendingUpgrade->plan->max_group > $maxGroup)
-                                            <p class="text-success small mt-2 mb-0">
-                                                <i class="fa fa-circle-info me-1"></i>
-                                                Kuota akan bertambah jadi
-                                                <strong>{{ $pendingUpgrade->plan->max_group }}</strong> group
-                                                pada <strong>{{ $pendingUpgrade->starts_at->format('d M Y') }}</strong>
-                                            </p>
-                                        @endif
                                     </div>
                                 @else
                                     <p class="text-muted small mb-4">
@@ -233,11 +267,13 @@
                     <div class="col-12">
                         <div class="card border-0">
                             <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                                <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-user-friends me-2 text-primary"></i> My
-                                    Groups</h5>
+                                <h5 class="mb-0 fw-bold text-dark">
+                                    <i class="fas fa-user-friends me-2 text-primary"></i>My Groups
+                                </h5>
                                 @if ($totalGroups > 3)
-                                    <a href="/groups" class="btn btn-sm btn-light text-primary fw-bold">Lihat Semua
-                                        ({{ $totalGroups }})</a>
+                                    <a href="/groups" class="btn btn-sm btn-light text-primary fw-bold">
+                                        Lihat Semua ({{ $totalGroups }})
+                                    </a>
                                 @endif
                             </div>
                             <div class="card-body p-4">
@@ -248,18 +284,30 @@
                                                 <div class="card-body">
                                                     <div class="d-flex justify-content-between align-items-start mb-3">
                                                         <h6 class="fw-bold mb-0">{{ $group->name }}</h6>
-                                                        <i class="fas fa-ellipsis-v text-muted small"></i>
-                                                    </div>
 
-                                                    @php
-                                                        $memberRole = \App\Models\GroupMember::where(
-                                                            'group_id',
-                                                            $group->id,
-                                                        )
-                                                            ->where('user_id', auth()->id())
-                                                            ->with('role')
-                                                            ->first();
-                                                    @endphp
+                                                        @php
+                                                            $memberRole = \App\Models\GroupMember::where(
+                                                                'group_id',
+                                                                $group->id,
+                                                            )
+                                                                ->where('user_id', auth()->id())
+                                                                ->with('role')
+                                                                ->first();
+                                                        @endphp
+
+                                                        {{-- Tombol edit hanya untuk owner --}}
+                                                        @if ($memberRole?->role?->is_owner)
+                                                            <button class="btn btn-sm btn-light" data-bs-toggle="modal"
+                                                                data-bs-target="#modalEditGroup"
+                                                                data-id="{{ $group->id }}"
+                                                                data-name="{{ $group->name }}">
+                                                                <i class="fas fa-pen text-muted"
+                                                                    style="font-size: 11px;"></i>
+                                                            </button>
+                                                        @else
+                                                            <i class="fas fa-ellipsis-v text-muted small"></i>
+                                                        @endif
+                                                    </div>
 
                                                     @if ($memberRole?->role)
                                                         <span class="badge badge-role mb-3 d-inline-block text-white"
@@ -286,6 +334,47 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Modal Edit Group --}}
+                    <div class="modal fade" id="modalEditGroup" tabindex="-1">
+                        <div class="modal-dialog modal-sm">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h6 class="modal-title fw-bold">
+                                        <i class="fas fa-pen me-2 text-primary"></i>Edit Nama Group
+                                    </h6>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                </div>
+                                <form method="POST" id="formEditGroup">
+                                    @csrf
+                                    @method('PUT')
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold small">Nama Group</label>
+                                            <input type="text" name="name" id="editGroupName" class="form-control"
+                                                placeholder="Nama Group" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary btn-sm"
+                                            data-bs-dismiss="modal">Batal</button>
+                                        <button type="submit" class="btn btn-primary btn-sm">Simpan</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <script>
+                        const modalEditGroup = document.getElementById('modalEditGroup');
+                        modalEditGroup.addEventListener('show.bs.modal', function(e) {
+                            const btn = e.relatedTarget;
+                            const id = btn.getAttribute('data-id');
+                            const name = btn.getAttribute('data-name');
+                            document.getElementById('editGroupName').value = name;
+                            document.getElementById('formEditGroup').action = `/groups/${id}`;
+                        });
+                    </script>
                 </div>
             </div>
         </div>
@@ -303,7 +392,6 @@
     </div>
 
     <script>
-        // JS Logic tetap sama sesuai kode originalmu
         function showToast(message, type = 'danger') {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toastMessage');
@@ -326,7 +414,71 @@
             document.getElementById('formJoinGroup').submit();
         }
 
-        function pay(planId) {
+        const pricing = {
+            whatsapp: {{ $pricing['whatsapp'] }},
+            discord: {{ $pricing['discord'] }},
+            telegram: {{ $pricing['telegram'] }},
+            per_group: {{ $pricing['per_group'] }},
+            per_member: {{ $pricing['per_member'] }},
+        };
+
+        const currentSubscription = {
+            has_whatsapp: {{ $subscription?->has_whatsapp ? 'true' : 'false' }},
+            has_discord: {{ $subscription?->has_discord ? 'true' : 'false' }},
+            has_telegram: {{ $subscription?->has_telegram ? 'true' : 'false' }},
+            max_groups: {{ $subscription?->max_groups ?? 0 }},
+            max_members: {{ $subscription?->max_members ?? 0 }},
+        };
+
+        function calculatePrice() {
+            let total = 0;
+
+            if (document.getElementById('chk_wa')?.checked && !currentSubscription.has_whatsapp) {
+                total += pricing.whatsapp;
+            }
+            if (document.getElementById('chk_discord')?.checked && !currentSubscription.has_discord) {
+                total += pricing.discord;
+            }
+            if (document.getElementById('chk_telegram')?.checked && !currentSubscription.has_telegram) {
+                total += pricing.telegram;
+            }
+
+            const groups = parseInt(document.getElementById('input_groups')?.value) || 1;
+            const members = parseInt(document.getElementById('input_members')?.value) || 10;
+
+            const extraGroups = Math.max(0, groups - currentSubscription.max_groups);
+            const extraMembers = Math.max(0, members - currentSubscription.max_members);
+
+            total += extraGroups * pricing.per_group;
+            total += extraMembers * pricing.per_member;
+
+            const el = document.getElementById('totalPrice');
+            if (el) el.innerText = 'Rp ' + total.toLocaleString('id-ID');
+
+            return total;
+        }
+
+        function changeValue(id, delta) {
+            const input = document.getElementById(id);
+            const newVal = parseInt(input.value) + delta;
+            if (newVal >= parseInt(input.min) && newVal <= parseInt(input.max)) {
+                input.value = newVal;
+                calculatePrice();
+            }
+        }
+
+        function pay() {
+            const hasWa = document.getElementById('chk_wa')?.checked ?? false;
+            const hasDiscord = document.getElementById('chk_discord')?.checked ?? false;
+            const hasTelegram = document.getElementById('chk_telegram')?.checked ?? false;
+            const maxGroups = document.getElementById('input_groups')?.value ?? 1;
+            const maxMembers = document.getElementById('input_members')?.value ?? 10;
+
+            if (!hasWa && !hasDiscord && !hasTelegram) {
+                showToast('⚠️ Pilih minimal 1 bot notifikasi!', 'warning');
+                return;
+            }
+
             fetch('/payment/snap-token', {
                     method: 'POST',
                     headers: {
@@ -334,30 +486,82 @@
                         'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
                     },
                     body: JSON.stringify({
-                        plan_id: planId
+                        has_whatsapp: hasWa,
+                        has_discord: hasDiscord,
+                        has_telegram: hasTelegram,
+                        max_groups: maxGroups,
+                        max_members: maxMembers,
                     })
                 })
                 .then(res => res.json())
                 .then(data => {
+                    if (data.error) {
+                        showToast(data.error, 'danger');
+                        return;
+                    }
                     snap.pay(data.token, {
-                        onSuccess: (result) => {
+                        onSuccess: function(result) {
                             fetch('/payment/sync-bots', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector(
-                                        'meta[name="csrf-token"]').content
-                                },
-                                body: JSON.stringify({
-                                    order_id: result.order_id
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector(
+                                            'meta[name="csrf-token"]').content
+                                    },
+                                    body: JSON.stringify({
+                                        order_id: result.order_id
+                                    })
                                 })
-                            }).then(() => {
-                                // Redirect ke halaman receipt setelah sync
-                                window.location.href = '/payment/receipt/' + result.order_id;
-                            });
+                                .then(res => res.json())
+                                .then(() => {
+                                    window.location.href = '/payment/receipt/' + result.order_id;
+                                });
+                        },
+                        onPending: function(result) {
+                            showToast('⏳ Menunggu pembayaran...', 'warning');
+                        },
+                        onError: function(result) {
+                            showToast('❌ Pembayaran gagal!', 'danger');
+                        },
+                        onClose: function() {
+                            fetch('/payment/check-pending', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRF-TOKEN': document.querySelector(
+                                            'meta[name="csrf-token"]').content
+                                    }
+                                })
+                                .then(res => res.json())
+                                .then(data => {
+                                    if (data.synced) {
+                                        window.location.href = '/payment/receipt/' + data.order_id;
+                                    }
+                                });
                         }
                     });
                 });
         }
+
+        // Cek payment pending saat halaman pertama kali dibuka
+        document.addEventListener('DOMContentLoaded', function() {
+            calculatePrice();
+
+            // Auto cek payment pending
+            fetch('/payment/check-pending', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.synced) {
+                        window.location.href = '/payment/receipt/' + data.order_id;
+                    }
+                });
+        });
+        document.addEventListener('DOMContentLoaded', calculatePrice);
     </script>
 @endsection

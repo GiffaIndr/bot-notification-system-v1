@@ -598,78 +598,127 @@
 
                 {{-- Daftar Member --}}
                 <div class="card border-0 shadow-sm mb-4" style="border-radius: 12px; overflow: hidden;">
-    <div class="card-header bg-white py-2 border-bottom-0">
-        <div class="d-flex align-items-center justify-content-between">
-            <div class="d-flex align-items-center">
-                <i class="fa fa-users text-primary me-2" style="font-size: 14px;"></i>
-                <span class="fw-bold mb-0" style="color: #334155; font-size: 13px;">Anggota Group</span>
-            </div>
-            <span class="badge bg-light text-secondary border-0" style="font-size: 10px;">{{ $members->count() }} User</span>
-        </div>
-    </div>
-
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-sm table-hover align-middle mb-0" style="font-size: 12px;">
-                <thead class="bg-light">
-                    <tr>
-                        <th class="ps-3 py-2 border-0 text-secondary fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.3px;">Nama</th>
-                        <th class="py-2 border-0 text-secondary fw-bold text-uppercase" style="font-size: 10px; letter-spacing: 0.3px;">Role</th>
-                        @if ($role->can_manage_member)
-                            <th class="py-2 border-0 text-secondary fw-bold text-uppercase text-end pe-3" style="font-size: 10px; letter-spacing: 0.3px;">Ubah Role</th>
-                        @endif
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($members as $m)
-                        <tr class="border-bottom-0" style="border-bottom: 1px solid #f1f5f9 !important;">
-                            <td class="ps-3 py-2">
-                                <div class="d-flex align-items-center">
-                                    <div class="me-2 d-flex align-items-center justify-content-center fw-bold text-white"
-                                         style="width: 28px; height: 28px; border-radius: 6px; background: linear-gradient(45deg, #6366f1, #a855f7); font-size: 10px;">
-                                        {{ strtoupper(substr($m->user->name, 0, 1)) }}
-                                    </div>
-                                    <span class="fw-medium text-dark">{{ $m->user->name }}</span>
-                                </div>
-                            </td>
-                            <td class="py-2">
-                                <span class="badge"
-                                      style="background-color: {{ $m->role->color }}; font-size: 9px; padding: 3px 8px;">
-                                    {{ $m->role->name }}
+                    <div class="card-header bg-white py-2 border-bottom-0">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center">
+                                <i class="fa fa-users text-primary me-2" style="font-size: 14px;"></i>
+                                <span class="fw-bold mb-0" style="color: #334155; font-size: 13px;">Anggota Group</span>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                {{-- Tampilkan max member dari subscription --}}
+                                @php
+                                    $maxMembers = auth()->user()->activeSubscription()?->first()?->max_members ?? '∞';
+                                @endphp
+                                <span class="badge bg-light text-secondary border" style="font-size: 10px;">
+                                    {{ $members->count() }}/{{ $maxMembers }} Member
                                 </span>
-                            </td>
-                            @if ($role->can_manage_member)
-                                <td class="py-2 text-end pe-3">
-                                    @if ($m->role->is_owner)
-                                        <small class="text-muted" style="font-size: 10px;"><i class="fa fa-lock me-1"></i>Owner</small>
-                                    @else
-                                        <form method="POST" action="/groups/{{ $group->id }}/roles/assign" class="d-inline-block">
-                                            @csrf
-                                            <input type="hidden" name="user_id" value="{{ $m->user_id }}">
-                                            <select name="role_id" class="form-select form-select-sm py-0"
-                                                    onchange="this.form.submit()"
-                                                    style="font-size: 10px; height: 26px; width: 110px; border-radius: 6px; background-color: #f8fafc;">
-                                                @foreach ($roles->where('is_owner', false) as $r)
-                                                    <option value="{{ $r->id }}" {{ $m->role_id == $r->id ? 'selected' : '' }}>
-                                                        {{ $r->name }}
-                                                    </option>
-                                                @endforeach
-                                            </select>
-                                        </form>
-                                    @endif
-                                </td>
-                            @endif
-                        </tr>
-                    @endforeach
-                </tbody>
-
-            </table>
-        </div>
-    </div>
-      <div class="card-footer bg-light border-0 py-2 text-center">
-                            <small class="text-muted" style="font-size: 10px; letter-spacing: 0.5px;">URUTAN MEMBER</small>
+                                @if (is_numeric($maxMembers) && $members->count() >= $maxMembers)
+                                    <span class="badge bg-danger bg-opacity-10 text-danger" style="font-size: 10px;">
+                                        <i class="fa fa-triangle-exclamation me-1"></i>Penuh
+                                    </span>
+                                @endif
+                            </div>
                         </div>
-</div>
+                    </div>
+
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover align-middle mb-0" style="font-size: 12px;">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="ps-3 py-2 border-0 text-secondary fw-bold text-uppercase"
+                                            style="font-size: 10px; letter-spacing: 0.3px;">Nama</th>
+                                        <th class="py-2 border-0 text-secondary fw-bold text-uppercase"
+                                            style="font-size: 10px; letter-spacing: 0.3px;">Role</th>
+                                        @if ($role->can_manage_member)
+                                            <th class="py-2 border-0 text-secondary fw-bold text-uppercase text-end pe-3"
+                                                style="font-size: 10px; letter-spacing: 0.3px;">Ubah Role</th>
+                                        @endif
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($members as $m)
+                                        <tr class="border-bottom-0" style="border-bottom: 1px solid #f1f5f9 !important;">
+                                            <td class="ps-3 py-2">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="me-2 d-flex align-items-center justify-content-center fw-bold text-white"
+                                                        style="width: 28px; height: 28px; border-radius: 6px; background: linear-gradient(45deg, #6366f1, #a855f7); font-size: 10px;">
+                                                        {{ strtoupper(substr($m->user->name, 0, 1)) }}
+                                                    </div>
+                                                    <span class="fw-medium text-dark">{{ $m->user->name }}</span>
+                                                </div>
+                                            </td>
+                                            <td class="py-2">
+                                                <span class="badge"
+                                                    style="background-color: {{ $m->role->color }}; font-size: 9px; padding: 3px 8px;">
+                                                    {{ $m->role->name }}
+                                                </span>
+                                            </td>
+                                            @if ($role->can_manage_member)
+                                                <td class="py-2 text-end pe-3">
+                                                    @if ($m->role->is_owner)
+                                                        <small class="text-muted" style="font-size: 10px;">
+                                                            <i class="fa fa-lock me-1"></i>Owner
+                                                        </small>
+                                                    @else
+                                                        <div class="d-flex align-items-center justify-content-end gap-2">
+                                                            {{-- Dropdown ubah role --}}
+                                                            <form method="POST"
+                                                                action="/groups/{{ $group->id }}/roles/assign"
+                                                                class="d-inline-block">
+                                                                @csrf
+                                                                <input type="hidden" name="user_id"
+                                                                    value="{{ $m->user_id }}">
+                                                                <select name="role_id"
+                                                                    class="form-select form-select-sm py-0"
+                                                                    onchange="this.form.submit()"
+                                                                    style="font-size: 10px; height: 26px; width: 110px; border-radius: 6px; background-color: #f8fafc;">
+                                                                    @foreach ($roles->where('is_owner', false) as $r)
+                                                                        <option value="{{ $r->id }}"
+                                                                            {{ $m->role_id == $r->id ? 'selected' : '' }}>
+                                                                            {{ $r->name }}
+                                                                        </option>
+                                                                    @endforeach
+                                                                </select>
+                                                            </form>
+
+                                                            {{-- Tombol kick --}}
+                                                            <form method="POST"
+                                                                action="/groups/{{ $group->id }}/members/{{ $m->id }}"
+                                                                onsubmit="return confirm('Yakin kick {{ $m->user->name }}?')">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="submit"
+                                                                    class="btn btn-sm btn-outline-danger"
+                                                                    style="font-size: 10px; padding: 2px 7px; border-radius: 6px;">
+                                                                    <i class="fa fa-user-slash"></i>
+                                                                </button>
+                                                            </form>
+                                                        </div>
+                                                    @endif
+                                                </td>
+                                            @endif
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card-footer bg-light border-0 py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted" style="font-size: 10px; letter-spacing: 0.5px;">URUTAN
+                                MEMBER</small>
+                            @if (is_numeric($maxMembers))
+                                <div class="progress" style="width: 100px; height: 5px; border-radius: 10px;">
+                                    <div class="progress-bar {{ $members->count() >= $maxMembers ? 'bg-danger' : 'bg-primary' }}"
+                                        style="width: {{ min(100, ($members->count() / $maxMembers) * 100) }}%">
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
 
             </div>
 

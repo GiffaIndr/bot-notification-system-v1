@@ -27,10 +27,11 @@ class User extends Authenticatable
     ];
     public function activeSubscription()
     {
-        return $this->hasOne(Payment::class)
-            ->where('status', 'success')
+        return $this->hasOne(Subscription::class)
             ->where('expires_at', '>', now())
-            ->latest();
+            ->whereNotNull('starts_at')
+            ->whereNotNull('expires_at')
+            ->latest('expires_at');
     }
     public function groupMembers()
     {

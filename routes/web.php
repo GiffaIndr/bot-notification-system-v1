@@ -44,4 +44,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/payment/receipt/{orderId}', [PaymentController::class, 'receipt']);
     Route::get('/payment/receipt/{orderId}/print', [PaymentController::class, 'printReceipt']);
     Route::get('/paymentlogs', [PaymentController::class, 'logs']);
+    Route::delete('/groups/{group}/members/{member}', [GroupController::class, 'kickMember']);
+    Route::post('/payment/check-pending', [PaymentController::class, 'checkPending']);
+    Route::put('/groups/{group}', [GroupController::class, 'update']);
 });

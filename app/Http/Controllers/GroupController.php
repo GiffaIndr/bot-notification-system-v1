@@ -37,79 +37,102 @@ class GroupController extends Controller
             return redirect()->back()->with('error', 'Anda harus subscribe terlebih dahulu');
         }
 
-        $subscription = auth()->user()->activeSubscription()->with('plan')->first();
-        $plan         = $subscription->plan;
+        $subscription = auth()->user()->activeSubscription()->first();
         $groupCount   = auth()->user()->groupMembers()
             ->whereHas('role', fn($q) => $q->where('is_owner', true))
             ->count();
 
-        if ($groupCount >= $plan->max_group) {
-            return redirect()->back()->with('error', "Maksimal {$plan->max_group} group untuk plan {$plan->name}");
+        if ($groupCount >= $subscription->max_groups) {
+            return redirect()->back()->with('error', "Maksimal {$subscription->max_groups} group untuk langganan kamu");
         }
 
         $group = Group::create([
-            'name' => $request->name,
-            'owner_id' => auth()->id(),
-            'invitation_code_pj' => Str::random(8),
+            'name'                   => $request->name,
+            'owner_id'               => auth()->id(),
+            'invitation_code_pj'     => Str::random(8),
             'invitation_code_member' => Str::random(8),
         ]);
 
         // Buat 3 default role
         $ownerRole = GroupRole::create([
-            'group_id' => $group->id,
-            'name' => 'Owner',
-            'color' => '#0d6efd',
+            'group_id'                => $group->id,
+            'name'                    => 'Owner',
+            'color'                   => '#0d6efd',
             'can_create_announcement' => true,
-            'can_edit_announcement' => true,
-            'can_manage_member'  => true,
-            'can_generate_code' => true,
-            'can_manage_bot' => true,
-            'is_owner'  => true,
+            'can_edit_announcement'   => true,
+            'can_manage_member'       => true,
+            'can_generate_code'       => true,
+            'can_manage_bot'          => true,
+            'is_owner'                => true,
         ]);
 
         GroupRole::create([
-            'group_id' => $group->id,
-            'name' => 'Editor',
-            'color'  => '#198754',
+            'group_id'                => $group->id,
+            'name'                    => 'Editor',
+            'color'                   => '#198754',
             'can_create_announcement' => true,
-            'can_edit_announcement' => true,
-            'can_manage_member' => false,
-            'can_generate_code' => false,
-            'can_manage_bot' => false,
-            'is_owner' > false,
+            'can_edit_announcement'   => true,
+            'can_manage_member'       => false,
+            'can_generate_code'       => false,
+            'can_manage_bot'          => false,
+            'is_owner'                => false, // ← fix typo 'is_owner' > false jadi => false
         ]);
 
         GroupRole::create([
-            'group_id' => $group->id,
-            'name'  => 'Member',
-            'color' => '#6c757d',
+            'group_id'                => $group->id,
+            'name'                    => 'Member',
+            'color'                   => '#6c757d',
             'can_create_announcement' => false,
-            'can_edit_announcement' => false,
-            'can_manage_member' => false,
-            'can_generate_code' => false,
-            'can_manage_bot' => false,
-            'is_owner' => false,
+            'can_edit_announcement'   => false,
+            'can_manage_member'       => false,
+            'can_generate_code'       => false,
+            'can_manage_bot'          => false,
+            'is_owner'                => false,
         ]);
 
-        // Owner otomatis dapat role owner
         GroupMember::create([
             'group_id' => $group->id,
-            'user_id' => auth()->id(),
-            'role_id' => $ownerRole->id,
+            'user_id'  => auth()->id(),
+            'role_id'  => $ownerRole->id,
         ]);
 
-        // Generate bot sesuai plan
-        if ($plan->whatsapp) {
+        // Generate bot sesuai subscription
+        if ($subscription->has_whatsapp) {
             GroupBot::create(['group_id' => $group->id, 'type' => 'whatsapp', 'invitation_code' => Str::random(10), 'is_active' => true]);
         }
-        if ($plan->discord) {
+        if ($subscription->has_discord) {
             GroupBot::create(['group_id' => $group->id, 'type' => 'discord', 'invitation_code' => Str::random(10), 'is_active' => true]);
         }
-        if ($plan->telegram) {
+        if ($subscription->has_telegram) {
             GroupBot::create(['group_id' => $group->id, 'type' => 'telegram', 'invitation_code' => Str::random(10), 'is_active' => true]);
         }
 
         return back()->with('success', 'Group berhasil dibuat!');
+    }
+    public function kickMember(Group $group, GroupMember $member)
+    {
+        $requester = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
+
+        if (!$requester || !$requester->role->can_manage_member) {
+            abort(403);
+        }
+
+        // Tidak bisa kick owner
+        if ($member->role->is_owner) {
+            return back()->with('error', 'Tidak bisa kick owner!');
+        }
+
+        // Tidak bisa kick diri sendiri
+        if ($member->user_id === auth()->id()) {
+            return back()->with('error', 'Tidak bisa kick diri sendiri!');
+        }
+
+        $member->delete();
+
+        return back()->with('success', 'Member berhasil dikeluarkan.');
     }
     public function updateBotChannel(Request $request, Group $group, GroupBot $bot)
     {
@@ -255,5 +278,24 @@ class GroupController extends Controller
         $bot->update(['telegram_chat_id' => $chatId]);
 
         return back()->with('success', "Berhasil terhubung ke group Telegram!");
+    }
+    public function update(Request $request, Group $group)
+    {
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
+
+        if (!$member || !$member->role->is_owner) {
+            abort(403);
+        }
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $group->update(['name' => $request->name]);
+
+        return back()->with('success', 'Nama group berhasil diupdate!');
     }
 }

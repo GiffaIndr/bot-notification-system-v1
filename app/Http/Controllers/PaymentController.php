@@ -8,6 +8,8 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Str;
 use App\Models\Payment;
 use App\Models\PaymentLog;
+use App\Models\PricingComponent;
+use App\Models\Subscription;
 use App\Models\Plan;
 use App\Models\GroupBot;
 use App\Models\ActivityLog;
@@ -57,9 +59,8 @@ class PaymentController extends Controller
         return response()->json(['message' => 'ok']);
     }
 
-    private function syncGroupBots($user, $plan)
+    private function syncGroupBots($user, $subscription)
     {
-        // Ganti wherePivot role ke sistem baru
         $groupIds = \App\Models\GroupMember::where('user_id', $user->id)
             ->whereHas('role', fn($q) => $q->where('is_owner', true))
             ->pluck('group_id');
@@ -67,19 +68,19 @@ class PaymentController extends Controller
         $groups = \App\Models\Group::whereIn('id', $groupIds)->get();
 
         foreach ($groups as $group) {
-            if ($plan->whatsapp) {
+            if ($subscription->has_whatsapp) {
                 GroupBot::firstOrCreate(
                     ['group_id' => $group->id, 'type' => 'whatsapp'],
                     ['invitation_code' => Str::random(10), 'is_active' => true]
                 );
             }
-            if ($plan->discord) {
+            if ($subscription->has_discord) {
                 GroupBot::firstOrCreate(
                     ['group_id' => $group->id, 'type' => 'discord'],
                     ['invitation_code' => Str::random(10), 'is_active' => true]
                 );
             }
-            if ($plan->telegram) {
+            if ($subscription->has_telegram) {
                 GroupBot::firstOrCreate(
                     ['group_id' => $group->id, 'type' => 'telegram'],
                     ['invitation_code' => Str::random(10), 'is_active' => true]
@@ -91,22 +92,30 @@ class PaymentController extends Controller
     public function syncBotsManual(Request $request)
     {
         $payment = Payment::where('order_id', $request->order_id)
-            ->with('plan')
+            ->with('subscription')
             ->first();
 
         if (!$payment) {
             return response()->json(['message' => 'Payment not found']);
         }
 
-        $user     = $payment->user;
-        $existing = $user->activeSubscription()
-            ->where('id', '!=', $payment->id)
-            ->with('plan')
+        $user         = $payment->user;
+        $subscription = $payment->subscription;
+
+        // Cek existing subscription aktif selain yang ini
+        $existing = Subscription::where('user_id', $user->id)
+            ->where('id', '!=', $subscription->id)
+            ->whereNotNull('starts_at')
+            ->where('expires_at', '>', now())
+            ->latest('expires_at')
             ->first();
 
         if ($existing) {
-            $startsAt  = $existing->expires_at;
+            $startsAt  = now(); // langsung aktif
             $expiresAt = $existing->expires_at->copy()->addMonths(6);
+
+            // Hapus subscription lama, merge ke yang baru
+            $existing->delete();
         } else {
             $startsAt  = now();
             $expiresAt = now()->addMonths(6);
@@ -118,27 +127,20 @@ class PaymentController extends Controller
             'expires_at' => $expiresAt,
         ]);
 
-        $this->syncGroupBots($user, $payment->plan);
-
-        // Log payment
-        PaymentLog::create([
-            'user_id'    => $user->id,
-            'payment_id' => $payment->id,
-            'plan_id'    => $payment->plan_id,
-            'order_id'   => $payment->order_id,
-            'amount'     => $payment->amount,
+        $subscription->update([
             'starts_at'  => $startsAt,
             'expires_at' => $expiresAt,
-            'status'     => 'success',
         ]);
+
+        $this->syncGroupBots($user, $subscription);
 
         return response()->json(['message' => 'ok']);
     }
 
     public function logs()
     {
-        $logs = PaymentLog::where('user_id', auth()->id())
-            ->with('plan')
+        $logs = Payment::where('user_id', auth()->id())
+            ->with('subscription')
             ->latest()
             ->paginate(10);
 
@@ -148,10 +150,13 @@ class PaymentController extends Controller
     {
         $payment = Payment::where('order_id', $orderId)
             ->where('user_id', auth()->id())
-            ->with('plan')
+            ->with('subscription')
             ->firstOrFail();
 
-        return view('pages.receipt', compact('payment'));
+        // Ambil expires_at dari subscription kalau payment null
+        $expiresAt = $payment->expires_at ?? $payment->subscription->expires_at;
+
+        return view('pages.receipt', compact('payment', 'expiresAt'));
     }
 
     public function printReceipt(string $orderId)
@@ -168,42 +173,132 @@ class PaymentController extends Controller
     }
     public function snapToken(Request $request)
     {
+        Config::$serverKey    = config('midtrans.server_key');
+        Config::$isProduction = false;
+        Config::$isSanitized  = true;
+        Config::$is3ds        = true;
 
-        Config::$serverKey = config('midtrans.server_key');
-        Config::$isProduction = false;
-        Config::$isSanitized = true;
-        Config::$is3ds = true;
-        Config::$isProduction = false;
+        $pricing      = PricingComponent::pluck('price', 'key');
+        $existing     = auth()->user()->activeSubscription()->first();
+
+        $total = 0;
+
+        // Bot — hanya yang baru
+        if ($request->has_whatsapp && !($existing?->has_whatsapp)) $total += $pricing['whatsapp'];
+        if ($request->has_discord  && !($existing?->has_discord))  $total += $pricing['discord'];
+        if ($request->has_telegram && !($existing?->has_telegram)) $total += $pricing['telegram'];
+
+        // Group & member — hanya tambahan
+        $currentGroups  = $existing?->max_groups  ?? 0;
+        $currentMembers = $existing?->max_members ?? 0;
+        $extraGroups    = max(0, $request->max_groups  - $currentGroups);
+        $extraMembers   = max(0, $request->max_members - $currentMembers);
+
+        $total += $extraGroups  * $pricing['per_group'];
+        $total += $extraMembers * $pricing['per_member'];
+
+        if ($total <= 0) {
+            return response()->json(['error' => 'Tidak ada perubahan dari langganan saat ini!'], 422);
+        }
 
         $orderId = 'ORDER-' . Str::random(8);
 
-        $plan = Plan::findOrFail($request->plan_id);
-
         $params = [
-
             'transaction_details' => [
-                'order_id' => $orderId,
-                'gross_amount' => $plan->price
+                'order_id'     => $orderId,
+                'gross_amount' => $total,
             ],
-
             'customer_details' => [
                 'first_name' => auth()->user()->name,
-                'email' => auth()->user()->email
-            ]
-
+                'email'      => auth()->user()->email,
+            ],
         ];
 
         $snapToken = Snap::getSnapToken($params);
 
-        Payment::create([
-            'user_id' => auth()->id(),
-            'plan_id' => $plan->id,
-            'order_id' => $orderId,
-            'amount' => $plan->price
+        // Merge dengan subscription yang ada
+        $subscription = Subscription::create([
+            'user_id'      => auth()->id(),
+            'has_whatsapp' => $request->has_whatsapp || ($existing?->has_whatsapp ?? false),
+            'has_discord'  => $request->has_discord  || ($existing?->has_discord  ?? false),
+            'has_telegram' => $request->has_telegram || ($existing?->has_telegram ?? false),
+            'max_groups'   => max($request->max_groups,  $existing?->max_groups  ?? 0),
+            'max_members'  => max($request->max_members, $existing?->max_members ?? 0),
+            'total_price'  => $total,
         ]);
 
-        return response()->json([
-            'token' => $snapToken
+        Payment::create([
+            'user_id'         => auth()->id(),
+            'subscription_id' => $subscription->id,
+            'order_id'        => $orderId,
+            'amount'          => $total,
         ]);
+
+        return response()->json(['token' => $snapToken]);
+    }
+
+    public function checkPending(Request $request)
+    {
+        // Cari payment terbaru user yang status-nya masih pending
+        $payment = Payment::where('user_id', auth()->id())
+            ->where('status', 'pending')
+            ->latest()
+            ->first();
+
+        if (!$payment) {
+            return response()->json(['synced' => false]);
+        }
+
+        // Cek ke Midtrans apakah sudah dibayar
+        Config::$serverKey    = config('midtrans.server_key');
+        Config::$isProduction = false;
+
+        try {
+            $status = \Midtrans\Transaction::status($payment->order_id);
+
+            if ($status->transaction_status === 'settlement' || $status->transaction_status === 'capture') {
+                // Payment sudah success, sync sekarang
+                $user         = $payment->user;
+                $subscription = $payment->subscription;
+
+                $existing = Subscription::where('user_id', $user->id)
+                    ->where('id', '!=', $subscription->id)
+                    ->whereNotNull('starts_at')
+                    ->where('expires_at', '>', now())
+                    ->latest('expires_at')
+                    ->first();
+
+                if ($existing) {
+                    $startsAt  = now();
+                    $expiresAt = $existing->expires_at->copy()->addMonths(6);
+                    $existing->delete();
+                } else {
+                    $startsAt  = now();
+                    $expiresAt = now()->addMonths(6);
+                }
+
+                $payment->update([
+                    'status'     => 'success',
+                    'starts_at'  => $startsAt,
+                    'expires_at' => $expiresAt,
+                ]);
+
+                $subscription->update([
+                    'starts_at'  => $startsAt,
+                    'expires_at' => $expiresAt,
+                ]);
+
+                $this->syncGroupBots($user, $subscription);
+
+                return response()->json([
+                    'synced'   => true,
+                    'order_id' => $payment->order_id,
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['synced' => false]);
+        }
+
+        return response()->json(['synced' => false]);
     }
 }

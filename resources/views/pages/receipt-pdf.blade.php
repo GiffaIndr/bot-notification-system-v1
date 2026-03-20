@@ -1,208 +1,105 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'DejaVu Sans', sans-serif; font-size: 12px; color: #333; }
+@extends('layout.sidebar')
 
-        .receipt {
-            max-width: 400px;
-            margin: 0 auto;
-            padding: 30px 20px;
-        }
+@section('content')
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-6">
 
-        .header {
-            text-align: center;
-            border-bottom: 2px dashed #ddd;
-            padding-bottom: 20px;
-            margin-bottom: 20px;
-        }
+            <div class="card shadow-sm border-0">
 
-        .header h1 {
-            font-size: 20px;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
+                {{-- Header --}}
+                <div class="card-body text-center py-5 border-bottom">
+                    <div class="mb-3">
+                        <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10"
+                              style="width: 80px; height: 80px;">
+                            <i class="fa fa-circle-check text-success" style="font-size: 2.5rem"></i>
+                        </span>
+                    </div>
+                    <h4 class="fw-bold mb-1">Pembayaran Berhasil!</h4>
+                    <p class="text-muted mb-0">Terima kasih, langganan kamu telah aktif.</p>
+                </div>
 
-        .header p {
-            font-size: 11px;
-            color: #666;
-        }
+                {{-- Detail --}}
+                <div class="card-body">
+                    <h6 class="fw-bold text-muted mb-3 small text-uppercase">Detail Pembayaran</h6>
 
-        .status {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Order ID</span>
+                        <span class="fw-semibold small">{{ $payment->order_id }}</span>
+                    </div>
 
-        .status .badge {
-            display: inline-block;
-            background: #d1fae5;
-            color: #065f46;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: bold;
-        }
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Jumlah</span>
+                        <span class="fw-semibold small">Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
+                    </div>
 
-        .section-title {
-            font-size: 10px;
-            text-transform: uppercase;
-            color: #999;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Tanggal</span>
+                        <span class="fw-semibold small">{{ $payment->created_at->format('d M Y, H:i') }}</span>
+                    </div>
 
-        .detail-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 11px;
-        }
+                    <div class="d-flex justify-content-between mb-2">
+                        <span class="text-muted small">Aktif Hingga</span>
+                        <span class="fw-semibold small text-success">{{ $payment->expires_at->format('d M Y') }}</span>
+                    </div>
 
-        .detail-row .label { color: #666; }
-        .detail-row .value { font-weight: bold; }
+                    <hr>
 
-        .divider {
-            border: none;
-            border-top: 1px dashed #ddd;
-            margin: 15px 0;
-        }
+                    {{-- Fitur --}}
+                    <h6 class="fw-bold text-muted mb-3 small text-uppercase">Fitur yang Didapat</h6>
 
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
+                    <div class="d-flex flex-column gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            @if ($payment->subscription->has_whatsapp)
+                                <i class="fa fa-circle-check text-success"></i>
+                            @else
+                                <i class="fa fa-circle-xmark text-danger"></i>
+                            @endif
+                            <span class="small"><i class="fab fa-whatsapp text-success me-1"></i>WhatsApp Bot</span>
+                        </div>
 
-        .features {
-            margin-top: 15px;
-        }
+                        <div class="d-flex align-items-center gap-2">
+                            @if ($payment->subscription->has_discord)
+                                <i class="fa fa-circle-check text-success"></i>
+                            @else
+                                <i class="fa fa-circle-xmark text-danger"></i>
+                            @endif
+                            <span class="small"><i class="fab fa-discord text-primary me-1"></i>Discord Bot</span>
+                        </div>
 
-        .feature-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 6px;
-            font-size: 11px;
-        }
+                        <div class="d-flex align-items-center gap-2">
+                            @if ($payment->subscription->has_telegram)
+                                <i class="fa fa-circle-check text-success"></i>
+                            @else
+                                <i class="fa fa-circle-xmark text-danger"></i>
+                            @endif
+                            <span class="small"><i class="fab fa-telegram text-info me-1"></i>Telegram Bot</span>
+                        </div>
 
-        .feature-item .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 8px;
-        }
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa fa-circle-check text-success"></i>
+                            <span class="small"><i class="fa fa-layer-group text-secondary me-1"></i>Max {{ $payment->subscription->max_groups }} Group</span>
+                        </div>
 
-        .dot-success { background: #10b981; }
-        .dot-failed  { background: #ef4444; }
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fa fa-circle-check text-success"></i>
+                            <span class="small"><i class="fa fa-users text-secondary me-1"></i>Max {{ $payment->subscription->max_members }} Member per Group</span>
+                        </div>
+                    </div>
 
-        .footer {
-            text-align: center;
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 2px dashed #ddd;
-            font-size: 10px;
-            color: #999;
-        }
-    </style>
-</head>
-<body>
-    <div class="receipt">
+                </div>
 
-        {{-- Header --}}
-        <div class="header">
-            <h1>Bot Notification System</h1>
-            <p>Bukti Pembayaran Resmi</p>
-        </div>
+                {{-- Footer --}}
+                <div class="card-body border-top d-flex gap-2">
+                    <a href="/dashboard" class="btn btn-primary w-100">
+                        <i class="fa fa-house me-1"></i> Ke Dashboard
+                    </a>
+                    <button onclick="window.print()" class="btn btn-outline-secondary w-100">
+                        <i class="fa fa-print me-1"></i> Print
+                    </button>
+                </div>
 
-        {{-- Status --}}
-        <div class="status">
-            <span class="badge">✓ Pembayaran Berhasil</span>
-        </div>
-
-        {{-- Detail Transaksi --}}
-        <div class="section-title">Detail Transaksi</div>
-
-        <div class="detail-row">
-            <span class="label">Order ID</span>
-            <span class="value">{{ $payment->order_id }}</span>
-        </div>
-        <div class="detail-row">
-            <span class="label">Tanggal</span>
-            <span class="value">{{ $payment->created_at->format('d M Y, H:i') }}</span>
-        </div>
-        <div class="detail-row">
-            <span class="label">Nama</span>
-            <span class="value">{{ $payment->user->name }}</span>
-        </div>
-        <div class="detail-row">
-            <span class="label">Email</span>
-            <span class="value">{{ $payment->user->email }}</span>
-        </div>
-
-        <hr class="divider">
-
-        {{-- Detail Plan --}}
-        <div class="section-title">Detail Langganan</div>
-
-        <div class="detail-row">
-            <span class="label">Plan</span>
-            <span class="value">{{ $payment->plan->name }}</span>
-        </div>
-        <div class="detail-row">
-            <span class="label">Periode</span>
-            <span class="value">6 Bulan</span>
-        </div>
-        <div class="detail-row">
-            <span class="label">Aktif Dari</span>
-            <span class="value">{{ $payment->starts_at->format('d M Y') }}</span>
-        </div>
-        <div class="detail-row">
-            <span class="label">Aktif Hingga</span>
-            <span class="value">{{ $payment->expires_at->format('d M Y') }}</span>
-        </div>
-
-        <hr class="divider">
-
-        {{-- Total --}}
-        <div class="total-row">
-            <span>Total</span>
-            <span>Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
-        </div>
-
-        <hr class="divider">
-
-        {{-- Fitur --}}
-        <div class="section-title">Fitur Yang Didapat</div>
-
-        <div class="features">
-            <div class="feature-item">
-                <span class="dot {{ $payment->plan->whatsapp ? 'dot-success' : 'dot-failed' }}"></span>
-                WhatsApp Bot
             </div>
-            <div class="feature-item">
-                <span class="dot {{ $payment->plan->discord ? 'dot-success' : 'dot-failed' }}"></span>
-                Discord Bot
-            </div>
-            <div class="feature-item">
-                <span class="dot {{ $payment->plan->telegram ? 'dot-success' : 'dot-failed' }}"></span>
-                Telegram Bot
-            </div>
-            <div class="feature-item">
-                <span class="dot dot-success"></span>
-                Max {{ $payment->plan->max_group }} Group
-            </div>
-        </div>
 
-        {{-- Footer --}}
-        <div class="footer">
-            <p>Dokumen ini merupakan bukti pembayaran yang sah.</p>
-            <p>Dicetak pada {{ now()->format('d M Y, H:i') }}</p>
         </div>
-
     </div>
-</body>
-</html>
+@endsection

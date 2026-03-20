@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Models\PricingComponent;
+use App\Models\GroupMember;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,19 +20,23 @@ class AuthController extends Controller
     }
     public function dashboard()
     {
-        $plans        = Plan::all();
-        $groups       = auth()->user()->groups()->withPivot('role_id')->take(6)->get();
+        $pricing      = PricingComponent::pluck('price', 'key');
+        $groups       = auth()->user()->groups()->withPivot('role_id')->take(2)->get();
         $totalGroups  = auth()->user()->groups()->count();
-        $subscription = auth()->user()->activeSubscription()->with('plan')->first();
-
-        // Ganti ini
-        $groupCount = \App\Models\GroupMember::where('user_id', auth()->id())
+        $subscription = auth()->user()->activeSubscription()->first();
+        $groupCount   = GroupMember::where('user_id', auth()->id())
             ->whereHas('role', fn($q) => $q->where('is_owner', true))
             ->count();
+        $maxGroup     = $subscription ? $subscription->max_groups : 0;
 
-        $maxGroup = $subscription ? $subscription->plan->max_group : 0;
-
-        return view('pages.dashboard', compact('groups', 'subscription', 'groupCount', 'maxGroup', 'plans', 'totalGroups'));
+        return view('pages.dashboard', compact(
+            'pricing',
+            'groups',
+            'totalGroups',
+            'subscription',
+            'groupCount',
+            'maxGroup'
+        ));
     }
 
     /**

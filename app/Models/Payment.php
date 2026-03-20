@@ -10,17 +10,21 @@ class Payment extends Model
     use HasFactory;
     protected $guarded = ['id'];
     protected $casts = [
-    'expires_at' => 'datetime',
-    'starts_at'  => 'datetime',
-];
+        'starts_at'  => 'datetime',
+        'expires_at' => 'datetime',
+    ];
 
     public function user()
-{
-    return $this->belongsTo(User::class);
-}
-   public function plan()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function subscription()
+    {
+        return $this->belongsTo(Subscription::class);
+    }
+    public function plan()
     {
         return $this->belongsTo(Plan::class);
     }
 }
-

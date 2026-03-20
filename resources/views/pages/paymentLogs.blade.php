@@ -94,7 +94,7 @@
                 <thead class="table-light">
                     <tr>
                         <th>Order ID</th>
-                        <th>Plan</th>
+                        <th>Fitur</th>
                         <th>Jumlah</th>
                         <th>Aktif</th>
                         <th>Expired</th>
@@ -107,15 +107,45 @@
                         <tr>
                             <td class="small">{{ $log->order_id }}</td>
                             <td>
-                                <span class="badge bg-primary">{{ $log->plan->name }}</span>
+                                <div class="d-flex gap-1 flex-wrap">
+                                    @if ($log->subscription?->has_whatsapp)
+                                        <span class="badge bg-success" style="font-size:10px">
+                                            <i class="fab fa-whatsapp"></i> WA
+                                        </span>
+                                    @endif
+                                    @if ($log->subscription?->has_discord)
+                                        <span class="badge bg-primary" style="font-size:10px">
+                                            <i class="fab fa-discord"></i> Discord
+                                        </span>
+                                    @endif
+                                    @if ($log->subscription?->has_telegram)
+                                        <span class="badge bg-info" style="font-size:10px">
+                                            <i class="fab fa-telegram"></i> Telegram
+                                        </span>
+                                    @endif
+                                    <span class="badge bg-secondary" style="font-size:10px">
+                                        {{ $log->subscription?->max_groups ?? '-' }} Group
+                                    </span>
+                                    <span class="badge bg-secondary" style="font-size:10px">
+                                        {{ $log->subscription?->max_members ?? '-' }} Member
+                                    </span>
+                                </div>
                             </td>
                             <td class="small">Rp {{ number_format($log->amount, 0, ',', '.') }}</td>
-                            <td class="small">{{ $log->starts_at->format('d M Y') }}</td>
-                            <td class="small">{{ $log->expires_at->format('d M Y') }}</td>
+                            <td class="small">
+                                {{ $log->starts_at ? $log->starts_at->format('d M Y') : '-' }}
+                            </td>
+                            <td class="small">
+                                {{ $log->expires_at ? $log->expires_at->format('d M Y') : '-' }}
+                            </td>
                             <td>
                                 @if ($log->status === 'success')
                                     <span class="badge bg-success bg-opacity-10 text-success">
                                         <i class="fa fa-circle-check me-1"></i>Sukses
+                                    </span>
+                                @elseif ($log->status === 'pending')
+                                    <span class="badge bg-warning bg-opacity-10 text-warning">
+                                        <i class="fa fa-clock me-1"></i>Pending
                                     </span>
                                 @else
                                     <span class="badge bg-danger bg-opacity-10 text-danger">
@@ -125,21 +155,20 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-1">
-                                    <a href="/payment/receipt/{{ $log->order_id }}" class="btn btn-sm btn-outline-primary">
-                                        <i class="fa fa-eye"></i>
-                                    </a>
-                                    <a href="/payment/receipt/{{ $log->order_id }}/print"
-                                        class="btn btn-sm btn-outline-secondary" target="_blank">
-                                        <i class="fa fa-print"></i>
-                                    </a>
+                                    @if ($log->status === 'success')
+                                        <a href="/payment/receipt/{{ $log->order_id }}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            <i class="fa fa-eye"></i>
+                                        </a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="7" class="text-center py-4 text-muted">
-                                <i class="fa fa-receipt fa-2x mb-2"></i>
-                                <p class="mb-0">Belum ada riwayat pembayaran.</p>
+                                <i class="fa fa-receipt fa-2x mb-2 d-block"></i>
+                                Belum ada riwayat pembayaran.
                             </td>
                         </tr>
                     @endforelse
