@@ -1,105 +1,211 @@
-@extends('layout.sidebar')
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Receipt_{{ $payment->order_id }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-@section('content')
-    <div class="row justify-content-center mt-5">
-        <div class="col-md-6">
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-            <div class="card shadow-sm border-0">
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+            padding: 40px 20px;
+            color: #334155;
+        }
 
-                {{-- Header --}}
-                <div class="card-body text-center py-5 border-bottom">
-                    <div class="mb-3">
-                        <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-success bg-opacity-10"
-                              style="width: 80px; height: 80px;">
-                            <i class="fa fa-circle-check text-success" style="font-size: 2.5rem"></i>
-                        </span>
-                    </div>
-                    <h4 class="fw-bold mb-1">Pembayaran Berhasil!</h4>
-                    <p class="text-muted mb-0">Terima kasih, langganan kamu telah aktif.</p>
+        .container {
+            max-width: 550px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        /* Dekorasi Lubang Struk (Samping) */
+        .receipt-main {
+            background: #ffffff;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            position: relative;
+        }
+
+        /* Header Blue Bar */
+        .top-bar {
+            height: 8px;
+            background: linear-gradient(90deg, #6366f1, #a855f7);
+        }
+
+        .content { padding: 40px; }
+
+        /* Brand & Status */
+        .header-grid {
+            display: table;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+        .brand-side { display: table-cell; vertical-align: middle; }
+        .status-side { display: table-cell; text-align: right; vertical-align: middle; }
+
+        .brand-name {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e293b;
+            letter-spacing: -0.5px;
+        }
+
+        .badge-paid {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            border: 1px solid #bbf7d0;
+        }
+
+        /* Table Style Info */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        .info-table td { padding: 8px 0; font-size: 13px; }
+        .info-table td.label { color: #64748b; width: 40%; }
+        .info-table td.value { color: #1e293b; font-weight: 600; text-align: right; }
+
+        /* Divider */
+        .divider {
+            border-top: 1px dashed #e2e8f0;
+            margin: 20px 0;
+            position: relative;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #f1f5f9; /* Sama dengan bg body */
+            border-radius: 50%;
+            top: -10px;
+        }
+        .divider::before { left: -50px; border-right: 1px solid #e2e8f0; }
+        .divider::after { right: -50px; border-left: 1px solid #e2e8f0; }
+
+        /* Pricing Box */
+        .price-display {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 15px 20px;
+            text-align: center;
+            margin-top: 5px;
+        }
+        .price-label { font-size: 11px; color: #64748b; text-transform: uppercase; font-weight: 700; margin-bottom: 4px; }
+        .price-amount { font-size: 24px; font-weight: 800; color: #4f46e5; }
+
+        /* Features */
+        .feature-title { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin-bottom: 15px; letter-spacing: 1px; }
+        .feature-item {
+            display: inline-block;
+            width: 48%;
+            margin-bottom: 10px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        /* Pure CSS Icons */
+        .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
+        .dot-check { background: #22c55e; box-shadow: 0 0 0 3px #dcfce7; }
+        .dot-cross { background: #ef4444; box-shadow: 0 0 0 3px #fee2e2; }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .order-id { font-family: 'Monaco', monospace; font-size: 12px; color: #6366f1; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .receipt-main { box-shadow: none; border: 1px solid #eee; }
+            .divider::before, .divider::after { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="receipt-main">
+        <div class="top-bar"></div>
+
+        <div class="content">
+            <div class="header-grid">
+                <div class="brand-side">
+                    <div class="brand-name">AnnounceBot</div>
+                    <div class="order-id">#{{ $payment->order_id }}</div>
                 </div>
-
-                {{-- Detail --}}
-                <div class="card-body">
-                    <h6 class="fw-bold text-muted mb-3 small text-uppercase">Detail Pembayaran</h6>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted small">Order ID</span>
-                        <span class="fw-semibold small">{{ $payment->order_id }}</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted small">Jumlah</span>
-                        <span class="fw-semibold small">Rp {{ number_format($payment->amount, 0, ',', '.') }}</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted small">Tanggal</span>
-                        <span class="fw-semibold small">{{ $payment->created_at->format('d M Y, H:i') }}</span>
-                    </div>
-
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted small">Aktif Hingga</span>
-                        <span class="fw-semibold small text-success">{{ $payment->expires_at->format('d M Y') }}</span>
-                    </div>
-
-                    <hr>
-
-                    {{-- Fitur --}}
-                    <h6 class="fw-bold text-muted mb-3 small text-uppercase">Fitur yang Didapat</h6>
-
-                    <div class="d-flex flex-column gap-2">
-                        <div class="d-flex align-items-center gap-2">
-                            @if ($payment->subscription->has_whatsapp)
-                                <i class="fa fa-circle-check text-success"></i>
-                            @else
-                                <i class="fa fa-circle-xmark text-danger"></i>
-                            @endif
-                            <span class="small"><i class="fab fa-whatsapp text-success me-1"></i>WhatsApp Bot</span>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-2">
-                            @if ($payment->subscription->has_discord)
-                                <i class="fa fa-circle-check text-success"></i>
-                            @else
-                                <i class="fa fa-circle-xmark text-danger"></i>
-                            @endif
-                            <span class="small"><i class="fab fa-discord text-primary me-1"></i>Discord Bot</span>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-2">
-                            @if ($payment->subscription->has_telegram)
-                                <i class="fa fa-circle-check text-success"></i>
-                            @else
-                                <i class="fa fa-circle-xmark text-danger"></i>
-                            @endif
-                            <span class="small"><i class="fab fa-telegram text-info me-1"></i>Telegram Bot</span>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fa fa-circle-check text-success"></i>
-                            <span class="small"><i class="fa fa-layer-group text-secondary me-1"></i>Max {{ $payment->subscription->max_groups }} Group</span>
-                        </div>
-
-                        <div class="d-flex align-items-center gap-2">
-                            <i class="fa fa-circle-check text-success"></i>
-                            <span class="small"><i class="fa fa-users text-secondary me-1"></i>Max {{ $payment->subscription->max_members }} Member per Group</span>
-                        </div>
-                    </div>
-
+                <div class="status-side">
+                    <span class="badge-paid">Paid Successful</span>
                 </div>
-
-                {{-- Footer --}}
-                <div class="card-body border-top d-flex gap-2">
-                    <a href="/dashboard" class="btn btn-primary w-100">
-                        <i class="fa fa-house me-1"></i> Ke Dashboard
-                    </a>
-                    <button onclick="window.print()" class="btn btn-outline-secondary w-100">
-                        <i class="fa fa-print me-1"></i> Print
-                    </button>
-                </div>
-
             </div>
 
+            <table class="info-table">
+                <tr>
+                    <td class="label">Customer Name</td>
+                    <td class="value">{{ $payment->user->name }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Email Address</td>
+                    <td class="value">{{ $payment->user->email }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Transaction Date</td>
+                    <td class="value">{{ $payment->created_at->format('d M Y, H:i') }}</td>
+                </tr>
+                <tr>
+                    <td class="label">Valid Until</td>
+                    <td class="value" style="color: #22c55e;">{{ $payment->expires_at ? $payment->expires_at->format('d M Y') : ($payment->subscription?->expires_at?->format('d M Y') ?? '-') }}</td>
+                </tr>
+            </table>
+
+            <div class="price-display">
+                <div class="price-label">Total Payment</div>
+                <div class="price-amount">Rp {{ number_format($payment->amount, 0, ',', '.') }}</div>
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="feature-title">Subscription Benefits</div>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <span class="dot {{ $payment->subscription?->has_whatsapp ? 'dot-check' : 'dot-cross' }}"></span>
+                    WhatsApp Bot
+                </div>
+                <div class="feature-item">
+                    <span class="dot {{ $payment->subscription?->has_discord ? 'dot-check' : 'dot-cross' }}"></span>
+                    Discord Bot
+                </div>
+                <div class="feature-item">
+                    <span class="dot {{ $payment->subscription?->has_telegram ? 'dot-check' : 'dot-cross' }}"></span>
+                    Telegram Bot
+                </div>
+                <div class="feature-item">
+                    <span class="dot dot-check"></span>
+                    {{ $payment->subscription?->max_groups ?? '0' }} Groups Limit
+                </div>
+            </div>
         </div>
     </div>
-@endsection
+
+    <div class="footer-note">
+        <p>Thank you for your business!</p>
+        <p>Generated on {{ now()->format('d M Y, H:i') }}</p>
+    </div>
+</div>
+
+</body>
+</html>

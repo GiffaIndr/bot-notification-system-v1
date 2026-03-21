@@ -139,6 +139,85 @@ app.get("/discord/channel/:channel_id", async (req, res) => {
         return res.status(500).json({ success: false, message: error.message });
     }
 });
+// WA: terima caption
+app.post("/send-file", async (req, res) => {
+    const { phones, filename, type, mime_type, data, caption } = req.body;
+
+    if (!isConnected || !sock) {
+        return res
+            .status(500)
+            .json({ success: false, message: "WhatsApp belum terhubung" });
+    }
+
+    const buffer = Buffer.from(data, "base64");
+    const results = [];
+
+    for (const phone of phones) {
+        try {
+            const jid = `${phone}@s.whatsapp.net`;
+
+            if (type === "image") {
+                await sock.sendMessage(jid, {
+                    image: buffer,
+                    caption: caption || filename,
+                });
+            } else {
+                await sock.sendMessage(jid, {
+                    document: buffer,
+                    fileName: filename,
+                    mimetype: mime_type,
+                    caption: caption || "",
+                });
+            }
+
+            results.push({ phone, success: true });
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+        } catch (error) {
+            results.push({ phone, success: false, error: error.message });
+        }
+    }
+
+    return res.json({ success: true, results });
+});
+
+app.post("/discord/send-with-files", async (req, res) => {
+    const { channel_id, message, files } = req.body;
+
+    try {
+        const channel = await discordClient.channels.fetch(channel_id);
+        const attachments = files.map((f) => ({
+            attachment: Buffer.from(f.data, "base64"),
+            name: f.filename,
+        }));
+
+        await channel.send({
+            content: message,
+            files: attachments,
+        });
+
+        return res.json({ success: true });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
+
+// Kirim file Discord
+app.post("/discord/send-file", async (req, res) => {
+    const { channel_id, filename, mime_type, data } = req.body;
+
+    try {
+        const channel = await discordClient.channels.fetch(channel_id);
+        const buffer = Buffer.from(data, "base64");
+
+        await channel.send({
+            files: [{ attachment: buffer, name: filename }],
+        });
+
+        return res.json({ success: true });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: error.message });
+    }
+});
 // Cek status
 app.get("/status", (req, res) => {
     return res.json({

@@ -56,4 +56,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/groups/{group}/announcements/{announcement}/react', [AnnouncementController::class, 'react']);
     Route::post('/groups/{group}/announcements/{announcement}/pick', [AnnouncementController::class, 'previewPick']);
     Route::post('/groups/{group}/picker', [GroupController::class, 'picker']);
+    Route::post('/groups/{group}/announcements/{announcement}/pin', [AnnouncementController::class, 'pin']);
+    Route::delete('/groups/{group}/announcements/{announcement}/attachments/{attachment}', [AnnouncementController::class, 'deleteAttachment']);
+    Route::get('/payment/receipt/{orderId}/print', [PaymentController::class, 'printReceipt']);
 });

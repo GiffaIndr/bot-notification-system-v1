@@ -26,8 +26,7 @@ class SendScheduledAnnouncements extends Command
 
         $now = Carbon::now();
 
-        $announcements = Announcement::with(['group.members', 'group.bots'])
-            ->whereNotNull('scheduled_at')
+        $announcements = Announcement::with(['group.members', 'group.bots', 'attachments'])
             ->where('scheduled_at', '<=', $now)
             ->get();
 
@@ -89,6 +88,7 @@ class SendScheduledAnnouncements extends Command
                 . $reactionSummary;
 
             // Kirim WhatsApp
+            // Kirim WhatsApp
             if ($status['whatsapp']) {
                 $phones = $announcement->group->members()
                     ->whereNotNull('phone')
@@ -96,7 +96,19 @@ class SendScheduledAnnouncements extends Command
                     ->toArray();
 
                 if (!empty($phones)) {
-                    $result = $notification->sendWhatsapp($phones, $message);
+                    if ($announcement->attachments->isNotEmpty()) {
+                        // Kirim attachment pertama dengan caption = message
+                        $firstAttachment = $announcement->attachments->first();
+                        $notification->sendWhatsappFile($phones, $firstAttachment, $message);
+
+                        // Kirim attachment sisanya tanpa caption
+                        foreach ($announcement->attachments->skip(1) as $attachment) {
+                            $notification->sendWhatsappFile($phones, $attachment);
+                        }
+                    } else {
+                        // Tidak ada attachment, kirim text biasa
+                        $notification->sendWhatsapp($phones, $message);
+                    }
 
                     ActivityLogService::log(
                         groupId: $announcement->group_id,
@@ -114,30 +126,34 @@ class SendScheduledAnnouncements extends Command
                 $discordBot = $announcement->group->bots->where('type', 'discord')->first();
 
                 if ($discordBot && $discordBot->discord_channel_id) {
-                    $sent = $notification->sendDiscord($discordBot->discord_channel_id, $message);
-
-                    ActivityLogService::log(
-                        groupId: $announcement->group_id,
-                        type: 'notification_sent',
-                        description: 'Notifikasi Discord ' . ($sent ? 'terkirim' : 'gagal') . ' untuk announcement "' . $announcement->title . '"',
-                        meta: ['bot_type' => 'discord', 'channel_id' => $discordBot->discord_channel_id, 'announcement_id' => $announcement->id],
-                        status: $sent ? 'success' : 'failed',
-                        userId: null
-                    );
+                    if ($announcement->attachments->isNotEmpty()) {
+                        // Kirim pesan + semua attachment sekaligus
+                        $notification->sendDiscordWithFiles(
+                            $discordBot->discord_channel_id,
+                            $message,
+                            $announcement->attachments
+                        );
+                    } else {
+                        $notification->sendDiscord($discordBot->discord_channel_id, $message);
+                    }
                 }
             }
+
+            // Kirim Telegram
             $telegramBot = $announcement->group->bots->where('type', 'telegram')->first();
             if ($telegramBot && $telegramBot->telegram_chat_id) {
-                $sent = $notification->sendTelegram($telegramBot->telegram_chat_id, $message);
+                if ($announcement->attachments->isNotEmpty()) {
+                    // Kirim attachment pertama dengan caption = message
+                    $firstAttachment = $announcement->attachments->first();
+                    $notification->sendTelegramFile($telegramBot->telegram_chat_id, $firstAttachment, $message);
 
-                ActivityLogService::log(
-                    groupId: $announcement->group_id,
-                    type: 'notification_sent',
-                    description: 'Notifikasi Telegram ' . ($sent ? 'terkirim' : 'gagal') . ' untuk announcement "' . $announcement->title . '"',
-                    meta: ['bot_type' => 'telegram', 'chat_id' => $telegramBot->telegram_chat_id, 'announcement_id' => $announcement->id],
-                    status: $sent ? 'success' : 'failed',
-                    userId: null
-                );
+                    // Kirim attachment sisanya
+                    foreach ($announcement->attachments->skip(1) as $attachment) {
+                        $notification->sendTelegramFile($telegramBot->telegram_chat_id, $attachment);
+                    }
+                } else {
+                    $notification->sendTelegram($telegramBot->telegram_chat_id, $message);
+                }
             }
 
             // Update jadwal berikutnya

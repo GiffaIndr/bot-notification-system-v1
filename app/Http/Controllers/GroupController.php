@@ -185,7 +185,9 @@ class GroupController extends Controller
         $members = GroupMember::where('group_id', $group->id)->with(['user', 'role'])->get();
         $roles   = $group->roles;
         $announcements = $group->announcements()
-            ->with(['user', 'reactions'])
+            ->with(['user', 'reactions', 'attachments'])
+            ->orderByRaw('is_pinned DESC')
+            ->orderByDesc('created_at')
             ->get();
 
         $discordChannelName = null;
@@ -303,31 +305,31 @@ class GroupController extends Controller
         return back()->with('success', "Berhasil terhubung ke group Telegram!");
     }
     // GroupController.php
-public function picker(Request $request, Group $group)
-{
-    $member = GroupMember::where('group_id', $group->id)
-                         ->where('user_id', auth()->id())
-                         ->first();
-    if (!$member) abort(403);
+    public function picker(Request $request, Group $group)
+    {
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->first();
+        if (!$member) abort(403);
 
-    $count = $request->count ?? 1;
+        $count = $request->count ?? 1;
 
-    if ($request->mode === 'custom') {
-        $list   = collect($request->custom_list)->filter()->values()->shuffle();
-        $picked = $list->take($count);
-    } else {
-        $query = $group->members();
-        if ($request->role_id) {
-            $query->wherePivot('role_id', $request->role_id);
+        if ($request->mode === 'custom') {
+            $list   = collect($request->custom_list)->filter()->values()->shuffle();
+            $picked = $list->take($count);
+        } else {
+            $query = $group->members();
+            if ($request->role_id) {
+                $query->wherePivot('role_id', $request->role_id);
+            }
+            $members = $query->get()->shuffle();
+            $picked  = $members->take($count)->pluck('name');
         }
-        $members = $query->get()->shuffle();
-        $picked  = $members->take($count)->pluck('name');
-    }
 
-    return response()->json([
-        'picked' => $picked->values()->toArray(),
-    ]);
-}
+        return response()->json([
+            'picked' => $picked->values()->toArray(),
+        ]);
+    }
     public function update(Request $request, Group $group)
     {
         $member = GroupMember::where('group_id', $group->id)

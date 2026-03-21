@@ -52,7 +52,7 @@
 
                     <div class="d-flex flex-column gap-2">
                         <div class="d-flex align-items-center gap-2">
-                            @if ($payment->subscription->has_whatsapp)
+                            @if ($payment->subscription?->has_whatsapp)
                                 <i class="fa fa-circle-check text-success"></i>
                             @else
                                 <i class="fa fa-circle-xmark text-danger"></i>
@@ -61,7 +61,7 @@
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            @if ($payment->subscription->has_discord)
+                            @if ($payment->subscription?->has_discord)
                                 <i class="fa fa-circle-check text-success"></i>
                             @else
                                 <i class="fa fa-circle-xmark text-danger"></i>
@@ -70,7 +70,7 @@
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            @if ($payment->subscription->has_telegram)
+                            @if ($payment->subscription?->has_telegram)
                                 <i class="fa fa-circle-check text-success"></i>
                             @else
                                 <i class="fa fa-circle-xmark text-danger"></i>
@@ -81,13 +81,13 @@
                         <div class="d-flex align-items-center gap-2">
                             <i class="fa fa-circle-check text-success"></i>
                             <span class="small"><i class="fa fa-layer-group text-secondary me-1"></i>Max
-                                {{ $payment->subscription->max_groups }} Group</span>
+                                {{ $payment->subscription?->max_groups }} Group</span>
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
                             <i class="fa fa-circle-check text-success"></i>
                             <span class="small"><i class="fa fa-users text-secondary me-1"></i>Max
-                                {{ $payment->subscription->max_members }} Member per Group</span>
+                                {{ $payment->subscription?->max_members }} Member per Group</span>
                         </div>
                     </div>
 
@@ -98,9 +98,9 @@
                     <a href="/dashboard" class="btn btn-primary w-100">
                         <i class="fa fa-house me-1"></i> Ke Dashboard
                     </a>
-                    <button onclick="window.print()" class="btn btn-outline-secondary w-100">
-                        <i class="fa fa-print me-1"></i> Print
-                    </button>
+                    <a href="/payment/receipt/{{ $payment->order_id }}/print" class="btn btn-outline-secondary w-100">
+                        <i class="fa fa-file-pdf me-1"></i> Download PDF
+                    </a>
                 </div>
 
             </div>

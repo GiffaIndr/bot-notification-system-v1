@@ -9,21 +9,25 @@ use App\Models\AnnouncementReaction;
 use App\Services\ActivityLogService;
 use App\Models\Announcement;
 use Illuminate\Http\Request;
+use App\Models\AnnouncementAttachment;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
 class AnnouncementController extends Controller
 {
+
     public function store(Request $request, Group $group)
     {
         $role = $this->getRole($group);
-
-        if (!$role->can_create_announcement) abort(403, 'Anda tidak punya akses.');
+        if (!$role->can_create_announcement) abort(403);
 
         $request->validate([
-            'title'        => 'required|string|max:255',
-            'content'      => 'required|string',
-            'scheduled_at' => 'nullable|date',
-            'repeat'       => 'required|in:none,daily,weekly,monthly',
+            'title'         => 'required|string|max:255',
+            'content'       => 'required|string',
+            'scheduled_at'  => 'nullable|date',
+            'repeat'        => 'required|in:none,daily,weekly,monthly',
+            'attachments'   => 'nullable|array|max:3',
+            'attachments.*' => 'file|max:20480|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xlsx,xls',
         ]);
 
         $announcement = Announcement::create([
@@ -42,6 +46,12 @@ class AnnouncementController extends Controller
                 : null,
         ]);
 
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $this->saveAttachment($file, $announcement);
+            }
+        }
+
         ActivityLogService::log(
             groupId: $group->id,
             type: 'create_announcement',
@@ -50,6 +60,87 @@ class AnnouncementController extends Controller
         );
 
         return back()->with('success', 'Announcement berhasil dibuat.');
+    }
+
+    public function update(Request $request, Group $group, Announcement $announcement)
+    {
+        $role = $this->getRole($group);
+        if (!$role->can_edit_announcement) abort(403);
+
+        $request->validate([
+            'title'         => 'required|string|max:255',
+            'content'       => 'required|string',
+            'scheduled_at'  => 'nullable|date',
+            'repeat'        => 'required|in:none,daily,weekly,monthly',
+            'attachments'   => 'nullable|array',
+            'attachments.*' => 'file|max:20480|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xlsx,xls',
+        ]);
+
+        // Cek total attachment tidak lebih dari 3
+        $existingCount = $announcement->attachments()->count();
+        $newCount      = $request->hasFile('attachments') ? count($request->file('attachments')) : 0;
+
+        if ($existingCount + $newCount > 3) {
+            return back()->with('error', 'Maksimal 3 lampiran per announcement!');
+        }
+
+        $oldTitle = $announcement->title;
+
+        $announcement->update([
+            'title'            => $request->title,
+            'content'          => $request->content,
+            'scheduled_at'     => $request->scheduled_at,
+            'repeat'           => $request->repeat,
+            'use_picker'       => $request->boolean('use_picker'),
+            'picker_mode'      => $request->picker_mode ?? 'members',
+            'pick_count'       => $request->pick_count ?? 1,
+            'pick_role_id'     => $request->pick_role_id ?? null,
+            'custom_pick_list' => $request->picker_mode === 'custom'
+                ? array_filter(explode("\n", $request->custom_pick_list))
+                : null,
+        ]);
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $this->saveAttachment($file, $announcement);
+            }
+        }
+
+        ActivityLogService::log(
+            groupId: $group->id,
+            type: 'edit_announcement',
+            description: auth()->user()->name . ' mengedit announcement "' . $oldTitle . '"',
+            meta: ['announcement_id' => $announcement->id, 'old_title' => $oldTitle, 'new_title' => $request->title]
+        );
+
+        return redirect("/groups/{$group->id}")->with('success', 'Announcement berhasil diupdate.');
+    }
+
+    private function saveAttachment($file, Announcement $announcement): void
+    {
+        $mime = $file->getMimeType();
+        $type = str_starts_with($mime, 'image/') ? 'image' : 'document';
+        $path = $file->store("announcements/{$announcement->group_id}/{$announcement->id}", 'public');
+
+        AnnouncementAttachment::create([
+            'announcement_id' => $announcement->id,
+            'filename'        => $file->getClientOriginalName(),
+            'path'            => $path,
+            'type'            => $type,
+            'mime_type'       => $mime,
+            'size'            => $file->getSize(),
+        ]);
+    }
+
+    public function deleteAttachment(Group $group, Announcement $announcement, AnnouncementAttachment $attachment)
+    {
+        $role = $this->getRole($group);
+        if (!$role->can_edit_announcement) abort(403);
+
+        Storage::disk('public')->delete($attachment->path);
+        $attachment->delete();
+
+        return back()->with('success', 'Lampiran berhasil dihapus.');
     }
     public function react(Request $request, Group $group, Announcement $announcement)
     {
@@ -93,47 +184,6 @@ class AnnouncementController extends Controller
         ]);
     }
 
-    public function update(Request $request, Group $group, Announcement $announcement)
-    {
-        $role = $this->getRole($group);
-
-        if (!$role->can_edit_announcement) abort(403, 'Anda tidak punya akses.');
-
-        $request->validate([
-            'title'        => 'required|string|max:255',
-            'content'      => 'required|string',
-            'scheduled_at' => 'nullable|date',
-            'repeat'       => 'required|in:none,daily,weekly,monthly',
-        ]);
-
-        $oldTitle = $announcement->title;
-
-        $announcement->update([
-            'group_id'         => $group->id,
-            'user_id'          => auth()->id(),
-            'title'            => $request->title,
-            'content'          => $request->content,
-            'scheduled_at'     => $request->scheduled_at,
-            'repeat'           => $request->repeat,
-            'use_picker'       => $request->boolean('use_picker'),
-            'picker_mode'      => $request->picker_mode ?? 'members',
-            'pick_count'       => $request->pick_count ?? 1,
-            'pick_role_id'     => $request->pick_role_id ?? null,
-            'custom_pick_list' => $request->picker_mode === 'custom'
-                ? array_filter(explode("\n", $request->custom_pick_list))
-                : null,
-        ]);
-
-        ActivityLogService::log(
-            groupId: $group->id,
-            type: 'edit_announcement',
-            description: auth()->user()->name . ' mengedit announcement "' . $oldTitle . '"',
-            meta: ['announcement_id' => $announcement->id, 'old_title' => $oldTitle, 'new_title' => $request->title]
-        );
-
-        return redirect("/groups/{$group->id}")->with('success', 'Announcement berhasil diupdate.');
-    }
-
     public function destroy(Group $group, Announcement $announcement)
     {
         $role = $this->getRole($group);
@@ -150,6 +200,17 @@ class AnnouncementController extends Controller
         $announcement->delete();
 
         return back()->with('success', 'Announcement berhasil dihapus.');
+    }
+    public function pin(Request $request, Group $group, Announcement $announcement)
+    {
+        $role = $this->getRole($group);
+        if (!$role->can_edit_announcement) abort(403);
+
+        // Toggle pin
+        $announcement->is_pinned = !$announcement->is_pinned;
+        $announcement->save();
+
+        return back()->with('success', $announcement->is_pinned ? 'Announcement berhasil dipin!' : 'Announcement berhasil diunpin!');
     }
     public function previewPick(Request $request, Group $group, Announcement $announcement)
     {
@@ -175,7 +236,7 @@ class AnnouncementController extends Controller
         $announcement->picked_result = $picked->toArray();
         $result = $announcement->save();
 
-        \Log::info('save result', [
+        Log::info('save result', [
             'saved'          => $result,
             'picked_result'  => $announcement->fresh()->picked_result,
         ]);

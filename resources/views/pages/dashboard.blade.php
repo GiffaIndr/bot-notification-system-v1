@@ -2,6 +2,101 @@
 
 @section('content')
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
+
+        .custom-group-card {
+            background: #ffffff;
+            transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border: 1px solid rgba(0, 0, 0, 0.03) !important;
+        }
+
+        .custom-group-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+            background: #fff;
+        }
+
+        .avatar-group-ui {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .role-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: var(--role-color);
+            background-color: color-mix(in srgb, var(--role-color), transparent 85%);
+            color: var(--role-color);
+        }
+
+        .role-pill .dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--role-color);
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .btn-group-action {
+            background: #f1f4f9;
+            color: #1e293b;
+            border: none;
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            transition: 0.3s;
+        }
+
+        .btn-group-action:hover {
+            background: #1e293b;
+            color: #ffffff;
+        }
+
+        .btn-edit {
+            width: 35px;
+            height: 35px;
+            transition: 0.3s;
+        }
+
+        .btn-edit:hover {
+            background: #0d6efd;
+            color: white !important;
+        }
+
+        .btn-edit:hover i {
+            color: white !important;
+        }
+
+        .empty-animation {
+            font-size: 4rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
         /* Custom style khusus Dashboard */
         .dashboard-title {
             font-weight: 800;
@@ -58,6 +153,170 @@
             border: none;
             color: white;
         }
+
+        .card-subscription {
+            border: none;
+            background: #ffffff;
+            transition: all 0.3s ease;
+        }
+
+        .platform-card {
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 2px solid #f8f9fa !important;
+        }
+
+        .platform-card:hover {
+            border-color: #e9ecef !important;
+            background-color: #f8f9fa;
+        }
+
+        /* Efek saat checkbox dipilih */
+        .form-check-input:checked+.platform-label-wrapper {
+            color: #0d6efd;
+        }
+
+        .custom-option input:checked~label {
+            color: #0d6efd;
+        }
+
+        .custom-option input:disabled~label {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .price-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(118, 75, 162, 0.2);
+        }
+
+        .btn-upgrade {
+            background: linear-gradient(45deg, #0d6efd, #0b5ed7);
+            border: none;
+            letter-spacing: 0.5px;
+            transition: transform 0.2s;
+        }
+
+        .btn-upgrade:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+        }
+
+        .input-group-custom {
+            background: #f1f3f5;
+            border-radius: 12px;
+            padding: 5px;
+        }
+
+        .input-group-custom .btn {
+            border-radius: 8px !important;
+            background: white;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .subscription-card {
+            background: #ffffff;
+        }
+
+        .divider-text {
+            text-align: center;
+            position: relative;
+        }
+
+        .divider-text::before {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 0;
+            width: 100%;
+            height: 1px;
+            background: #f0f0f0;
+            z-index: 1;
+        }
+
+        .divider-text span {
+            position: relative;
+            background: #fff;
+            padding: 0 15px;
+            z-index: 2;
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+
+        .custom-checkbox-card input:checked+label {
+            border-color: #4e73df !important;
+            background-color: rgba(78, 115, 223, 0.05);
+            box-shadow: 0 4px 12px rgba(78, 115, 223, 0.1);
+        }
+
+        .custom-checkbox-card input:checked+label .platform-icon-sm {
+            background-color: #fff !important;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        }
+
+        .custom-checkbox-card input:disabled+label {
+            opacity: 0.7;
+            cursor: not-allowed;
+            background-color: #f8f9fc;
+        }
+
+        .custom-stepper .btn:hover {
+            background-color: #ececec;
+        }
+
+        .btn-pay:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        .pointer {
+            cursor: pointer;
+        }
+
+        .tracking-wider {
+            letter-spacing: 1px;
+        }
+
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Firefox */
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .transition-hover {
+            transition: all 0.3s ease;
+        }
+
+        .transition-hover:hover {
+            transform: translateY(-5px);
+            border-color: var(--bs-primary) !important;
+        }
+
+        .shadow-sm-hover:hover {
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
+        }
+
+        .btn-icon {
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .grayscale {
+            filter: grayscale(1);
+        }
     </style>
 
     <div class="container-fluid pb-5">
@@ -67,134 +326,132 @@
             {{-- Subscription Plans --}}
 
             <div class="col-md-4">
-                <div class="card h-100">
-                    <div class="card-header fw-bold">
-                        <i class="fa fa-credit-card text-primary me-2"></i>Langganan
-                    </div>
-                    <div class="card-body">
-
-                        @if ($subscription)
-                            <div class="alert alert-success py-2">
-                                ✅ Aktif hingga: <strong>{{ $subscription->expires_at->format('d M Y') }}</strong>
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden subscription-card">
+                    <div class="card-header bg-white border-bottom border-light py-4 px-4">
+                        <h6 class="fw-bold mb-0 d-flex align-items-center text-dark">
+                            <div class="icon-badge me-2 bg-warning bg-opacity-10 p-2 rounded-3">
+                                <i class="fa fa-crown text-warning"></i>
                             </div>
-                            <div class="small text-muted mb-3">
-                                <div>{{ $subscription->has_whatsapp ? '✅' : '❌' }} WhatsApp Bot</div>
-                                <div>{{ $subscription->has_discord ? '✅' : '❌' }} Discord Bot</div>
-                                <div>{{ $subscription->has_telegram ? '✅' : '❌' }} Telegram Bot</div>
-                                <div>👥 Max {{ $subscription->max_groups }} Group</div>
-                                <div>👤 Max {{ $subscription->max_members }} Member/Group</div>
+                            Status & Paket Langganan
+                        </h6>
+                    </div>
+
+                    <div class="card-body p-4">
+                        @if ($subscription)
+                            <div
+                                class="subscription-status p-3 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-25 mb-4 position-relative overflow-hidden">
+                                <div class="d-flex align-items-center mb-3">
+                                    <span class="badge bg-success rounded-pill px-3 py-2 shadow-sm me-2">Aktif</span>
+                                    <span class="small fw-bold text-success">
+                                        Hingga {{ $subscription->expires_at->format('d M Y') }}
+                                    </span>
+                                </div>
+
+                                <div class="platform-icons d-flex gap-3 mb-3">
+                                    <div class="platform-item {{ $subscription->has_whatsapp ? 'active' : 'opacity-25' }}">
+                                        <i class="fab fa-whatsapp fs-5 text-success"></i>
+                                    </div>
+                                    <div class="platform-item {{ $subscription->has_discord ? 'active' : 'opacity-25' }}">
+                                        <i class="fab fa-discord fs-5 text-primary"></i>
+                                    </div>
+                                    <div class="platform-item {{ $subscription->has_telegram ? 'active' : 'opacity-25' }}">
+                                        <i class="fab fa-telegram fs-5 text-info"></i>
+                                    </div>
+                                </div>
+
+                                <div class="pt-2 border-top border-success border-opacity-10">
+                                    <div class="d-flex justify-content-between small fw-bold text-dark">
+                                        <span><i class="fa fa-users me-1 text-muted"></i> Limit:</span>
+                                        <span>{{ $subscription->max_groups }} GRP / {{ $subscription->max_members }}
+                                            MEM</span>
+                                    </div>
+                                </div>
                             </div>
                         @else
-                            <div class="alert alert-warning py-2">⚠️ Belum berlangganan.</div>
+                            <div class="p-4 rounded-4 bg-light border border-dashed mb-4 text-center">
+                                <div class="mb-2 opacity-50"><i class="fas fa-receipt fa-2x"></i></div>
+                                <p class="small text-muted mb-0 fw-medium">Belum memiliki paket aktif</p>
+                            </div>
                         @endif
 
-                        <hr>
-                        <h6 class="fw-bold mb-3">Buat Langganan Baru</h6>
-                        {{-- Bot Notifikasi --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small">Bot Notifikasi</label>
-                            <div class="d-flex flex-column gap-2">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="chk_wa"
-                                        onchange="calculatePrice()"
-                                        {{ $subscription?->has_whatsapp ? 'checked disabled' : '' }}>
-                                    <label class="form-check-label small" for="chk_wa">
-                                        <i class="fab fa-whatsapp text-success me-1"></i>
-                                        WhatsApp — <strong>Rp
-                                            {{ number_format($pricing['whatsapp'], 0, ',', '.') }}</strong>
-                                        @if ($subscription?->has_whatsapp)
-                                            <span class="badge bg-success bg-opacity-10 text-success ms-1"
-                                                style="font-size:10px">Aktif</span>
-                                        @endif
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="chk_discord"
-                                        onchange="calculatePrice()"
-                                        {{ $subscription?->has_discord ? 'checked disabled' : '' }}>
-                                    <label class="form-check-label small" for="chk_discord">
-                                        <i class="fab fa-discord text-primary me-1"></i>
-                                        Discord — <strong>Rp {{ number_format($pricing['discord'], 0, ',', '.') }}</strong>
-                                        @if ($subscription?->has_discord)
-                                            <span class="badge bg-success bg-opacity-10 text-success ms-1"
-                                                style="font-size:10px">Aktif</span>
-                                        @endif
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="chk_telegram"
-                                        onchange="calculatePrice()"
-                                        {{ $subscription?->has_telegram ? 'checked disabled' : '' }}>
-                                    <label class="form-check-label small" for="chk_telegram">
-                                        <i class="fab fa-telegram text-info me-1"></i>
-                                        Telegram — <strong>Rp
-                                            {{ number_format($pricing['telegram'], 0, ',', '.') }}</strong>
-                                        @if ($subscription?->has_telegram)
-                                            <span class="badge bg-success bg-opacity-10 text-success ms-1"
-                                                style="font-size:10px">Aktif</span>
-                                        @endif
-                                    </label>
+                        <div class="divider-text mb-4">
+                            <span class="small fw-bold text-muted text-uppercase tracking-wider">Konfigurasi Baru</span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold small text-secondary mb-3">Pilih Platform Bot</label>
+                            <div class="platform-grid d-flex flex-column gap-2">
+                                @foreach (['whatsapp' => ['fa-whatsapp', 'text-success', 'chk_wa'], 'discord' => ['fa-discord', 'text-primary', 'chk_discord'], 'telegram' => ['fa-telegram', 'text-info', 'chk_telegram']] as $key => $info)
+                                    <div class="custom-checkbox-card transition-all">
+                                        <input class="form-check-input d-none" type="checkbox" id="{{ $info[2] }}"
+                                            onchange="calculatePrice()"
+                                            {{ $subscription?->{'has_' . $key} ? 'checked disabled' : '' }}>
+                                        <label
+                                            class="d-flex align-items-center justify-content-between p-3 border rounded-4 pointer w-100 mb-0"
+                                            for="{{ $info[2] }}">
+                                            <div class="d-flex align-items-center">
+                                                <div
+                                                    class="platform-icon-sm me-3 {{ $info[1] }} bg-light rounded-3 p-2">
+                                                    <i class="fab {{ $info[0] }} fs-5"></i>
+                                                </div>
+                                                <span class="fw-bold text-dark">{{ ucfirst($key) }}</span>
+                                            </div>
+                                            <span class="badge bg-light text-dark border fw-bold px-2 py-1">
+                                                Rp {{ number_format($pricing[$key], 0, ',', '.') }}
+                                            </span>
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-secondary mb-2">Jumlah Group</label>
+                                <div class="input-group custom-stepper rounded-pill overflow-hidden border">
+                                    <button class="btn btn-light border-0 px-3" onclick="changeValue('input_groups', -1)"><i
+                                            class="fas fa-minus small"></i></button>
+                                    <input type="number" id="input_groups"
+                                        class="form-control border-0 text-center fw-bold bg-white"
+                                        value="{{ $subscription ? $subscription->max_groups : 1 }}"
+                                        min="{{ $subscription ? $subscription->max_groups : 1 }}" max="20"
+                                        onchange="calculatePrice()">
+                                    <button class="btn btn-light border-0 px-3" onclick="changeValue('input_groups', 1)"><i
+                                            class="fas fa-plus small"></i></button>
                                 </div>
                             </div>
-                        </div>
-
-                        {{-- Group --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small">
-                                Jumlah Group
-                                <span class="text-muted">(Rp
-                                    {{ number_format($pricing['per_group'], 0, ',', '.') }}/group)</span>
-                            </label>
-                            <div class="d-flex align-items-center gap-2">
-                                <button class="btn btn-sm btn-outline-secondary"
-                                    onclick="changeValue('input_groups', -1)">-</button>
-                                <input type="number" id="input_groups" class="form-control form-control-sm text-center"
-                                    value="{{ $subscription ? $subscription->max_groups : 1 }}"
-                                    min="{{ $subscription ? $subscription->max_groups : 1 }}" max="20"
-                                    onchange="calculatePrice()" style="width: 60px">
-                                <button class="btn btn-sm btn-outline-secondary"
-                                    onclick="changeValue('input_groups', 1)">+</button>
-                            </div>
-                            @if ($subscription)
-                                <small class="text-muted">Minimum {{ $subscription->max_groups }} (sudah dipunya)</small>
-                            @endif
-                        </div>
-
-                        {{-- Member --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold small">
-                                Max Member per Group
-                                <span class="text-muted">(Rp
-                                    {{ number_format($pricing['per_member'], 0, ',', '.') }}/member)</span>
-                            </label>
-                            <div class="d-flex align-items-center gap-2">
-                                <button class="btn btn-sm btn-outline-secondary"
-                                    onclick="changeValue('input_members', -5)">-</button>
-                                <input type="number" id="input_members" class="form-control form-control-sm text-center"
-                                    value="{{ $subscription ? $subscription->max_members : 10 }}"
-                                    min="{{ $subscription ? $subscription->max_members : 5 }}" max="500"
-                                    step="5" onchange="calculatePrice()" style="width: 70px">
-                                <button class="btn btn-sm btn-outline-secondary"
-                                    onclick="changeValue('input_members', 5)">+</button>
-                            </div>
-                            @if ($subscription)
-                                <small class="text-muted">Minimum {{ $subscription->max_members }} (sudah dipunya)</small>
-                            @endif
-                        </div>
-
-                        {{-- Total --}}
-                        <div class="alert alert-primary py-2 mb-3">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="small fw-semibold">Total / 6 bulan</span>
-                                <span class="fw-bold" id="totalPrice">Rp 0</span>
+                            <div class="col-12">
+                                <label class="form-label fw-bold small text-secondary mb-2">Maksimal Member</label>
+                                <div class="input-group custom-stepper rounded-pill overflow-hidden border">
+                                    <button class="btn btn-light border-0 px-3"
+                                        onclick="changeValue('input_members', -5)"><i
+                                            class="fas fa-minus small"></i></button>
+                                    <input type="number" id="input_members"
+                                        class="form-control border-0 text-center fw-bold bg-white"
+                                        value="{{ $subscription ? $subscription->max_members : 10 }}"
+                                        min="{{ $subscription ? $subscription->max_members : 5 }}" max="500"
+                                        step="5" onchange="calculatePrice()">
+                                    <button class="btn btn-light border-0 px-3" onclick="changeValue('input_members', 5)"><i
+                                            class="fas fa-plus small"></i></button>
+                                </div>
                             </div>
                         </div>
 
-                        <button class="btn btn-primary w-100" onclick="pay()">
-                            <i class="fa fa-credit-card me-1"></i>
-                            {{ $subscription ? 'Perpanjang / Upgrade' : 'Berlangganan' }}
+                        <div class="total-estimation p-4 rounded-4 mb-4 text-center shadow-sm position-relative overflow-hidden"
+                            style="background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);">
+                            <div class="position-relative z-1">
+                                <p class="small text-white text-opacity-75 mb-1 fw-medium">Total Estimasi (6 Bulan)</p>
+                                <h3 class="fw-bold text-white mb-0" id="totalPrice">Rp 0</h3>
+                            </div>
+                            <div class="position-absolute bg-white opacity-10 rounded-circle"
+                                style="width: 100px; height: 100px; top: -30px; right: -30px;"></div>
+                        </div>
+
+                        <button class="btn btn-primary w-100 py-3 fw-bold rounded-pill shadow btn-pay transition-all"
+                            onclick="pay()">
+                            <i class="fa fa-bolt me-2"></i>
+                            {{ $subscription ? 'Upgrade Paket Sekarang' : 'Aktifkan Paket' }}
                         </button>
-
                     </div>
                 </div>
             </div>
@@ -265,25 +522,40 @@
 
                     {{-- My Groups --}}
                     <div class="col-12">
-                        <div class="card border-0">
-                            <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                                <h5 class="mb-0 fw-bold text-dark">
-                                    <i class="fas fa-user-friends me-2 text-primary"></i>My Groups
-                                </h5>
+                        <div class="card border-0 shadow-lg rounded-4 overflow-hidden"
+                            style="background: linear-gradient(145deg, #ffffff, #f8f9ff);">
+
+                            <div
+                                class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center ">
+                                <div class="d-flex align-items-center">
+                                    <div class="icon-box me-3 bg-primary bg-opacity-10 text-primary rounded-3 d-flex align-items-center justify-content-center"
+                                        style="width: 45px; height: 45px;">
+                                        <i class="fas fa-layer-group fs-4"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-0 fw-extrabold text-dark tracking-tight">My Universe</h5>
+                                        <p class="text-muted small mb-0">Buat dan atur dunia mu!</p>
+                                    </div>
+                                </div>
                                 @if ($totalGroups > 3)
-                                    <a href="/groups" class="btn btn-sm btn-light text-primary fw-bold">
-                                        Lihat Semua ({{ $totalGroups }})
+                                    <a href="/groups" class="btn btn-dark btn-sm rounded-pill px-4 shadow-sm fw-bold">
+                                        View All <span class="badge bg-primary ms-1">{{ $totalGroups }}</span>
                                     </a>
                                 @endif
                             </div>
-                            <div class="card-body p-4">
-                                <div class="row">
+
+                            <div class="card-body p-4 pt-2">
+                                <div class="row g-4">
                                     @forelse ($groups as $group)
-                                        <div class="col-md-4 mb-3">
-                                            <div class="card border shadow-none h-100">
-                                                <div class="card-body">
-                                                    <div class="d-flex justify-content-between align-items-start mb-3">
-                                                        <h6 class="fw-bold mb-0">{{ $group->name }}</h6>
+                                        <div class="col-md-6">
+                                            <div class="card h-100 border-0 shadow-sm custom-group-card rounded-4">
+                                                <div class="card-body p-4">
+
+                                                    <div class="d-flex justify-content-between mb-4">
+                                                        <div class="avatar-group-ui shadow-sm"
+                                                            style="background: linear-gradient(45deg, #6a11cb 0%, #2575fc 100%);">
+                                                            {{ strtoupper(substr($group->name, 0, 2)) }}
+                                                        </div>
 
                                                         @php
                                                             $memberRole = \App\Models\GroupMember::where(
@@ -295,39 +567,42 @@
                                                                 ->first();
                                                         @endphp
 
-                                                        {{-- Tombol edit hanya untuk owner --}}
                                                         @if ($memberRole?->role?->is_owner)
-                                                            <button class="btn btn-sm btn-light" data-bs-toggle="modal"
-                                                                data-bs-target="#modalEditGroup"
+                                                            <button
+                                                                class="btn btn-sm btn-light rounded-circle shadow-sm btn-edit"
+                                                                data-bs-toggle="modal" data-bs-target="#modalEditGroup"
                                                                 data-id="{{ $group->id }}"
                                                                 data-name="{{ $group->name }}">
-                                                                <i class="fas fa-pen text-muted"
-                                                                    style="font-size: 11px;"></i>
+                                                                <i class="fas fa-pen-nib text-primary"></i>
                                                             </button>
-                                                        @else
-                                                            <i class="fas fa-ellipsis-v text-muted small"></i>
                                                         @endif
                                                     </div>
 
+                                                    <h6 class="fw-bold text-dark mb-1 h5">{{ $group->name }}</h6>
+
                                                     @if ($memberRole?->role)
-                                                        <span class="badge badge-role mb-3 d-inline-block text-white"
-                                                            style="background-color: {{ $memberRole->role->color }}">
+                                                        <div class="role-pill mb-4"
+                                                            style="--role-color: {{ $memberRole->role->color }}">
+                                                            <span class="dot"></span>
                                                             {{ $memberRole->role->name }}
-                                                        </span>
+                                                        </div>
                                                     @endif
 
                                                     <a href="/groups/{{ $group->id }}"
-                                                        class="btn btn-sm btn-outline-primary w-100 rounded-pill">
-                                                        Manage Group <i class="fas fa-arrow-right ms-1"></i>
+                                                        class="btn btn-group-action w-100 d-flex justify-content-between align-items-center mt-auto">
+                                                        <span>Enter Workspace</span>
+                                                        <i class="fas fa-arrow-right shadow-sm"></i>
                                                     </a>
                                                 </div>
                                             </div>
                                         </div>
                                     @empty
-                                        <div class="col-12 text-center py-4">
-                                            <img src="https://illustrations.popsy.co/flat/team-building.svg"
-                                                alt="empty" style="width: 150px;" class="mb-3 opacity-50">
-                                            <p class="text-muted">Kamu belum bergabung di group manapun.</p>
+                                        <div class="col-12 text-center py-5">
+                                            <div class="empty-animation mb-3">🚀</div>
+                                            <h5 class="text-dark fw-bold">No groups found</h5>
+                                            <p class="text-muted small">Start your journey by creating or joining a group.
+                                            </p>
+                                            <button class="btn btn-primary rounded-pill px-5">Get Started</button>
                                         </div>
                                     @endforelse
                                 </div>

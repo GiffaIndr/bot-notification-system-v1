@@ -193,13 +193,12 @@ class PaymentController extends Controller
     {
         $payment = Payment::where('order_id', $orderId)
             ->where('user_id', auth()->id())
-
+            ->with('subscription')
             ->firstOrFail();
 
-        $pdf = Pdf::loadView('pages.receipt-pdf', compact('payment'))
-            ->setPaper('a5', 'portrait');
+        $pdf = Pdf::loadView('pages.receipt-pdf', compact('payment'));
 
-        return $pdf->stream("receipt-{$orderId}.pdf");
+        return $pdf->download("receipt-{$orderId}.pdf");
     }
     public function snapToken(Request $request)
     {

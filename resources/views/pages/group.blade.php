@@ -63,18 +63,77 @@
 
             /* Card per Item Announcement */
             .announcement-item {
-                border: 1px solid #f1f5f9 !important;
-                border-left: 5px solid #6366f1 !important;
-                /* Aksen warna ungu/primary */
-                border-radius: 15px;
-                transition: all 0.3s ease;
+                border-radius: 0;
+                transition: transform 0.2s ease;
                 background: #ffffff;
             }
 
             .announcement-item:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
-                border-color: #e2e8f0 !important;
+                transform: translateY(-2px);
+            }
+
+            /* Pinned Style */
+            .announcement-item.is-pinned {
+                background: linear-gradient(to right, #fffdf5, #ffffff);
+                border-left: 5px solid #f59e0b !important;
+            }
+
+            /* Gaya Lampiran/Attachment */
+            .attachment-card {
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 8px 12px;
+                transition: all 0.2s;
+                min-width: 200px;
+            }
+
+            .attachment-card:hover {
+                background: #f1f5f9;
+                border-color: #cbd5e1;
+            }
+
+            /* Badge Info Pengumuman */
+            .info-badge {
+                font-size: 11px;
+                background: #f1f5f9;
+                color: #475569;
+                padding: 4px 10px;
+                border-radius: 6px;
+                font-weight: 600;
+            }
+
+            /* Gaya Reaksi (Emoji) */
+            .btn-reaction {
+                border: 1px solid #f1f5f9;
+                background: #ffffff;
+                padding: 4px 10px;
+                border-radius: 50px;
+                font-size: 0.8rem;
+                transition: all 0.2s;
+            }
+
+            .btn-reaction:hover {
+                background: #f8fafc;
+                border-color: #e2e8f0;
+            }
+
+            .btn-reaction.active {
+                background: #eff6ff;
+                border-color: #3b82f6;
+                color: #1d4ed8;
+            }
+
+            /* Sidebar Actions (Pin/Edit/Delete) */
+            .action-group .btn {
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 10px;
+                margin-bottom: 5px;
+                font-size: 12px;
             }
 
             /* Style Badge Custom */
@@ -127,6 +186,159 @@
                     gap: 1rem;
                 }
             }
+
+            .picker-card {
+                border: none;
+                border-radius: 24px;
+                overflow: hidden;
+                transition: all 0.3s ease;
+            }
+
+            .picker-header {
+                background: #ffffff;
+                padding: 1.25rem 1.5rem;
+                border-bottom: 1px solid #f1f5f9;
+            }
+
+            /* Radio Mode Toggle - Custom Look */
+            .mode-selector {
+                background: #f1f5f9;
+                padding: 5px;
+                border-radius: 12px;
+                display: inline-flex;
+                width: 100%;
+            }
+
+            .mode-option {
+                flex: 1;
+                text-align: center;
+            }
+
+            .mode-option input[type="radio"] {
+                display: none;
+            }
+
+            .mode-option label {
+                display: block;
+                padding: 8px;
+                border-radius: 10px;
+                cursor: pointer;
+                font-size: 13px;
+                font-weight: 600;
+                color: #64748b;
+                transition: all 0.2s;
+                margin-bottom: 0;
+            }
+
+            .mode-option input[type="radio"]:checked+label {
+                background: white;
+                color: #f59e0b;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            }
+
+            /* Picker Controls */
+            .count-control {
+                background: #f8fafc;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 5px;
+            }
+
+            .count-control .btn-circle {
+                width: 32px;
+                height: 32px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+                background: white;
+                border: 1px solid #e2e8f0;
+                color: #64748b;
+                transition: 0.2s;
+            }
+
+            .count-control .btn-circle:hover {
+                background: #f1f5f9;
+                color: #1e293b;
+            }
+
+            .count-control input {
+                border: none;
+                background: transparent;
+                font-weight: 700;
+                color: #1e293b;
+                width: 50px;
+            }
+
+            /* Result Area - The "Glass" Look */
+            #standaloneResult {
+                background: linear-gradient(135deg, #fffbeb 0%, #fff7ed 100%);
+                border: 2px dashed #fed7aa !important;
+                border-radius: 20px;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .picked-name {
+                background: white;
+                color: #92400e;
+                padding: 10px 20px;
+                border-radius: 12px;
+                font-weight: 700;
+                box-shadow: 0 4px 15px rgba(245, 158, 11, 0.15);
+                border: 1px solid #fef3c7;
+                animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            }
+
+            @keyframes popIn {
+                0% {
+                    transform: scale(0.5);
+                    opacity: 0;
+                }
+
+                100% {
+                    transform: scale(1);
+                    opacity: 1;
+                }
+            }
+
+            .btn-pick-main {
+                background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+                color: white;
+                border: none;
+                border-radius: 14px;
+                padding: 12px;
+                box-shadow: 0 10px 15px -3px rgba(245, 158, 11, 0.3);
+                transition: all 0.2s;
+            }
+
+            .btn-pick-main:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 12px 20px -3px rgba(245, 158, 11, 0.4);
+                color: white;
+            }
+
+            .form-control:focus,
+            .form-select:focus {
+                border-color: #4e73df;
+                box-shadow: 0 0 0 0.25rem rgba(78, 115, 223, 0.15);
+            }
+
+            .bg-soft-info {
+                background-color: #e3f2fd;
+                border: 1px solid #bbdefb;
+            }
+
+            .modal-content {
+                border-radius: 15px;
+                overflow: hidden;
+            }
+
+            .btn-check:checked+.btn-outline-primary {
+                background-color: #4e73df;
+                color: white;
+            }
         </style>
 
         <div class="header-wrapper d-flex justify-content-between align-items-center">
@@ -178,137 +390,178 @@
                         </div>
                     </div>
 
-                    <div class="card-body p-4">
+                    <div class="card-body p-0">
                         @forelse ($announcements as $announcement)
-                            <div class="card announcement-item mb-3 shadow-none">
-                                <div class="card-body p-3">
+                            <div
+                                class="card mb-4 shadow-sm announcement-item {{ $announcement->is_pinned ? 'is-pinned' : 'border-0' }}">
+                                <div class="card-body p-4">
                                     <div class="d-flex justify-content-between align-items-start">
+
                                         <div class="flex-grow-1">
-                                            <h6 class="fw-bold text-dark mb-1" style="font-size: 1.1rem;">
-                                                {{ $announcement->title }}</h6>
-                                            <p class="mb-3 text-secondary" style="font-size: 0.95rem; line-height: 1.5;">
+                                            {{-- Header: Title & Pin Icon --}}
+                                            <div class="d-flex align-items-center mb-2">
+                                                @if ($announcement->is_pinned)
+                                                    <div class="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
+                                                        <i class="fa fa-thumbtack text-warning"
+                                                            style="font-size: 14px;"></i>
+                                                    </div>
+                                                @endif
+                                                <h5 class="fw-bold text-dark mb-0" style="letter-spacing: -0.5px;">
+                                                    {{ $announcement->title }}</h5>
+                                            </div>
+
+                                            {{-- Content --}}
+                                            <p class="text-secondary mb-4"
+                                                style="font-size: 0.95rem; line-height: 1.7; white-space: pre-line; color: #4b5563 !important;">
                                                 {{ $announcement->content }}
                                             </p>
 
-                                            <div class="d-flex gap-2 flex-wrap">
-                                                <span class="badge-soft badge-user">
-                                                    <i class="fa fa-user-circle"></i> {{ $announcement->user->name }}
+                                            {{-- Attachments Section --}}
+                                            @if ($announcement->attachments->isNotEmpty())
+                                                <div class="d-flex flex-wrap gap-2 mb-4">
+                                                    @foreach ($announcement->attachments as $attachment)
+                                                        <a href="{{ $attachment->url }}" target="_blank"
+                                                            class="attachment-card text-decoration-none text-dark d-flex align-items-center">
+                                                            @if ($attachment->type === 'image')
+                                                                <img src="{{ $attachment->url }}" class="rounded me-2"
+                                                                    style="width:35px; height:35px; object-fit:cover;">
+                                                            @else
+                                                                @php
+                                                                    $icon = match (true) {
+                                                                        str_contains($attachment->mime_type, 'pdf')
+                                                                            => 'fa-file-pdf text-danger',
+                                                                        str_contains($attachment->mime_type, 'word')
+                                                                            => 'fa-file-word text-primary',
+                                                                        str_contains($attachment->mime_type, 'sheet')
+                                                                            => 'fa-file-excel text-success',
+                                                                        default => 'fa-file text-secondary',
+                                                                    };
+                                                                @endphp
+                                                                <i class="fa {{ $icon }} fa-lg me-3"></i>
+                                                            @endif
+                                                            <div class="overflow-hidden">
+                                                                <div class="small fw-bold text-truncate"
+                                                                    style="max-width: 140px;">{{ $attachment->filename }}
+                                                                </div>
+                                                                <div class="text-muted" style="font-size: 9px;">
+                                                                    {{ $attachment->formatted_size }}</div>
+                                                            </div>
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            @endif
+
+                                            {{-- Footer Metadata --}}
+                                            <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                                                <span class="info-badge">
+                                                    <i class="fa fa-user-circle me-1 text-primary"></i>
+                                                    {{ $announcement->user->name }}
                                                 </span>
-                                                <span class="badge-soft badge-time">
-                                                    <i class="fa fa-calendar-alt"></i>
+                                                <span class="info-badge">
+                                                    <i class="fa fa-calendar-alt me-1"></i>
                                                     {{ $announcement->created_at->format('d M, H:i') }}
                                                 </span>
-
                                                 @if ($announcement->scheduled_at)
-                                                    <span class="badge-soft badge-scheduled border border-primary-subtle">
-                                                        <i class="fa fa-clock"></i>
+                                                    <span class="info-badge text-primary" style="background: #eff6ff;">
+                                                        <i class="fa fa-clock me-1"></i> Terjadwal:
                                                         {{ $announcement->scheduled_at->format('d M, H:i') }}
                                                     </span>
                                                 @endif
-
                                                 @if ($announcement->repeat !== 'none')
-                                                    <span class="badge-soft badge-repeat border border-success-subtle">
-                                                        <i class="fa fa-sync-alt"></i>
-                                                        {{ match ($announcement->repeat) {
-                                                            'daily' => 'Harian',
-                                                            'weekly' => 'Mingguan',
-                                                            'monthly' => 'Bulanan',
-                                                        } }}
+                                                    <span class="info-badge text-success" style="background: #f0fdf4;">
+                                                        <i class="fa fa-sync-alt me-1"></i>
+                                                        {{ ucfirst($announcement->repeat) }}
                                                     </span>
                                                 @endif
-                                                <div class="">
-                                                    {{-- Reactions --}}
-                                                    <div class="d-flex gap-1 flex-wrap mt-2"
-                                                        id="reactions-{{ $announcement->id }}">
-                                                        @php
-                                                            $emojis = ['👍', '❤️', '😂', '😮', '😢', '😡'];
-                                                            $reactionCounts = $announcement->reactions->groupBy(
-                                                                'emoji',
-                                                            );
-                                                            $myReactions = $announcement->reactions
-                                                                ->where('user_id', auth()->id())
-                                                                ->pluck('emoji')
-                                                                ->toArray();
-                                                        @endphp
-
-                                                        @foreach ($emojis as $emoji)
-                                                            @php
-                                                                $count = $reactionCounts->get($emoji)?->count() ?? 0;
-                                                                $reacted = in_array($emoji, $myReactions);
-                                                            @endphp
-                                                            <button
-                                                                class="btn btn-sm reaction-btn {{ $reacted ? 'btn-primary' : 'btn-outline-secondary' }}"
-                                                                style="font-size: 12px; padding: 2px 8px; border-radius: 20px;"
-                                                                onclick="react({{ $announcement->id }}, '{{ $emoji }}', this)"
-                                                                data-announcement="{{ $announcement->id }}"
-                                                                data-emoji="{{ $emoji }}">
-                                                                {{ $emoji }}
-                                                                <span class="reaction-count ms-1" style="font-size: 11px;">
-                                                                    {{ $count > 0 ? $count : '' }}
-                                                                </span>
-                                                            </button>
-                                                        @endforeach
-                                                    </div>
-
-                                                </div>
                                             </div>
-                                            @if ($announcement->use_picker)
-                                                <div class="mt-2" data-announcement-id="{{ $announcement->id }}"
-                                                    data-picked-result="{{ json_encode($announcement->picked_result) }}">
-                                                    <span class="badge bg-warning bg-opacity-10 text-warning me-2">
-                                                        <i class="fa fa-dice me-1"></i>
-                                                        Random Pick {{ $announcement->pick_count }}
-                                                        {{ $announcement->picker_mode === 'custom' ? 'dari custom list' : 'member' }}
-                                                        @if ($announcement->pickRole)
-                                                            ({{ $announcement->pickRole->name }})
-                                                        @endif
-                                                    </span>
+
+                                            {{-- Reactions --}}
+                                            <div class="d-flex flex-wrap gap-1" id="reactions-{{ $announcement->id }}">
+                                                @php
+                                                    $emojis = ['👍', '❤️', '😂', '😮', '😢', '😡'];
+                                                    $reactionCounts = $announcement->reactions->groupBy('emoji');
+                                                    $myReactions = $announcement->reactions
+                                                        ->where('user_id', auth()->id())
+                                                        ->pluck('emoji')
+                                                        ->toArray();
+                                                @endphp
+                                                @foreach ($emojis as $emoji)
+                                                    @php
+                                                        $count = $reactionCounts->get($emoji)?->count() ?? 0;
+                                                        $reacted = in_array($emoji, $myReactions);
+                                                    @endphp
                                                     <button
-                                                        class="btn btn-sm {{ $announcement->picked_result ? 'btn-warning' : 'btn-outline-warning' }}"
-                                                        id="btnPick-{{ $announcement->id }}"
-                                                        onclick="previewPick({{ $announcement->id }})">
-                                                        <i
-                                                            class="fa fa-{{ $announcement->picked_result ? 'rotate' : 'shuffle' }} me-1"></i>
-                                                        {{ $announcement->picked_result ? 'Undi Ulang' : 'Undi' }}
+                                                        onclick="react({{ $announcement->id }}, '{{ $emoji }}', this)"
+                                                        class="btn-reaction {{ $reacted ? 'active' : '' }}">
+                                                        {{ $emoji }} <span
+                                                            class="ms-1 fw-bold">{{ $count > 0 ? $count : '' }}</span>
                                                     </button>
+                                                @endforeach
+                                            </div>
+
+                                            {{-- Random Picker Result (Inner Card) --}}
+                                            @if ($announcement->use_picker)
+                                                <div class="mt-4 p-3 rounded-4 border border-warning border-opacity-25"
+                                                    style="background: #fffcf0;">
+                                                    <div
+                                                        class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                                        <div class="small fw-bold text-warning text-uppercase">
+                                                            <i class="fa fa-dice me-2"></i> RANDOM PICKER
+                                                        </div>
+                                                        <button
+                                                            class="btn btn-sm {{ $announcement->picked_result ? 'btn-warning' : 'btn-outline-warning' }} rounded-pill px-3 fw-bold"
+                                                            id="btnPick-{{ $announcement->id }}"
+                                                            onclick="previewPick({{ $announcement->id }})">
+                                                            <i
+                                                                class="fa fa-{{ $announcement->picked_result ? 'rotate' : 'shuffle' }} me-1"></i>
+                                                            {{ $announcement->picked_result ? 'Undi Ulang' : 'Undi Sekarang' }}
+                                                        </button>
+                                                    </div>
                                                     <div id="pickResult-{{ $announcement->id }}"
-                                                        class="{{ $announcement->picked_result ? '' : 'd-none' }}">
-                                                        <div id="spinner-{{ $announcement->id }}" class="text-muted small">
-                                                            {{ $announcement->picked_result ? '🎉 Terpilih!' : '' }}
+                                                        class="mt-3 {{ $announcement->picked_result ? '' : 'd-none' }}">
+                                                        <div id="spinner-{{ $announcement->id }}"
+                                                            class="fw-bold text-dark small mb-2 opacity-75">
+                                                            {{ $announcement->picked_result ? '🎉 Hasil Undian:' : '' }}
                                                         </div>
                                                         <div id="names-{{ $announcement->id }}"
-                                                            class="d-flex flex-wrap gap-2 mt-2 justify-content-start">
+                                                            class="d-flex flex-wrap gap-2">
+                                                            {{-- Hasil undian akan muncul di sini --}}
                                                         </div>
                                                     </div>
                                                 </div>
                                             @endif
                                         </div>
 
+                                        {{-- Admin Actions Column --}}
                                         @if ($role->can_edit_announcement)
-                                            <div class="d-flex flex-column gap-2 ms-3">
-                                                <button class="btn btn-sm btn-outline-warning" data-bs-toggle="modal"
+                                            <div class="action-group d-flex flex-column ms-3">
+                                                <form method="POST"
+                                                    action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}/pin">
+                                                    @csrf
+                                                    <button type="submit"
+                                                        class="btn {{ $announcement->is_pinned ? 'btn-warning shadow-sm' : 'btn-light border' }}"
+                                                        title="Pin/Unpin">
+                                                        <i class="fa fa-thumbtack"></i>
+                                                    </button>
+                                                </form>
+
+                                                <button class="btn btn-light border text-primary" data-bs-toggle="modal"
                                                     data-bs-target="#modalEdit" data-id="{{ $announcement->id }}"
                                                     data-title="{{ $announcement->title }}"
                                                     data-content="{{ $announcement->content }}"
-                                                    data-scheduled="{{ $announcement->scheduled_at?->format('Y-m-d\TH:i') }}"
-                                                    data-repeat="{{ $announcement->repeat }}"
-                                                    data-use_picker="{{ $announcement->use_picker ? '1' : '0' }}"
-                                                    data-picker_mode="{{ $announcement->picker_mode ?? 'members' }}"
-                                                    data-pick_count="{{ $announcement->pick_count ?? 1 }}"
-                                                    data-pick_role_id="{{ $announcement->pick_role_id ?? '' }}"
-                                                    data-custom_list="{{ $announcement->custom_pick_list ? implode("\n", $announcement->custom_pick_list) : '' }}">
+                                                    data-attachments="{{ json_encode($announcement->attachments) }}">
                                                     <i class="fa fa-pen"></i>
                                                 </button>
-                                                <button class="btn btn-sm btn-outline-danger btn-action-round"
-                                                    onclick="confirmDelete({{ $announcement->id }})" title="Hapus">
+
+                                                <button class="btn btn-light border text-danger"
+                                                    onclick="confirmDelete({{ $announcement->id }})">
                                                     <i class="fa fa-trash"></i>
                                                 </button>
 
                                                 <form id="deleteForm{{ $announcement->id }}" method="POST"
                                                     action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}"
                                                     class="d-none">
-                                                    @csrf
-                                                    @method('DELETE')
+                                                    @csrf @method('DELETE')
                                                 </form>
                                             </div>
                                         @endif
@@ -317,103 +570,114 @@
                             </div>
                         @empty
                             <div class="text-center py-5">
-                                <div class="mb-3">
-                                    <i class="fa fa-bullhorn fa-4x text-light"></i>
+                                <div class="bg-light d-inline-block p-4 rounded-circle mb-3">
+                                    <i class="fa fa-bullhorn fa-3x text-muted opacity-25"></i>
                                 </div>
-                                <h5 class="text-muted fw-normal">Belum ada pengumuman hari ini.</h5>
-                                <p class="text-muted small">Semua pengumuman grup akan muncul di sini.</p>
+                                <h5 class="text-secondary fw-bold">Belum ada pengumuman</h5>
+                                <p class="text-muted small">Cek kembali nanti untuk info terbaru.</p>
                             </div>
                         @endforelse
                     </div>
                 </div>
                 {{-- Random Picker --}}
-                <div class="card announcement-container shadow-sm mt-4">
-                    <div
-                        class="card-header fw-bold d-flex justify-content-between align-items-center bg-white border-bottom">
-                        <span><i class="fa fa-shuffle text-warning me-2"></i>Random Picker</span>
+                <div class="card picker-card shadow-sm mt-4">
+                    <div class="picker-header d-flex justify-content-between align-items-center">
+                        <h6 class="fw-bold m-0"><i class="fa fa-shuffle text-warning me-2"></i>Random Picker</h6>
+                        <span
+                            class="badge bg-warning bg-opacity-10 text-warning px-3 py-2 rounded-pill small fw-bold">Lucky
+                            Draw</span>
                     </div>
-                    <div class="card-body">
 
-                        <div class="row g-3">
-
-                            {{-- Input --}}
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold small">Mode</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="picker_mode_standalone"
+                    <div class="card-body p-4">
+                        <div class="row g-4">
+                            {{-- Bagian Kontrol --}}
+                            <div class="col-md-6 border-end border-light">
+                                {{-- Mode Selector --}}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-muted mb-2 text-uppercase">Pilih
+                                        Mode</label>
+                                    <div class="mode-selector">
+                                        <div class="mode-option">
+                                            <input type="radio" name="picker_mode_standalone"
                                                 id="standaloneModeMembers" value="members" checked
                                                 onchange="toggleStandaloneMode()">
-                                            <label class="form-check-label small" for="standaloneModeMembers">
-                                                <i class="fa fa-users me-1 text-primary"></i>Dari Member Group
+                                            <label for="standaloneModeMembers">
+                                                <i class="fa fa-users me-1"></i> Members
                                             </label>
                                         </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="picker_mode_standalone"
-                                                id="standaloneModeCustom" value="custom"
-                                                onchange="toggleStandaloneMode()">
-                                            <label class="form-check-label small" for="standaloneModeCustom">
-                                                <i class="fa fa-list me-1 text-success"></i>Custom List
+                                        <div class="mode-option">
+                                            <input type="radio" name="picker_mode_standalone" id="standaloneModeCustom"
+                                                value="custom" onchange="toggleStandaloneMode()">
+                                            <label for="standaloneModeCustom">
+                                                <i class="fa fa-list me-1"></i> Custom List
                                             </label>
                                         </div>
                                     </div>
                                 </div>
 
-                                {{-- Mode members --}}
-                                <div id="standaloneMemberOptions">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold small">Filter Role (opsional)</label>
-                                        <select id="standaloneRoleId" class="form-select form-select-sm">
-                                            <option value="">Semua Member</option>
-                                            @foreach ($roles as $r)
-                                                <option value="{{ $r->id }}">{{ $r->name }}</option>
-                                            @endforeach
-                                        </select>
+                                {{-- Mode Members Options --}}
+                                <div id="standaloneMemberOptions" class="mb-3">
+                                    <label class="form-label fw-bold small text-muted text-uppercase">Filter Role</label>
+                                    <select id="standaloneRoleId" class="form-select border-0 bg-light rounded-3 py-2">
+                                        <option value="">Semua Member</option>
+                                        @foreach ($roles as $r)
+                                            <option value="{{ $r->id }}">{{ $r->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                {{-- Mode Custom Options --}}
+                                <div id="standaloneCustomOptions" class="mb-3 d-none">
+                                    <label class="form-label fw-bold small text-muted text-uppercase">Daftar Nama</label>
+                                    <textarea id="standaloneCustomList" class="form-control border-0 bg-light rounded-3" rows="5"
+                                        placeholder="Contoh:&#10;Budi&#10;Ani&#10;Kelompok A"></textarea>
+                                    <div class="mt-1 d-flex align-items-center text-muted" style="font-size: 11px;">
+                                        <i class="fa fa-info-circle me-1"></i> Satu nama per baris
                                     </div>
                                 </div>
 
-                                {{-- Mode custom --}}
-                                <div id="standaloneCustomOptions" class="d-none">
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold small">Daftar Nama</label>
-                                        <textarea id="standaloneCustomList" class="form-control form-control-sm" rows="6"
-                                            placeholder="Tulis satu per baris:&#10;Budi&#10;Ani&#10;Cici&#10;Kelompok 1&#10;Kelompok 2"></textarea>
-                                        <small class="text-muted">Satu nama per baris</small>
+                                {{-- Pick Count --}}
+                                <div class="mb-4 pt-2">
+                                    <label class="form-label fw-bold small text-muted text-uppercase">Jumlah yang
+                                        Dipick</label>
+                                    <div class="count-control d-inline-flex align-items-center gap-2">
+                                        <button type="button" class="btn btn-circle"
+                                            onclick="changeStandaloneCount(-1)"><i class="fa fa-minus small"></i></button>
+                                        <input type="number" id="standalonePickCount" class="text-center"
+                                            value="1" min="1" max="50" readonly>
+                                        <button type="button" class="btn btn-circle"
+                                            onclick="changeStandaloneCount(1)"><i class="fa fa-plus small"></i></button>
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold small">Jumlah yang Dipick</label>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <button class="btn btn-sm btn-outline-secondary"
-                                            onclick="changeStandaloneCount(-1)">-</button>
-                                        <input type="number" id="standalonePickCount"
-                                            class="form-control form-control-sm text-center" value="1"
-                                            min="1" max="50" style="width: 60px">
-                                        <button class="btn btn-sm btn-outline-secondary"
-                                            onclick="changeStandaloneCount(1)">+</button>
-                                    </div>
-                                </div>
-
-                                <button class="btn btn-warning w-100 fw-bold" id="btnStandalonePick"
+                                <button class="btn btn-pick-main w-100 fw-bold py-3" id="btnStandalonePick"
                                     onclick="standalonePick()">
-                                    <i class="fa fa-shuffle me-1"></i>Undi Sekarang!
+                                    <i class="fa fa-shuffle me-2"></i>UNDI SEKARANG
                                 </button>
                             </div>
 
-                            {{-- Hasil --}}
+                            {{-- Bagian Hasil --}}
                             <div class="col-md-6">
-                                <div class="card border-0 bg-light h-100 p-3 text-center d-flex flex-column justify-content-center"
-                                    id="standaloneResult" style="min-height: 200px;">
-                                    <div id="standaloneSpinner" class="text-muted">
-                                        <i class="fa fa-dice fa-3x mb-3 opacity-25"></i>
-                                        <p class="mb-0 small">Pencet "Undi Sekarang!" untuk mulai</p>
+                                <div class="h-100 d-flex flex-column">
+                                    <label class="form-label fw-bold small text-muted text-uppercase mb-2">Hasil
+                                        Undian</label>
+                                    <div class="card border-0 h-100 p-4 text-center d-flex flex-column justify-content-center align-items-center"
+                                        id="standaloneResult" style="min-height: 250px;">
+
+                                        <div id="standaloneSpinner" class="text-center">
+                                            <div class="mb-3">
+                                                <i class="fa fa-dice fa-4x text-warning opacity-25"></i>
+                                            </div>
+                                            <h6 class="text-muted fw-bold mb-1">Siap Mengundi?</h6>
+                                            <p class="text-muted small mb-0 px-4">Klik tombol undi untuk memilih pemenang
+                                                secara acak.</p>
+                                        </div>
+
+                                        <div id="standaloneNames" class="d-flex flex-wrap gap-3 justify-content-center">
+                                        </div>
                                     </div>
-                                    <div id="standaloneNames" class="d-flex flex-wrap gap-2 justify-content-center"></div>
                                 </div>
                             </div>
-
                         </div>
                     </div>
                 </div>
@@ -430,84 +694,108 @@
                             </button>
                         @endif
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-0"> {{-- Menghapus padding agar card poll menempel rapi --}}
                         @forelse ($polls as $poll)
-                            <div class="card mb-3 border-0 shadow-sm">
-                                <div class="card-body">
+                            <div class="card mb-3 border-0 shadow-sm mx-3 mt-3"
+                                style="border-radius: 15px; overflow: hidden;">
+                                <div class="card-body p-4">
 
-                                    {{-- Header poll --}}
+                                    {{-- Header Poll --}}
                                     <div class="d-flex justify-content-between align-items-start mb-3">
-                                        <div>
-                                            <h6 class="fw-bold mb-1">{{ $poll->question }}</h6>
-                                            <div class="d-flex gap-2">
-                                                <small class="text-muted">
-                                                    <i class="fa fa-user me-1"></i>{{ $poll->user->name }}
-                                                </small>
+                                        <div class="flex-grow-1">
+                                            <h6 class="fw-bold text-dark mb-2"
+                                                style="font-size: 1.1rem; line-height: 1.4;">
+                                                {{ $poll->question }}
+                                            </h6>
+                                            <div class="d-flex flex-wrap align-items-center gap-2">
+                                                <span class="text-muted small">
+                                                    <i class="fa fa-circle-user me-1"></i>{{ $poll->user->name }}
+                                                </span>
+
+                                                {{-- Badges Status --}}
                                                 @if ($poll->is_anonymous)
-                                                    <span class="badge bg-secondary bg-opacity-10 text-secondary"
-                                                        style="font-size:10px">
+                                                    <span
+                                                        class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25"
+                                                        style="font-size: 10px;">
                                                         <i class="fa fa-eye-slash me-1"></i>Anonymous
                                                     </span>
                                                 @else
-                                                    <span class="badge bg-info bg-opacity-10 text-info"
-                                                        style="font-size:10px">
+                                                    <span
+                                                        class="badge rounded-pill bg-info bg-opacity-10 text-info border border-info border-opacity-25"
+                                                        style="font-size: 10px;">
                                                         <i class="fa fa-eye me-1"></i>Publik
                                                     </span>
                                                 @endif
+
                                                 @if ($poll->is_closed || $poll->isExpired())
-                                                    <span class="badge bg-danger bg-opacity-10 text-danger"
-                                                        style="font-size:10px">
+                                                    <span
+                                                        class="badge rounded-pill bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25"
+                                                        style="font-size: 10px;">
                                                         <i class="fa fa-lock me-1"></i>Ditutup
                                                     </span>
                                                 @else
-                                                    <span class="badge bg-success bg-opacity-10 text-success"
-                                                        style="font-size:10px">
-                                                        <i class="fa fa-circle me-1"></i>Aktif
+                                                    <span
+                                                        class="badge rounded-pill bg-success bg-opacity-10 text-success border border-success border-opacity-25"
+                                                        style="font-size: 10px;">
+                                                        <i class="fa fa-bolt me-1 text-success"></i>Aktif
                                                     </span>
                                                 @endif
-                                                @if ($poll->closes_at && !$poll->is_closed)
-                                                    <small class="text-muted">
-                                                        <i class="fa fa-clock me-1"></i>Tutup
-                                                        {{ $poll->closes_at->format('d M Y, H:i') }}
-                                                    </small>
+
+                                                @if ($poll->closes_at && !$poll->is_closed && !$poll->isExpired())
+                                                    <span class="text-muted" style="font-size: 11px;">
+                                                        <i class="fa fa-clock me-1 text-warning"></i>Tutup:
+                                                        {{ $poll->closes_at->diffForHumans() }}
+                                                    </span>
                                                 @endif
                                             </div>
                                         </div>
 
+                                        {{-- Admin Actions --}}
                                         @if ($role->can_create_poll)
-                                            <div class="d-flex gap-1">
-                                                @if (!$poll->is_closed && !$poll->isExpired())
-                                                    <form method="POST"
-                                                        action="/groups/{{ $group->id }}/polls/{{ $poll->id }}/close">
-                                                        @csrf
-                                                        <button class="btn btn-sm btn-outline-warning"
-                                                            onclick="return confirm('Tutup poll ini?')"
-                                                            title="Tutup Poll">
-                                                            <i class="fa fa-lock"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
-                                                <form method="POST"
-                                                    action="/groups/{{ $group->id }}/polls/{{ $poll->id }}">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button class="btn btn-sm btn-outline-danger"
-                                                        onclick="return confirm('Hapus poll ini?')" title="Hapus Poll">
-                                                        <i class="fa fa-trash"></i>
-                                                    </button>
-                                                </form>
+                                            <div class="dropdown ms-2">
+                                                <button class="btn btn-link text-muted p-0" data-bs-toggle="dropdown">
+                                                    <i class="fa fa-ellipsis-vertical"></i>
+                                                </button>
+                                                <ul class="dropdown-menu dropdown-menu-end shadow border-0">
+                                                    @if (!$poll->is_closed && !$poll->isExpired())
+                                                        <li>
+                                                            <form method="POST"
+                                                                action="/groups/{{ $group->id }}/polls/{{ $poll->id }}/close">
+                                                                @csrf
+                                                                <button type="submit"
+                                                                    class="dropdown-item small text-warning"
+                                                                    onclick="return confirm('Tutup poll ini?')">
+                                                                    <i class="fa fa-lock me-2"></i>Tutup Poll
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    @endif
+                                                    <li>
+                                                        <form method="POST"
+                                                            action="/groups/{{ $group->id }}/polls/{{ $poll->id }}">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="dropdown-item small text-danger"
+                                                                onclick="return confirm('Hapus poll ini?')">
+                                                                <i class="fa fa-trash me-2"></i>Hapus Poll
+                                                            </button>
+                                                        </form>
+                                                    </li>
+                                                </ul>
                                             </div>
                                         @endif
                                     </div>
 
-                                    {{-- Options & Vote --}}
+                                    <hr class="opacity-50 mb-3">
+
+                                    {{-- Options & Vote Area --}}
                                     @php
                                         $totalVotes = $poll->votes->count();
                                         $userVote = $poll->votes->where('user_id', auth()->id())->first();
                                         $isClosed = $poll->is_closed || $poll->isExpired();
                                     @endphp
 
-                                    <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex flex-column gap-3">
                                         @foreach ($poll->options as $option)
                                             @php
                                                 $optionVotes = $option->votes->count();
@@ -516,56 +804,62 @@
                                                 $isMyVote = $userVote?->poll_option_id === $option->id;
                                             @endphp
 
-                                            <div>
+                                            <div class="option-container">
                                                 @if (!$userVote && !$isClosed)
-                                                    {{-- Belum vote & poll aktif --}}
+                                                    {{-- Mode: Belum Vote --}}
                                                     <form method="POST"
                                                         action="/groups/{{ $group->id }}/polls/{{ $poll->id }}/vote">
                                                         @csrf
                                                         <input type="hidden" name="option_id"
                                                             value="{{ $option->id }}">
                                                         <button type="submit"
-                                                            class="btn btn-sm w-100 text-start {{ $isMyVote ? 'btn-primary' : 'btn-outline-secondary' }}"
-                                                            style="border-radius: 8px;">
-                                                            <i
-                                                                class="fa fa-circle{{ $isMyVote ? '-check' : '' }} me-2"></i>
+                                                            class="btn btn-outline-primary w-100 text-start py-2 px-3 transition-all"
+                                                            style="border-radius: 12px; border-width: 2px; font-weight: 500;">
                                                             {{ $option->label }}
                                                         </button>
                                                     </form>
                                                 @else
-                                                    {{-- Sudah vote atau poll closed, tampilkan hasil --}}
-                                                    <div class="position-relative mb-1">
-                                                        <div class="progress" style="height: 28px; border-radius: 8px;">
-                                                            <div class="progress-bar {{ $isMyVote ? 'bg-primary' : 'bg-secondary bg-opacity-25' }}"
-                                                                style="width: {{ $percent }}%; border-radius: 8px;">
+                                                    {{-- Mode: Hasil Voting --}}
+                                                    <div class="position-relative">
+                                                        <div class="progress"
+                                                            style="height: 40px; border-radius: 10px; background-color: #f0f2f5;">
+                                                            <div class="progress-bar transition-all {{ $isMyVote ? 'bg-primary' : 'bg-secondary bg-opacity-25' }}"
+                                                                role="progressbar" style="width: {{ $percent }}%;"
+                                                                aria-valuenow="{{ $percent }}" aria-valuemin="0"
+                                                                aria-valuemax="100">
                                                             </div>
                                                         </div>
-                                                        <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center px-3"
-                                                            style="font-size: 12px;">
+
+                                                        <div
+                                                            class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center px-3 justify-content-between">
                                                             <span
-                                                                class="{{ $isMyVote ? 'text-white fw-bold' : 'text-dark' }}">
+                                                                class="small {{ $isMyVote ? 'text-white fw-bold' : 'text-dark fw-medium' }}">
                                                                 @if ($isMyVote)
-                                                                    <i class="fa fa-circle-check me-1"></i>
+                                                                    <i class="fa fa-circle-check me-2"></i>
                                                                 @endif
                                                                 {{ $option->label }}
                                                             </span>
                                                             <span
-                                                                class="ms-auto {{ $isMyVote ? 'text-white' : 'text-muted' }}">
+                                                                class="small {{ $isMyVote ? 'text-white fw-bold' : 'text-muted' }}">
                                                                 {{ $percent }}%
                                                                 @if (!$poll->is_anonymous || $isClosed)
-                                                                    ({{ $optionVotes }})
+                                                                    <span
+                                                                        style="font-size: 0.75rem;">({{ $optionVotes }})</span>
                                                                 @endif
                                                             </span>
                                                         </div>
                                                     </div>
 
-                                                    {{-- Tampilkan siapa yang vote (kalau publik & sudah vote/closed) --}}
+                                                    {{-- Daftar Voter (Jika Publik) --}}
                                                     @if (!$poll->is_anonymous && $optionVotes > 0)
-                                                        <div class="d-flex flex-wrap gap-1 mb-1">
+                                                        <div class="d-flex flex-wrap gap-1 mt-1 ms-1">
                                                             @foreach ($option->votes as $vote)
-                                                                <span class="badge bg-light text-dark border"
+                                                                <span class="badge bg-light text-muted border-0 p-0 me-1"
                                                                     style="font-size: 9px;">
-                                                                    {{ $vote->user->name }}
+                                                                    @if ($loop->first)
+                                                                        <i class="fa fa-users me-1"></i>
+                                                                    @endif
+                                                                    {{ explode(' ', $vote->user->name)[0] }}{{ !$loop->last ? ',' : '' }}
                                                                 </span>
                                                             @endforeach
                                                         </div>
@@ -575,16 +869,28 @@
                                         @endforeach
                                     </div>
 
-                                    <small class="text-muted mt-2 d-block">
-                                        <i class="fa fa-users me-1"></i>{{ $totalVotes }} vote
-                                    </small>
+                                    {{-- Footer Info --}}
+                                    <div class="mt-3 d-flex align-items-center justify-content-between">
+                                        <span class="text-muted fw-semibold" style="font-size: 12px;">
+                                            <i class="fa fa-poll me-1 text-primary"></i>Total: {{ $totalVotes }} suara
+                                        </span>
+                                        @if ($userVote)
+                                            <span class="text-primary small fw-bold">
+                                                <i class="fa fa-check-double me-1"></i>Sudah Memilih
+                                            </span>
+                                        @endif
+                                    </div>
 
                                 </div>
                             </div>
                         @empty
-                            <div class="text-center py-4">
-                                <i class="fa fa-chart-bar fa-3x text-muted mb-3"></i>
-                                <p class="text-muted">Belum ada poll.</p>
+                            <div class="text-center py-5">
+                                <div class="bg-light rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                                    style="width: 80px; height: 80px;">
+                                    <i class="fa fa-chart-simple fa-2x text-muted"></i>
+                                </div>
+                                <h6 class="fw-bold">Belum Ada Polling</h6>
+                                <p class="text-muted small">Diskusi jadi lebih mudah dengan fitur voting.</p>
                             </div>
                         @endforelse
                     </div>
@@ -595,92 +901,120 @@
 
 
             {{-- Modal Create Poll --}}
-            <div class="modal fade" id="modalCreatePoll" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                                <i class="fa fa-chart-bar me-2 text-primary"></i>Buat Poll
+            <div class="modal fade" id="modalCreatePoll" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered"> {{-- Tambah centered agar lebih fokus --}}
+                    <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                        <div class="modal-header border-0 pb-0">
+                            <h5 class="modal-title fw-bold">
+                                <span class="bg-primary bg-opacity-10 p-2 rounded-3 me-2">
+                                    <i class="fa fa-chart-bar text-primary"></i>
+                                </span>
+                                Buat Poll Baru
                             </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
+
                         <form method="POST" action="/groups/{{ $group->id }}/polls">
                             @csrf
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Pertanyaan</label>
-                                    <input type="text" name="question" class="form-control"
-                                        placeholder="Contoh: Setuju dengan jadwal meeting?" required>
+                            <div class="modal-body py-4">
+                                {{-- Input Pertanyaan --}}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-uppercase text-muted">Pertanyaan</label>
+                                    <textarea name="question" class="form-control border-2" rows="2" placeholder="Apa yang ingin Anda tanyakan?"
+                                        style="border-radius: 12px; resize: none;" required></textarea>
                                 </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Tipe Poll</label>
-                                    <select name="type" id="pollType" class="form-select"
-                                        onchange="togglePollOptions()">
-                                        <option value="yes_no">Ya / Tidak</option>
-                                        <option value="multiple_choice">Pilihan Ganda</option>
+                                {{-- Pilihan Tipe --}}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-uppercase text-muted">Tipe Voting</label>
+                                    <select name="type" id="pollType" class="form-select border-2"
+                                        style="border-radius: 10px; height: 45px;" onchange="togglePollOptions()">
+                                        <option value="yes_no">👍 Ya / Tidak 👎</option>
+                                        <option value="multiple_choice">📝 Pilihan Ganda</option>
                                     </select>
                                 </div>
 
-                                {{-- Options untuk multiple choice --}}
-                                <div id="pollOptions" class="mb-3 d-none">
-                                    <label class="form-label fw-semibold">Pilihan</label>
+                                {{-- Container Pilihan Ganda (Hidden by default) --}}
+                                <div id="pollOptions" class="mb-4 d-none p-3 bg-light rounded-4 border border-dashed">
+                                    <label class="form-label fw-bold small text-uppercase text-muted d-block mb-3">Opsi
+                                        Jawaban</label>
                                     <div id="optionList">
                                         <div class="input-group mb-2">
-                                            <input type="text" name="options[]" class="form-control form-control-sm"
-                                                placeholder="Pilihan 1">
-                                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                            <span class="input-group-text border-0 bg-white"><i
+                                                    class="fa fa-grip-lines text-muted"></i></span>
+                                            <input type="text" name="options[]"
+                                                class="form-control border-0 shadow-sm" placeholder="Pilihan 1"
+                                                style="border-radius: 0 8px 8px 0;">
+                                            <button type="button" class="btn btn-link text-danger ms-1 p-0"
                                                 onclick="removeOption(this)">
-                                                <i class="fa fa-xmark"></i>
+                                                <i class="fa fa-circle-xmark fa-lg"></i>
                                             </button>
                                         </div>
                                         <div class="input-group mb-2">
-                                            <input type="text" name="options[]" class="form-control form-control-sm"
-                                                placeholder="Pilihan 2">
-                                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                            <span class="input-group-text border-0 bg-white"><i
+                                                    class="fa fa-grip-lines text-muted"></i></span>
+                                            <input type="text" name="options[]"
+                                                class="form-control border-0 shadow-sm" placeholder="Pilihan 2"
+                                                style="border-radius: 0 8px 8px 0;">
+                                            <button type="button" class="btn btn-link text-danger ms-1 p-0"
                                                 onclick="removeOption(this)">
-                                                <i class="fa fa-xmark"></i>
+                                                <i class="fa fa-circle-xmark fa-lg"></i>
                                             </button>
                                         </div>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="addOption()">
-                                        <i class="fa fa-plus me-1"></i>Tambah Pilihan
+                                    <button type="button"
+                                        class="btn btn-sm btn-white border shadow-sm mt-2 w-100 fw-bold py-2"
+                                        onclick="addOption()" style="border-radius: 10px;">
+                                        <i class="fa fa-plus me-1 text-primary"></i> Tambah Opsi
                                     </button>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">
-                                        <i class="fa fa-clock me-1"></i>Tutup Otomatis (opsional)
-                                    </label>
-                                    <input type="datetime-local" name="closes_at" class="form-control">
-                                    <small class="text-muted">Kosongkan jika tidak ada batas waktu.</small>
-                                </div>
 
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Visibilitas Vote</label>
-                                    <div class="d-flex gap-3">
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="is_anonymous"
-                                                id="publik" value="0" checked>
-                                            <label class="form-check-label small" for="publik">
-                                                <i class="fa fa-eye me-1 text-info"></i>Publik
+                                <div class="row">
+                                    {{-- Tutup Otomatis --}}
+                                    <div class="col-md-12 mb-4">
+                                        <label class="form-label fw-bold small text-uppercase text-muted">
+                                            <i class="fa fa-calendar-clock me-1"></i>Batas Waktu (Opsional)
+                                        </label>
+                                        <input type="datetime-local" name="closes_at" class="form-control border-2"
+                                            style="border-radius: 10px;">
+                                    </div>
+
+                                    {{-- Visibilitas --}}
+                                    <div class="col-md-12">
+                                        <label class="form-label fw-bold small text-uppercase text-muted">Privasi
+                                            Hasil</label>
+                                        <div class="d-flex gap-2">
+                                            <input type="radio" class="btn-check" name="is_anonymous" id="publik"
+                                                value="0" checked autocomplete="off">
+                                            <label class="btn btn-outline-info flex-fill py-2" for="publik"
+                                                style="border-radius: 10px; border-width: 2px;">
+                                                <i class="fa fa-eye me-2"></i>Publik
+                                            </label>
+
+                                            <input type="radio" class="btn-check" name="is_anonymous" id="anonymous"
+                                                value="1" autocomplete="off">
+                                            <label class="btn btn-outline-secondary flex-fill py-2" for="anonymous"
+                                                style="border-radius: 10px; border-width: 2px;">
+                                                <i class="fa fa-eye-slash me-2"></i>Anonim
                                             </label>
                                         </div>
-                                        <div class="form-check">
-                                            <input class="form-check-input" type="radio" name="is_anonymous"
-                                                id="anonymous" value="1">
-                                            <label class="form-check-label small" for="anonymous">
-                                                <i class="fa fa-eye-slash me-1 text-secondary"></i>Anonymous
-                                            </label>
+                                        <div class="mt-2">
+                                            <small class="text-muted" style="font-size: 11px;">
+                                                <i class="fa fa-info-circle me-1"></i>
+                                                <b>Anonim:</b> Nama pemilih tidak akan terlihat oleh siapapun.
+                                            </small>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                    <i class="fa fa-xmark me-1"></i>Batal
-                                </button>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa fa-paper-plane me-1"></i>Buat Poll
+
+                            <div class="modal-footer border-0 pt-0 pb-4 justify-content-center">
+                                <button type="button" class="btn btn-light px-4 fw-bold text-muted"
+                                    data-bs-dismiss="modal" style="border-radius: 12px;">Batal</button>
+                                <button type="submit" class="btn btn-primary px-5 fw-bold shadow"
+                                    style="border-radius: 12px;">
+                                    <i class="fa fa-rocket me-2"></i>Luncurkan Poll
                                 </button>
                             </div>
                         </form>
@@ -1151,122 +1485,158 @@
             </div>
 
             {{-- Modal Create Announcement --}}
-            <div class="modal fade" id="modalCreate" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                                <i class="fa fa-bullhorn me-2 text-primary"></i>Buat Announcement
+            <div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered"> {{-- Tambah centered agar lebih modern --}}
+                    <div class="modal-content border-0 shadow-lg">
+
+                        {{-- Header dengan Gradien --}}
+                        <div class="modal-header bg-primary text-white"
+                            style="background: linear-gradient(45deg, #4e73df, #224abe);">
+                            <h5 class="modal-title d-flex align-items-center">
+                                <div class="bg-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center"
+                                    style="width: 35px; height: 35px;">
+                                    <i class="fa fa-bullhorn text-primary small"></i>
+                                </div>
+                                <span class="fw-bold">Buat Announcement Baru</span>
                             </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
+
                         <form method="POST" action="/groups/{{ $group->id }}/announcements"
-                            onsubmit="handleCreate(event, this)">
+                            enctype="multipart/form-data" onsubmit="handleCreate(event, this)">
                             @csrf
-                            <div class="modal-body">
+                            <div class="modal-body p-4">
+
+                                {{-- Section: Konten Utama --}}
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold">Judul</label>
-                                    <input type="text" name="title" id="createTitle" class="form-control"
-                                        placeholder="Judul Announcement" required>
+                                    <label class="form-label fw-bold text-dark">Judul <span
+                                            class="text-danger">*</span></label>
+                                    <input type="text" name="title" id="createTitle"
+                                        class="form-control border-2 shadow-sm" placeholder="Apa judul pengumumanmu?"
+                                        required style="border-radius: 10px;">
                                 </div>
+
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold">Isi</label>
-                                    <textarea name="content" id="createContent" class="form-control" rows="3" placeholder="Isi Announcement"
-                                        required></textarea>
+                                    <label class="form-label fw-bold text-dark">Isi Pesan <span
+                                            class="text-danger">*</span></label>
+                                    <textarea name="content" id="createContent" class="form-control border-2 shadow-sm" rows="4"
+                                        placeholder="Tuliskan detail pengumuman di sini..." required style="border-radius: 10px;"></textarea>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">
-                                        <i class="fa fa-calendar me-1"></i>Jadwal Kirim
-                                    </label>
-                                    <input type="datetime-local" name="scheduled_at" class="form-control">
-                                    <small class="text-muted">Kosongkan jika ingin langsung tampil.</small>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">
-                                        <i class="fa fa-rotate me-1"></i>Pengulangan
-                                    </label>
-                                    <select name="repeat" class="form-select">
-                                        <option value="none">Tidak Berulang</option>
-                                        <option value="daily">Setiap Hari</option>
-                                        <option value="weekly">Setiap Minggu</option>
-                                        <option value="monthly">Setiap Bulan</option>
-                                    </select>
-                                </div>
-                                {{-- Random Picker --}}
-                                <div class="mb-3">
-                                    <div class="form-check form-switch">
-                                        <label class="form-check-label fw-semibold" for="usePicker">
-                                            <i class="fa fa-dice me-1 text-warning"></i>Gunakan Random Picker
-                                            <input class="form-check-input form-control ml-3" type="checkbox"
-                                                name="use_picker" id="usePicker" onchange="togglePicker('create')">
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold small text-muted">
+                                            <i class="fa fa-calendar-alt me-1 text-primary"></i>Jadwal Kirim
                                         </label>
+                                        <input type="datetime-local" name="scheduled_at"
+                                            class="form-control form-control-sm border-2 shadow-sm"
+                                            style="border-radius: 8px;">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold small text-muted">
+                                            <i class="fa fa-rotate me-1 text-success"></i>Pengulangan
+                                        </label>
+                                        <select name="repeat" class="form-select form-select-sm border-2 shadow-sm"
+                                            style="border-radius: 8px;">
+                                            <option value="none">Tidak Berulang</option>
+                                            <option value="daily">Setiap Hari</option>
+                                            <option value="weekly">Setiap Minggu</option>
+                                            <option value="monthly">Setiap Bulan</option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div id="pickerOptions" class="d-none">
-                                    <div class="card border-0 bg-light p-3 mb-3">
 
-                                        {{-- Mode --}}
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold small">Mode Picker</label>
-                                            <div class="d-flex gap-3">
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="picker_mode"
-                                                        id="modeMembers" value="members" checked
-                                                        onchange="togglePickerMode('create')">
-                                                    <label class="form-check-label small" for="modeMembers">
-                                                        <i class="fa fa-users me-1 text-primary"></i>Dari Member Group
-                                                    </label>
+                                <hr class="my-4 opacity-50">
+
+                                {{-- Section: Lampiran --}}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-dark d-flex justify-content-between">
+                                        <span><i class="fa fa-paperclip me-2 text-info"></i>Lampiran</span>
+                                        <span class="badge bg-soft-info text-info small"
+                                            style="background-color: #e0f7fa;">Max 3</span>
+                                    </label>
+                                    <div class="input-group">
+                                        <input type="file" name="attachments[]" id="createAttachments"
+                                            class="form-control border-2" multiple
+                                            accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xlsx,.xls"
+                                            onchange="previewAttachments(this, 'createPreview')"
+                                            style="border-radius: 10px;">
+                                    </div>
+                                    <div id="createPreview" class="d-flex flex-wrap gap-2 mt-2"></div>
+                                </div>
+
+                                {{-- Section: Random Picker (Colorful Card) --}}
+                                <div class="card border-0 shadow-sm"
+                                    style="background-color: #fff9f0; border-radius: 15px;">
+                                    <div class="card-body">
+                                        <div class="form-check form-switch mb-2">
+                                            <input class="form-check-input" type="checkbox" name="use_picker"
+                                                id="usePicker" onchange="togglePicker('create')"
+                                                style="cursor: pointer; width: 40px; height: 20px;">
+                                            <label class="form-check-label fw-bold text-warning ms-2" for="usePicker">
+                                                <i class="fa fa-dice-d20 me-1"></i> Gunakan Random Picker
+                                            </label>
+                                        </div>
+
+                                        <div id="pickerOptions" class="d-none mt-3">
+                                            <div class="row g-2">
+                                                <div class="col-12 mb-2">
+                                                    <label class="form-label small fw-bold">Mode Picker</label>
+                                                    <div class="btn-group w-100" role="group">
+                                                        <input type="radio" class="btn-check" name="picker_mode"
+                                                            id="modeMembers" value="members" checked
+                                                            onchange="togglePickerMode('create')">
+                                                        <label class="btn btn-outline-primary btn-sm" for="modeMembers">
+                                                            <i class="fa fa-users me-1"></i> Member
+                                                        </label>
+
+                                                        <input type="radio" class="btn-check" name="picker_mode"
+                                                            id="modeCustom" value="custom"
+                                                            onchange="togglePickerMode('create')">
+                                                        <label class="btn btn-outline-success btn-sm" for="modeCustom">
+                                                            <i class="fa fa-list me-1"></i> Custom
+                                                        </label>
+                                                    </div>
                                                 </div>
-                                                <div class="form-check">
-                                                    <input class="form-check-input" type="radio" name="picker_mode"
-                                                        id="modeCustom" value="custom"
-                                                        onchange="togglePickerMode('create')">
-                                                    <label class="form-check-label small" for="modeCustom">
-                                                        <i class="fa fa-list me-1 text-success"></i>Custom List
-                                                    </label>
+
+                                                <div class="col-6 mb-2">
+                                                    <label class="form-label small fw-bold">Jumlah Pick</label>
+                                                    <input type="number" name="pick_count"
+                                                        class="form-control form-control-sm" value="1"
+                                                        min="1" max="50">
+                                                </div>
+
+                                                <div id="pickerRoleFilter" class="col-12 mb-2">
+                                                    <label class="form-label small fw-bold">Filter Role</label>
+                                                    <select name="pick_role_id" class="form-select form-select-sm">
+                                                        <option value="">Semua Member</option>
+                                                        @foreach ($roles as $r)
+                                                            <option value="{{ $r->id }}">{{ $r->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+
+                                                <div id="pickerCustomList" class="col-12 mb-2 d-none">
+                                                    <label class="form-label small fw-bold">Daftar Pilihan (Per
+                                                        Baris)</label>
+                                                    <textarea name="custom_pick_list" class="form-control form-control-sm" rows="3"
+                                                        placeholder="Contoh:&#10;Nama A&#10;Nama B"></textarea>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {{-- Jumlah pick --}}
-                                        <div class="mb-3">
-                                            <label class="form-label fw-semibold small">Jumlah yang Dipick</label>
-                                            <input type="number" name="pick_count" class="form-control form-control-sm"
-                                                value="1" min="1" max="50">
-                                        </div>
-
-                                        {{-- Filter role (mode members) --}}
-                                        <div id="pickerRoleFilter" class="mb-3">
-                                            <label class="form-label fw-semibold small">Filter Role (opsional)</label>
-                                            <select name="pick_role_id" class="form-select form-select-sm">
-                                                <option value="">Semua Member</option>
-                                                @foreach ($roles as $r)
-                                                    <option value="{{ $r->id }}">{{ $r->name }}</option>
-                                                @endforeach
-                                            </select>
-                                            <small class="text-muted">Kosongkan untuk pick dari semua member</small>
-                                        </div>
-
-                                        {{-- Custom list (mode custom) --}}
-                                        <div id="pickerCustomList" class="mb-3 d-none">
-                                            <label class="form-label fw-semibold small">Daftar Pilihan</label>
-                                            <textarea name="custom_pick_list" class="form-control form-control-sm" rows="5"
-                                                placeholder="Tulis satu per baris, contoh:&#10;Kelompok 1&#10;Kelompok 2&#10;Kelompok 3"></textarea>
-                                            <small class="text-muted">Satu item per baris</small>
-                                        </div>
-
                                     </div>
                                 </div>
+
                             </div>
 
-
-
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                    <i class="fa fa-xmark me-1"></i>Batal
-                                </button>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa fa-paper-plane me-1"></i>Kirim
+                            <div class="modal-footer bg-light border-0 px-4 py-3" style="border-radius: 0 0 15px 15px;">
+                                <button type="button" class="btn btn-link text-muted fw-bold text-decoration-none"
+                                    data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-primary px-4 shadow"
+                                    style="border-radius: 10px; background: linear-gradient(45deg, #4e73df, #224abe);">
+                                    <i class="fa fa-paper-plane me-2"></i>Kirim Pengumuman
                                 </button>
                             </div>
                         </form>
@@ -1275,124 +1645,158 @@
             </div>
 
             {{-- Modal Edit Announcement --}}
-            <div class="modal fade" id="modalEdit" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                                <i class="fa fa-pen me-2 text-warning"></i>Edit Announcement
+            <div class="modal fade" id="modalEdit" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg">
+
+                        {{-- Header dengan Gradien Kuning-Oranye --}}
+                        <div class="modal-header text-white"
+                            style="background: linear-gradient(45deg, #f6e05e, #ed8936);">
+                            <h5 class="modal-title d-flex align-items-center">
+                                <div class="bg-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center"
+                                    style="width: 35px; height: 35px;">
+                                    <i class="fa fa-pen text-warning small"></i>
+                                </div>
+                                <span class="fw-bold text-dark">Perbarui Announcement</span>
                             </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
-                        <form method="POST" id="formEdit" onsubmit="handleEdit(event, this)">
+
+                        <form method="POST" id="formEdit" enctype="multipart/form-data"
+                            onsubmit="handleEdit(event, this)">
                             @csrf
                             @method('PUT')
-                            <div class="modal-body">
+
+                            <div class="modal-body p-4">
+
+                                {{-- Input Judul --}}
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold">Judul</label>
-                                    <input type="text" name="title" id="editTitle" class="form-control" required>
+                                    <label class="form-label fw-bold text-dark small">Judul Announcement</label>
+                                    <input type="text" name="title" id="editTitle"
+                                        class="form-control border-2 shadow-sm" placeholder="Masukkan judul..." required
+                                        style="border-radius: 10px;">
                                 </div>
+
+                                {{-- Input Konten --}}
                                 <div class="mb-3">
-                                    <label class="form-label fw-semibold">Isi</label>
-                                    <textarea name="content" id="editContent" class="form-control" rows="3" required></textarea>
+                                    <label class="form-label fw-bold text-dark small">Isi Pesan</label>
+                                    <textarea name="content" id="editContent" class="form-control border-2 shadow-sm" rows="4"
+                                        placeholder="Edit isi pengumuman..." required style="border-radius: 10px;"></textarea>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">
-                                        <i class="fa fa-calendar me-1"></i>Jadwal Kirim
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold small text-muted">
+                                            <i class="fa fa-calendar me-1 text-warning"></i>Jadwal Kirim
+                                        </label>
+                                        <input type="datetime-local" name="scheduled_at" id="editScheduled"
+                                            class="form-control form-control-sm border-2 shadow-sm"
+                                            style="border-radius: 8px;">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold small text-muted">
+                                            <i class="fa fa-rotate me-1 text-success"></i>Pengulangan
+                                        </label>
+                                        <select name="repeat" id="editRepeat"
+                                            class="form-select form-select-sm border-2 shadow-sm"
+                                            style="border-radius: 8px;">
+                                            <option value="none">Tidak Berulang</option>
+                                            <option value="daily">Setiap Hari</option>
+                                            <option value="weekly">Setiap Minggu</option>
+                                            <option value="monthly">Setiap Bulan</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                {{-- Area Lampiran yang Ada --}}
+                                <div id="existingAttachmentsArea" class="mb-3 p-3 bg-light rounded-3 d-none">
+                                    <label class="form-label fw-bold small text-muted mb-2">Lampiran Saat Ini:</label>
+                                    <div id="existingAttachments" class="d-flex flex-wrap gap-2"></div>
+                                </div>
+
+                                {{-- Upload Lampiran Baru --}}
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold text-dark small">
+                                        <i class="fa fa-paperclip me-2 text-info"></i>Tambah Lampiran Baru
                                     </label>
-                                    <input type="datetime-local" name="scheduled_at" id="editScheduled"
-                                        class="form-control">
-                                    <small class="text-muted">Kosongkan jika ingin langsung tampil.</small>
+                                    <input type="file" name="attachments[]" id="editAttachments"
+                                        class="form-control form-control-sm border-2 shadow-sm" multiple
+                                        accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.xlsx,.xls"
+                                        onchange="previewAttachments(this, 'editPreview')" style="border-radius: 10px;">
+                                    <div id="editPreview" class="d-flex flex-wrap gap-2 mt-2"></div>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">
-                                        <i class="fa fa-rotate me-1"></i>Pengulangan
-                                    </label>
-                                    <select name="repeat" id="editRepeat" class="form-select">
-                                        <option value="none">Tidak Berulang</option>
-                                        <option value="daily">Setiap Hari</option>
-                                        <option value="weekly">Setiap Minggu</option>
-                                        <option value="monthly">Setiap Bulan</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    {{-- Random Picker --}}
-                                    <div class="mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="use_picker"
-                                                id="editUsePicker" onchange="toggleEditPicker()">
-                                            <label class="form-check-label fw-semibold" for="editUsePicker">
-                                                <i class="fa fa-dice me-1 text-warning"></i>Gunakan Random Picker
+
+                                {{-- Section: Random Picker (Refined Card) --}}
+                                <div class="card border-0 shadow-sm"
+                                    style="background-color: #fff9f0; border-radius: 15px;">
+                                    <div class="card-body">
+                                        <div class="form-check form-switch mb-0">
+                                            <input class="form-check-input shadow-none" type="checkbox" name="use_picker"
+                                                id="editUsePicker" onchange="toggleEditPicker()"
+                                                style="cursor: pointer; width: 40px; height: 20px;">
+                                            <label class="form-check-label fw-bold text-dark ms-2" for="editUsePicker">
+                                                <i class="fa fa-dice-six me-1 text-warning"></i> Gunakan Random Picker
                                             </label>
                                         </div>
-                                    </div>
 
-                                    <div id="editPickerOptions" class="d-none">
-                                        <div class="card border-0 bg-light p-3 mb-3">
-
-                                            {{-- Mode --}}
-                                            <div class="mb-3">
-                                                <label class="form-label fw-semibold small">Mode Picker</label>
-                                                <div class="d-flex gap-3">
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="picker_mode"
-                                                            id="editModeMembers" value="members" checked
+                                        <div id="editPickerOptions" class="d-none mt-3">
+                                            <div class="row g-2">
+                                                <div class="col-12 mb-2">
+                                                    <div class="btn-group w-100 shadow-sm" role="group">
+                                                        <input type="radio" class="btn-check" name="picker_mode"
+                                                            id="editModeMembers" value="members"
                                                             onchange="toggleEditPickerMode()">
-                                                        <label class="form-check-label small" for="editModeMembers">
-                                                            <i class="fa fa-users me-1 text-primary"></i>Dari Member Group
-                                                        </label>
-                                                    </div>
-                                                    <div class="form-check">
-                                                        <input class="form-check-input" type="radio" name="picker_mode"
+                                                        <label class="btn btn-outline-warning btn-sm fw-bold"
+                                                            for="editModeMembers">Member</label>
+
+                                                        <input type="radio" class="btn-check" name="picker_mode"
                                                             id="editModeCustom" value="custom"
                                                             onchange="toggleEditPickerMode()">
-                                                        <label class="form-check-label small" for="editModeCustom">
-                                                            <i class="fa fa-list me-1 text-success"></i>Custom List
-                                                        </label>
+                                                        <label class="btn btn-outline-warning btn-sm fw-bold"
+                                                            for="editModeCustom">Custom</label>
                                                     </div>
                                                 </div>
-                                            </div>
 
-                                            {{-- Jumlah pick --}}
-                                            <div class="mb-3">
-                                                <label class="form-label fw-semibold small">Jumlah yang Dipick</label>
-                                                <input type="number" name="pick_count" id="editPickCount"
-                                                    class="form-control form-control-sm" value="1" min="1"
-                                                    max="50">
-                                            </div>
+                                                <div class="col-12 mb-2">
+                                                    <label class="form-label small fw-bold text-muted">Jumlah yang
+                                                        Dipick</label>
+                                                    <input type="number" name="pick_count" id="editPickCount"
+                                                        class="form-control form-control-sm" min="1"
+                                                        max="50">
+                                                </div>
 
-                                            {{-- Filter role (mode members) --}}
-                                            <div id="editPickerRoleFilter" class="mb-3">
-                                                <label class="form-label fw-semibold small">Filter Role (opsional)</label>
-                                                <select name="pick_role_id" id="editPickRoleId"
-                                                    class="form-select form-select-sm">
-                                                    <option value="">Semua Member</option>
-                                                    @foreach ($roles as $r)
-                                                        <option value="{{ $r->id }}">{{ $r->name }}
-                                                        </option>
-                                                    @endforeach
-                                                </select>
-                                                <small class="text-muted">Kosongkan untuk pick dari semua member</small>
-                                            </div>
+                                                <div id="editPickerRoleFilter" class="col-12 mb-2">
+                                                    <label class="form-label small fw-bold text-muted">Filter Berdasarkan
+                                                        Role</label>
+                                                    <select name="pick_role_id" id="editPickRoleId"
+                                                        class="form-select form-select-sm">
+                                                        <option value="">Semua Member</option>
+                                                        @foreach ($roles as $r)
+                                                            <option value="{{ $r->id }}">{{ $r->name }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
 
-                                            {{-- Custom list (mode custom) --}}
-                                            <div id="editPickerCustomList" class="mb-3 d-none">
-                                                <label class="form-label fw-semibold small">Daftar Pilihan</label>
-                                                <textarea name="custom_pick_list" id="editCustomPickList" class="form-control form-control-sm" rows="5"
-                                                    placeholder="Tulis satu per baris, contoh:&#10;Kelompok 1&#10;Kelompok 2&#10;Kelompok 3"></textarea>
-                                                <small class="text-muted">Satu item per baris</small>
+                                                <div id="editPickerCustomList" class="col-12 mb-2 d-none">
+                                                    <label class="form-label small fw-bold text-muted">Daftar Pilihan (Satu
+                                                        Per Baris)</label>
+                                                    <textarea name="custom_pick_list" id="editCustomPickList" class="form-control form-control-sm" rows="3"></textarea>
+                                                </div>
                                             </div>
-
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                    <i class="fa fa-xmark me-1"></i>Batal
-                                </button>
-                                <button type="submit" class="btn btn-warning">
-                                    <i class="fa fa-floppy-disk me-1"></i>Update
+
+                            <div class="modal-footer border-0 px-4 pb-4 bg-white">
+                                <button type="button" class="btn btn-light fw-semibold px-4 me-auto"
+                                    data-bs-dismiss="modal" style="border-radius: 10px;">Batal</button>
+                                <button type="submit" class="btn btn-warning px-4 fw-bold shadow-sm"
+                                    style="border-radius: 10px; color: #5a4b00;">
+                                    <i class="fa fa-floppy-disk me-2"></i>Simpan Perubahan
                                 </button>
                             </div>
                         </form>
@@ -1401,78 +1805,151 @@
             </div>
 
             {{-- Modal Create Role --}}
-            <div class="modal fade" id="modalCreateRole" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                                <i class="fa fa-shield-halved me-2 text-primary"></i>Buat Role Baru
+            <div class="modal fade" id="modalCreateRole" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header bg-light">
+                            <h5 class="modal-title d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 p-2 rounded me-3">
+                                    <i class="fa fa-shield-halved text-primary"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold d-block">Buat Role Baru</span>
+                                    <small class="text-muted fw-normal" style="font-size: 0.75rem;">Tentukan nama dan hak
+                                        akses grup</small>
+                                </div>
                             </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
+
                         <form method="POST" action="/groups/{{ $group->id }}/roles">
                             @csrf
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Nama Role</label>
-                                    <input type="text" name="name" class="form-control"
-                                        placeholder="Contoh: Bendahara" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Warna Role</label>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <input type="color" name="color" class="form-control form-control-color"
-                                            value="#6c757d">
-                                        <small class="text-muted">Pilih warna untuk role ini</small>
+                            <div class="modal-body p-4">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-uppercase text-secondary">Nama Role</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i
+                                                class="fa fa-tag text-muted"></i></span>
+                                        <input type="text" name="name" class="form-control border-start-0 ps-0"
+                                            placeholder="Contoh: Bendahara, Moderator..." required>
                                     </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Permission</label>
-                                    <div class="d-flex flex-column gap-2">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox"
-                                                name="can_create_announcement" id="cr_create">
-                                            <label class="form-check-label small" for="cr_create">
-                                                <i class="fa fa-plus me-1 text-primary"></i>Buat Announcement
-                                            </label>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="can_edit_announcement"
-                                                id="cr_edit">
-                                            <label class="form-check-label small" for="cr_edit">
-                                                <i class="fa fa-pen me-1 text-warning"></i>Edit/Delete Announcement
-                                            </label>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="can_manage_member"
-                                                id="cr_member">
-                                            <label class="form-check-label small" for="cr_member">
-                                                <i class="fa fa-users me-1 text-success"></i>Manage Member & Role
-                                            </label>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="can_generate_code"
-                                                id="cr_code">
-                                            <label class="form-check-label small" for="cr_code">
-                                                <i class="fa fa-key me-1 text-warning"></i>Generate Invitation Code
-                                            </label>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="can_manage_bot"
-                                                id="cr_bot">
-                                            <label class="form-check-label small" for="cr_bot">
-                                                <i class="fa fa-robot me-1 text-info"></i>Manage Bot
-                                            </label>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-uppercase text-secondary">Warna
+                                        Identitas</label>
+                                    <div class="d-flex align-items-center p-2 border rounded bg-light">
+                                        <input type="color" name="color"
+                                            class="form-control form-control-color border-0 bg-transparent"
+                                            id="colorPicker" value="#6c757d" title="Pilih warna role">
+                                        <label for="colorPicker" class="ms-2 small text-muted">Warna ini akan muncul pada
+                                            lencana member</label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label fw-bold small text-uppercase text-secondary">Hak Akses
+                                        (Permissions)</label>
+                                    <div class="card border-0 bg-light">
+                                        <div class="list-group list-group-flush rounded border shadow-sm">
+
+                                            <div
+                                                class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="icon-box me-3 text-center" style="width: 30px;"><i
+                                                            class="fa fa-plus text-primary"></i></div>
+                                                    <div>
+                                                        <h6 class="mb-0 small fw-bold">Buat Announcement</h6>
+                                                        <p class="text-muted mb-0" style="font-size: 0.7rem;">Member bisa
+                                                            membuat pengumuman baru</p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="can_create_announcement" id="cr_create">
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="icon-box me-3 text-center" style="width: 30px;"><i
+                                                            class="fa fa-pen text-warning"></i></div>
+                                                    <div>
+                                                        <h6 class="mb-0 small fw-bold">Moderat Pengumuman</h6>
+                                                        <p class="text-muted mb-0" style="font-size: 0.7rem;">Edit/Hapus
+                                                            pengumuman milik siapa pun</p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="can_edit_announcement" id="cr_edit">
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="icon-box me-3 text-center" style="width: 30px;"><i
+                                                            class="fa fa-users text-success"></i></div>
+                                                    <div>
+                                                        <h6 class="mb-0 small fw-bold">Kelola Anggota</h6>
+                                                        <p class="text-muted mb-0" style="font-size: 0.7rem;">Mengatur
+                                                            member dan struktur role</p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="can_manage_member" id="cr_member">
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="icon-box me-3 text-center" style="width: 30px;"><i
+                                                            class="fa fa-key text-info"></i></div>
+                                                    <div>
+                                                        <h6 class="mb-0 small fw-bold">Kode Undangan</h6>
+                                                        <p class="text-muted mb-0" style="font-size: 0.7rem;">Membuat
+                                                            kode akses masuk grup</p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="can_generate_code" id="cr_code">
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                class="list-group-item d-flex justify-content-between align-items-center py-3 border-0">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="icon-box me-3 text-center" style="width: 30px;"><i
+                                                            class="fa fa-robot text-danger"></i></div>
+                                                    <div>
+                                                        <h6 class="mb-0 small fw-bold">Kelola Bot</h6>
+                                                        <p class="text-muted mb-0" style="font-size: 0.7rem;">Mengatur
+                                                            integrasi bot otomatis</p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="can_manage_bot" id="cr_bot">
+                                                </div>
+                                            </div>
+
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                    <i class="fa fa-xmark me-1"></i>Batal
-                                </button>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fa fa-plus me-1"></i>Buat Role
+
+                            <div class="modal-footer bg-light border-top-0 p-3">
+                                <button type="button"
+                                    class="btn btn-link text-decoration-none text-secondary fw-semibold"
+                                    data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-primary px-4 shadow-sm">
+                                    <i class="fa fa-check me-2"></i>Simpan Role
                                 </button>
                             </div>
                         </form>
@@ -1481,79 +1958,154 @@
             </div>
 
             {{-- Modal Edit Role --}}
-            <div class="modal fade" id="modalEditRole" tabindex="-1">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                                <i class="fa fa-pen me-2 text-warning"></i>Edit Role
+            <div class="modal fade" id="modalEditRole" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow">
+                        <div class="modal-header bg-light">
+                            <h5 class="modal-title d-flex align-items-center">
+                                <div class="bg-warning bg-opacity-10 p-2 rounded me-3">
+                                    <i class="fa fa-pen-to-square text-warning"></i>
+                                </div>
+                                <div>
+                                    <span class="fw-bold d-block">Edit Role</span>
+                                    <small class="text-muted fw-normal" style="font-size: 0.75rem;">Perbarui nama atau
+                                        hak akses role ini</small>
+                                </div>
                             </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                aria-label="Close"></button>
                         </div>
+
                         <form method="POST" id="formEditRole">
                             @csrf
                             @method('PUT')
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Nama Role</label>
-                                    <input type="text" name="name" id="editRoleName" class="form-control"
-                                        required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Warna Role</label>
-                                    <div class="d-flex gap-2 align-items-center">
-                                        <input type="color" name="color" id="editRoleColor"
-                                            class="form-control form-control-color">
-                                        <small class="text-muted">Pilih warna untuk role ini</small>
+                            <div class="modal-body p-4">
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-uppercase text-secondary">Nama
+                                        Role</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-white border-end-0"><i
+                                                class="fa fa-tag text-muted"></i></span>
+                                        <input type="text" name="name" id="editRoleName"
+                                            class="form-control border-start-0 ps-0" placeholder="Contoh: Moderator"
+                                            required>
                                     </div>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label fw-semibold">Permission</label>
-                                    <div class="d-flex flex-column gap-2">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox"
-                                                name="can_create_announcement" id="er_create">
-                                            <label class="form-check-label small" for="er_create">
-                                                <i class="fa fa-plus me-1 text-primary"></i>Buat Announcement
-                                            </label>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="can_edit_announcement"
-                                                id="er_edit">
-                                            <label class="form-check-label small" for="er_edit">
-                                                <i class="fa fa-pen me-1 text-warning"></i>Edit/Delete Announcement
-                                            </label>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="can_manage_member"
-                                                id="er_member">
-                                            <label class="form-check-label small" for="er_member">
-                                                <i class="fa fa-users me-1 text-success"></i>Manage Member & Role
-                                            </label>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="can_generate_code"
-                                                id="er_code">
-                                            <label class="form-check-label small" for="er_code">
-                                                <i class="fa fa-key me-1 text-warning"></i>Generate Invitation Code
-                                            </label>
-                                        </div>
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" name="can_manage_bot"
-                                                id="er_bot">
-                                            <label class="form-check-label small" for="er_bot">
-                                                <i class="fa fa-robot me-1 text-info"></i>Manage Bot
-                                            </label>
+
+                                <div class="mb-4">
+                                    <label class="form-label fw-bold small text-uppercase text-secondary">Warna
+                                        Identitas</label>
+                                    <div class="d-flex align-items-center p-2 border rounded bg-light">
+                                        <input type="color" name="color" id="editRoleColor"
+                                            class="form-control form-control-color border-0 bg-transparent"
+                                            title="Pilih warna role">
+                                        <label for="editRoleColor" class="ms-2 small text-muted">Sesuaikan warna lencana
+                                            role</label>
+                                    </div>
+                                </div>
+
+                                <div class="mb-2">
+                                    <label class="form-label fw-bold small text-uppercase text-secondary">Hak Akses
+                                        (Permissions)</label>
+                                    <div class="card border-0 bg-light">
+                                        <div class="list-group list-group-flush rounded border shadow-sm">
+
+                                            <div
+                                                class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="icon-box me-3 text-center" style="width: 30px;"><i
+                                                            class="fa fa-plus text-primary"></i></div>
+                                                    <div>
+                                                        <h6 class="mb-0 small fw-bold">Buat Announcement</h6>
+                                                        <p class="text-muted mb-0" style="font-size: 0.7rem;">Izinkan
+                                                            membuat pengumuman baru</p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="can_create_announcement" id="er_create">
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="icon-box me-3 text-center" style="width: 30px;"><i
+                                                            class="fa fa-pen text-warning"></i></div>
+                                                    <div>
+                                                        <h6 class="mb-0 small fw-bold">Moderat Pengumuman</h6>
+                                                        <p class="text-muted mb-0" style="font-size: 0.7rem;">Edit atau
+                                                            hapus semua pengumuman</p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="can_edit_announcement" id="er_edit">
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="icon-box me-3 text-center" style="width: 30px;"><i
+                                                            class="fa fa-users text-success"></i></div>
+                                                    <div>
+                                                        <h6 class="mb-0 small fw-bold">Kelola Anggota</h6>
+                                                        <p class="text-muted mb-0" style="font-size: 0.7rem;">Tambah,
+                                                            hapus, atau ubah role anggota</p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="can_manage_member" id="er_member">
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                class="list-group-item d-flex justify-content-between align-items-center py-3">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="icon-box me-3 text-center" style="width: 30px;"><i
+                                                            class="fa fa-key text-info"></i></div>
+                                                    <div>
+                                                        <h6 class="mb-0 small fw-bold">Kode Undangan</h6>
+                                                        <p class="text-muted mb-0" style="font-size: 0.7rem;">Membuat
+                                                            atau mereset kode grup</p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="can_generate_code" id="er_code">
+                                                </div>
+                                            </div>
+
+                                            <div
+                                                class="list-group-item d-flex justify-content-between align-items-center py-3 border-0">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="icon-box me-3 text-center" style="width: 30px;"><i
+                                                            class="fa fa-robot text-danger"></i></div>
+                                                    <div>
+                                                        <h6 class="mb-0 small fw-bold">Kelola Bot</h6>
+                                                        <p class="text-muted mb-0" style="font-size: 0.7rem;">
+                                                            Konfigurasi asisten otomatis (Bot)</p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox"
+                                                        name="can_manage_bot" id="er_bot">
+                                                </div>
+                                            </div>
+
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                    <i class="fa fa-xmark me-1"></i>Batal
-                                </button>
-                                <button type="submit" class="btn btn-warning">
-                                    <i class="fa fa-floppy-disk me-1"></i>Update
+
+                            <div class="modal-footer bg-light border-top-0 p-3">
+                                <button type="button"
+                                    class="btn btn-link text-decoration-none text-secondary fw-semibold"
+                                    data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-warning px-4 shadow-sm fw-bold text-dark">
+                                    <i class="fa fa-floppy-disk me-2"></i>Update Role
                                 </button>
                             </div>
                         </form>
@@ -1678,7 +2230,6 @@
                     document.getElementById('editPickRoleId').value = pickRoleId;
                     document.getElementById('editCustomPickList').value = customList;
 
-                    // Set mode
                     if (pickerMode === 'custom') {
                         document.getElementById('editModeCustom').checked = true;
                         document.getElementById('editPickerRoleFilter').classList.add('d-none');
@@ -1687,6 +2238,41 @@
                         document.getElementById('editModeMembers').checked = true;
                         document.getElementById('editPickerRoleFilter').classList.remove('d-none');
                         document.getElementById('editPickerCustomList').classList.add('d-none');
+                    }
+
+                    const attachments = btn.getAttribute('data-attachments');
+                    const existingDiv = document.getElementById('existingAttachments');
+                    existingDiv.innerHTML = '';
+                    document.getElementById('editPreview').innerHTML = '';
+                    document.getElementById('editAttachments').value = '';
+
+                    if (attachments && attachments !== '[]') {
+                        try {
+                            const list = JSON.parse(attachments);
+                            if (list.length > 0) {
+                                existingDiv.innerHTML =
+                                    '<label class="form-label fw-semibold small mb-2">Lampiran Saat Ini</label>';
+                                list.forEach(att => {
+                                    const icon = att.type === 'image' ? 'fa-image text-primary' :
+                                        'fa-file text-secondary';
+                                    existingDiv.innerHTML += `
+                        <div class="d-flex align-items-center justify-content-between border rounded p-2 mb-1" id="att-${att.id}">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fa ${icon}"></i>
+                                <span class="small">${att.filename}</span>
+                            </div>
+                            <button type="button"
+                                    class="btn btn-outline-danger"
+                                    style="font-size:10px; padding: 1px 6px;"
+                                    onclick="deleteAttachment(${att.id}, ${att.announcement_id})">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </div>`;
+                                });
+                            }
+                        } catch (e) {
+                            console.log('parse attachments error:', e);
+                        }
                     }
                 });
 
@@ -1704,6 +2290,69 @@
                     document.getElementById('formEditRole').action =
                         `/groups/{{ $group->id }}/roles/${btn.getAttribute('data-id')}`;
                 });
+
+                function previewAttachments(input, previewId) {
+                    const preview = document.getElementById(previewId);
+                    preview.innerHTML = '';
+
+                    if (input.files.length > 3) {
+                        showToast('Maksimal 3 file!', 'warning');
+                        input.value = '';
+                        return;
+                    }
+
+                    Array.from(input.files).forEach(file => {
+                        const isImage = file.type.startsWith('image/');
+                        const size = file.size >= 1048576 ?
+                            (file.size / 1048576).toFixed(2) + ' MB' :
+                            (file.size / 1024).toFixed(2) + ' KB';
+
+                        const div = document.createElement('div');
+                        div.className = 'border rounded p-2 d-flex align-items-center gap-2';
+                        div.style.maxWidth = '180px';
+
+                        if (isImage) {
+                            const img = document.createElement('img');
+                            img.style = 'width:36px;height:36px;object-fit:cover;border-radius:4px;';
+                            img.src = URL.createObjectURL(file);
+                            div.appendChild(img);
+                        } else {
+                            const icon = document.createElement('i');
+                            icon.className = 'fa fa-file fa-lg text-secondary';
+                            div.appendChild(icon);
+                        }
+
+                        const info = document.createElement('div');
+                        info.className = 'overflow-hidden';
+                        info.innerHTML = `<div class="small text-truncate fw-semibold">${file.name}</div>
+                          <div style="font-size:10px" class="text-muted">${size}</div>`;
+                        div.appendChild(info);
+                        preview.appendChild(div);
+                    });
+                }
+
+                function deleteAttachment(e, attachmentId, announcementId) {
+                    e.preventDefault();
+                    if (!confirm('Hapus lampiran ini?')) return;
+
+                    fetch(`/groups/{{ $group->id }}/announcements/${announcementId}/attachments/${attachmentId}`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                _method: 'DELETE'
+                            })
+                        })
+                        .then(res => {
+                            if (res.ok) {
+                                showToast('Lampiran berhasil dihapus!', 'success');
+                                // Hapus elemen dari DOM
+                                e.target.closest('.d-flex').remove();
+                            }
+                        });
+                }
 
                 function togglePollOptions() {
                     const type = document.getElementById('pollType').value;

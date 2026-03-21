@@ -32,12 +32,19 @@
 
         .sidebar {
             background: var(--sidebar-bg);
-            min-height: 100vh;
+            position: sticky;
+            top: 0;
+            height: 100vh;
             box-shadow: 10px 0 30px rgba(0, 0, 0, 0.03);
             border-right: 1px solid #edf2f7;
             padding: 1.5rem 1rem !important;
             display: flex;
             flex-direction: column;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .sidebar::-webkit-scrollbar {
+            width: 0px;
         }
 
         .sidebar-brand {

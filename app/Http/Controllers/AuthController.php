@@ -21,7 +21,7 @@ class AuthController extends Controller
     public function dashboard()
     {
         $pricing      = PricingComponent::pluck('price', 'key');
-        $groups       = auth()->user()->groups()->withPivot('role_id')->take(2)->get();
+        $groups       = auth()->user()->groups()->withPivot('role_id')->take(4)->get();
         $totalGroups  = auth()->user()->groups()->count();
         $subscription = auth()->user()->activeSubscription()->first();
         $groupCount   = GroupMember::where('user_id', auth()->id())

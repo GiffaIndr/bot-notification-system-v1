@@ -46,7 +46,7 @@ class Group extends Model
     }
     public function announcements()
     {
-        return $this->hasMany(Announcement::class)->latest();
+        return $this->hasMany(Announcement::class);
     }
 
     public function bots()

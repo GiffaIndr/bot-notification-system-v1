@@ -20,15 +20,21 @@ class Announcement extends Model
         'pick_count',
         'pick_role_id',
         'custom_pick_list',
+        'is_pinned',
         'picked_result',
     ];
 
     protected $casts = [
         'scheduled_at'     => 'datetime',
         'use_picker'       => 'boolean',
+        'is_pinned' => 'boolean',
         'custom_pick_list' => 'array',
         'picked_result'    => 'array',
     ];
+    public function attachments()
+    {
+        return $this->hasMany(AnnouncementAttachment::class);
+    }
 
     public function pickRole()
     {

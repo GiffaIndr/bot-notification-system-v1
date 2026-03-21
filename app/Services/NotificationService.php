@@ -78,6 +78,105 @@ class NotificationService
             return $chatId;
         }
     }
+    public function sendWhatsappFile(array $phones, $attachment, string $caption = ''): void
+    {
+        try {
+            $filePath = storage_path('app/public/' . $attachment->path);
+
+            if (!file_exists($filePath)) {
+                Log::error('File not found: ' . $filePath);
+                return;
+            }
+
+            $fileData = base64_encode(file_get_contents($filePath));
+
+            Http::timeout(30)->post("{$this->baseUrl}/send-file", [
+                'phones'    => $phones,
+                'filename'  => $attachment->filename,
+                'type'      => $attachment->type,
+                'mime_type' => $attachment->mime_type,
+                'data'      => $fileData,
+                'caption'   => $caption,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('WhatsApp file send error: ' . $e->getMessage());
+        }
+    }
+    public function sendDiscordWithFiles(string $channelId, string $message, $attachments): void
+    {
+        try {
+            $files = [];
+            foreach ($attachments as $attachment) {
+                $filePath = storage_path('app/public/' . $attachment->path);
+                if (file_exists($filePath)) {
+                    $fileData = base64_encode(file_get_contents($filePath));
+                    $files[]  = [
+                        'filename'  => $attachment->filename,
+                        'mime_type' => $attachment->mime_type,
+                        'data'      => $fileData,
+                    ];
+                }
+            }
+
+            Http::timeout(30)->post("{$this->baseUrl}/discord/send-with-files", [
+                'channel_id' => $channelId,
+                'message'    => $message,
+                'files'      => $files,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Discord send with files error: ' . $e->getMessage());
+        }
+    }
+
+    public function sendDiscordFile(string $channelId, $attachment): void
+    {
+        try {
+            $filePath = storage_path('app/public/' . $attachment->path);
+
+            if (!file_exists($filePath)) {
+                Log::error('File not found: ' . $filePath);
+                return;
+            }
+
+            $fileData = base64_encode(file_get_contents($filePath));
+
+            Http::timeout(30)->post("{$this->baseUrl}/discord/send-file", [
+                'channel_id' => $channelId,
+                'filename'   => $attachment->filename,
+                'mime_type'  => $attachment->mime_type,
+                'data'       => $fileData,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Discord file send error: ' . $e->getMessage());
+        }
+    }
+
+    public function sendTelegramFile(string $chatId, $attachment, string $caption = ''): void
+    {
+        try {
+            $token    = config('services.telegram.token');
+            $method   = $attachment->type === 'image' ? 'sendPhoto' : 'sendDocument';
+            $field    = $attachment->type === 'image' ? 'photo' : 'document';
+            $filePath = storage_path('app/public/' . $attachment->path);
+
+            if (!file_exists($filePath)) {
+                Log::error('File not found: ' . $filePath);
+                return;
+            }
+
+            Http::timeout(30)->attach(
+                $field,
+                file_get_contents($filePath),
+                $attachment->filename
+            )->post("https://api.telegram.org/bot{$token}/{$method}", [
+                'chat_id'    => $chatId,
+                'caption'    => $caption ?: $attachment->filename, // ← pakai caption kalau ada
+                'parse_mode' => 'Markdown',
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Telegram file send error: ' . $e->getMessage());
+        }
+    }
     public function sendTelegram(string $chatId, string $message): bool
     {
         try {

@@ -2,7 +2,7 @@
  @section('content2')
      <div class="container-fluid">
          <div class="row">
-             <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+             <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse sticky-top">
                  <div class="sidebar-brand">
                      <i class="fas fa-robot"></i>
                      <span>AnnounceBot</span>
