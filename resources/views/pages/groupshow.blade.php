@@ -11,74 +11,48 @@
 
     /* Group Card Modern */
     .group-card {
-        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        border-radius: 24px;
-        border: 1px solid rgba(226, 232, 240, 0.7) !important;
-        background: #ffffff;
+        transition: all 0.3s ease;
+        border-radius: 18px;
+        border: 1px solid #e7edf5;
+        background: #fff;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, 0.04);
         display: flex;
         flex-direction: column;
+        padding: 20px;
     }
 
     .group-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.06) !important;
-        border-color: #6366f1 !important;
+        transform: translateY(-4px);
+        box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+        border-color: #0d6efd;
     }
 
-    /* Avatar Inisial Ber-Style */
+    /* Avatar Inisial */
     .avatar-initial {
-        width: 54px;
-        height: 54px;
-        border-radius: 16px;
+        width: 50px;
+        height: 50px;
+        border-radius: 14px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 800;
-        font-size: 1.2rem;
+        font-size: 1.1rem;
         color: white;
-        text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        /* Gradient Dinamis */
-        background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-        box-shadow: 0 8px 16px -4px rgba(99, 102, 241, 0.4);
+        background: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+        flex-shrink: 0;
     }
 
     /* Role Badge - Soft & Modern */
     .role-pill {
-        font-size: 11px;
-        font-weight: 700;
-        padding: 5px 12px;
-        border-radius: 10px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 8px;
         display: inline-flex;
         align-items: center;
-        gap: 6px;
+        gap: 5px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
-    }
-
-    /* Manage Button Custom */
-    .btn-manage {
-        background: #f1f5f9;
-        color: #1e293b;
-        border: none;
-        border-radius: 14px;
-        font-weight: 700;
-        padding: 12px;
-        transition: 0.3s;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .btn-manage:hover {
-        background: #1e293b;
-        color: #ffffff;
-    }
-
-    .btn-manage i {
-        background: rgba(255, 255, 255, 0.2);
-        padding: 5px;
-        border-radius: 8px;
-        font-size: 10px;
     }
 
     .btn-edit-tool {
@@ -101,13 +75,13 @@
     <div class="row justify-content-center">
         <div class="col-lg-11">
 
-            <div class="d-flex justify-content-between align-items-end mb-5">
-                <div>
-                    <h2 class="fw-800 text-dark mb-1" style="letter-spacing: -1.5px;">Workspace Hub</h2>
-                    <p class="text-muted mb-0">Kelola kolaborasi tim dalam satu pintu.</p>
-                </div>
+            <!-- Header -->
+            <div class="mb-5">
+                <h2 class="fw-bold text-dark mb-2" style="font-size: 2rem;">Semua Workspace</h2>
+                <p class="text-muted mb-0">Kelola dan akses semua group atau workspace kamu dalam satu tempat.</p>
             </div>
 
+            <!-- Groups Grid -->
             <div class="row g-4">
                 @forelse ($groups as $group)
                     @php
@@ -121,45 +95,52 @@
                     @endphp
 
                     <div class="col-md-6 col-lg-4">
-                        <div class="card group-card h-100 p-4 border-0">
-
-                            <div class="d-flex justify-content-between align-items-start mb-4">
+                        <div class="group-card">
+                            <!-- Header dengan Avatar & Edit Button -->
+                            <div class="d-flex justify-content-between align-items-start mb-3">
                                 <div class="avatar-initial">
                                     {{ $initials }}
                                 </div>
-
                                 @if ($memberRole?->role?->is_owner)
-                                    <button class="btn btn-edit-tool"
+                                    <button class="btn btn-sm btn-light border" 
                                             data-bs-toggle="modal"
                                             data-bs-target="#modalEditGroup"
                                             data-id="{{ $group->id }}"
                                             data-name="{{ $group->name }}">
-                                        <i class="fas fa-pen-nib"></i>
+                                        <i class="fas fa-pen text-primary" style="font-size: 0.8rem;"></i>
                                     </button>
                                 @endif
                             </div>
 
+                            <!-- Group Info -->
                             <div class="mb-4">
-                                <h5 class="fw-bold text-dark mb-2 text-truncate">{{ $group->name }}</h5>
-
+                                <h5 class="fw-bold text-dark mb-2">{{ $group->name }}</h5>
                                 @if ($memberRole?->role)
                                     <span class="role-pill" style="background-color: {{ $memberRole->role->color }}15; color: {{ $memberRole->role->color }};">
-                                        <i class="fas fa-shield-alt" style="font-size: 8px;"></i>
                                         {{ $memberRole->role->name }}
                                     </span>
                                 @endif
                             </div>
 
+                            <!-- Action Button -->
                             <div class="mt-auto">
-                                <a href="/groups/{{ $group->id }}" class="btn-manage text-decoration-none">
-                                    <span>Manage Project</span>
-                                    <i class="fas fa-chevron-right text-white bg-dark"></i>
+                                <a href="/groups/{{ $group->id }}" class="btn btn-primary w-100 rounded-pill fw-bold btn-sm">
+                                    Buka Workspace
                                 </a>
                             </div>
                         </div>
                     </div>
                 @empty
-                    @endforelse
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <h6 class="fw-bold mb-2">Belum ada workspace</h6>
+                            <p class="text-muted small mb-3">Mulai dengan membuat group baru atau join dengan invitation code.</p>
+                            <a href="/dashboard" class="btn btn-primary rounded-pill px-4 fw-bold">
+                                Ke Dashboard
+                            </a>
+                        </div>
+                    </div>
+                @endforelse
             </div>
         </div>
     </div>
@@ -167,21 +148,21 @@
 
 <div class="modal fade" id="modalEditGroup" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 28px; overflow: hidden;">
-            <div class="p-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="fw-bold m-0 text-dark">Rename Group</h6>
-                    <button type="button" class="btn-close small" data-bs-dismiss="modal"></button>
-                </div>
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 18px;">
+            <div class="modal-header border-0 p-4">
+                <h6 class="modal-title fw-bold">Edit Nama Workspace</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body px-4 pb-4">
                 <form method="POST" id="formEditGroup">
                     @csrf
                     @method('PUT')
                     <input type="text" name="name" id="editGroupName"
-                           class="form-control border-0 bg-light p-3 rounded-4 mb-3"
-                           style="font-size: 0.9rem;" placeholder="Nama baru..." required>
+                           class="form-control rounded-3 p-3 mb-4"
+                           placeholder="Nama workspace baru..." required>
 
-                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold py-2 shadow-sm">
-                        Update Name
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill fw-bold">
+                        Simpan Perubahan
                     </button>
                 </form>
             </div>

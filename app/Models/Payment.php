@@ -10,6 +10,7 @@ class Payment extends Model
     use HasFactory;
     protected $guarded = ['id'];
     protected $casts = [
+        'duration_months' => 'integer',
         'starts_at'  => 'datetime',
         'expires_at' => 'datetime',
     ];

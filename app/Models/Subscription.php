@@ -14,6 +14,7 @@ class Subscription extends Model
         'max_groups',
         'max_members',
         'total_price',
+        'duration_months',
         'starts_at',
         'expires_at',
     ];
@@ -22,6 +23,7 @@ class Subscription extends Model
         'has_whatsapp' => 'boolean',
         'has_discord'  => 'boolean',
         'has_telegram' => 'boolean',
+        'duration_months' => 'integer',
         'starts_at'    => 'datetime',
         'expires_at'   => 'datetime',
     ];

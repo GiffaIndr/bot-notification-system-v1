@@ -11,6 +11,24 @@ require("dotenv").config();
 const app = express();
 app.use(express.json());
 
+function normalizePhones(phones) {
+    if (!Array.isArray(phones)) return [];
+
+    const normalized = phones
+        .map((phone) => {
+            const digits = String(phone || "").replace(/\D+/g, "");
+
+            if (!digits) return "";
+            if (digits.startsWith("0")) return `62${digits.slice(1)}`;
+            if (digits.startsWith("8")) return `62${digits}`;
+
+            return digits;
+        })
+        .filter(Boolean);
+
+    return [...new Set(normalized)];
+}
+
 // WHATSAPP
 
 let sock = null;
@@ -85,6 +103,7 @@ app.post("/send", async (req, res) => {
 // Kirim WA ke banyak nomor
 app.post("/send-bulk", async (req, res) => {
     const { phones, message } = req.body;
+    const uniquePhones = normalizePhones(phones);
 
     if (!isConnected || !sock) {
         return res
@@ -93,7 +112,7 @@ app.post("/send-bulk", async (req, res) => {
     }
 
     const results = [];
-    for (const phone of phones) {
+    for (const phone of uniquePhones) {
         try {
             const jid = `${phone}@s.whatsapp.net`;
             await sock.sendMessage(jid, { text: message });
@@ -142,6 +161,7 @@ app.get("/discord/channel/:channel_id", async (req, res) => {
 // WA: terima caption
 app.post("/send-file", async (req, res) => {
     const { phones, filename, type, mime_type, data, caption } = req.body;
+    const uniquePhones = normalizePhones(phones);
 
     if (!isConnected || !sock) {
         return res
@@ -152,7 +172,7 @@ app.post("/send-file", async (req, res) => {
     const buffer = Buffer.from(data, "base64");
     const results = [];
 
-    for (const phone of phones) {
+    for (const phone of uniquePhones) {
         try {
             const jid = `${phone}@s.whatsapp.net`;
 

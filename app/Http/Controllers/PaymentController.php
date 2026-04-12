@@ -12,12 +12,32 @@ use App\Models\PricingComponent;
 use App\Models\Subscription;
 use App\Models\Plan;
 use App\Models\GroupBot;
+use App\Models\GroupMember;
 use Illuminate\Support\Facades\Log;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
+    private function resolveDurationMonths($value): int
+    {
+        $months = (int) $value;
+        return max(1, min($months, 24));
+    }
+
+    public function index()
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $pricing = PricingComponent::pluck('price', 'key');
+        $subscription = $user->activeSubscription()->first();
+        $groupCount = GroupMember::where('user_id', auth()->id())
+            ->whereHas('role', fn($q) => $q->where('is_owner', true))
+            ->count();
+
+        return view('pages.payments', compact('pricing', 'subscription', 'groupCount'));
+    }
+
     public function callback(Request $request)
     {
         $orderId = $request->order_id;
@@ -47,13 +67,15 @@ class PaymentController extends Controller
                 ->latest('expires_at')
                 ->first();
 
+            $durationMonths = $this->resolveDurationMonths($subscription->duration_months ?? 6);
+
             if ($existing) {
                 $startsAt  = now();
-                $expiresAt = $existing->expires_at->copy()->addMonths(6);
+                $expiresAt = $existing->expires_at->copy()->addMonths($durationMonths);
                 $existing->delete();
             } else {
                 $startsAt  = now();
-                $expiresAt = now()->addMonths(6);
+                $expiresAt = now()->addMonths($durationMonths);
             }
 
             $payment->update([
@@ -140,9 +162,11 @@ class PaymentController extends Controller
             ->latest('expires_at')
             ->first();
 
+        $durationMonths = $this->resolveDurationMonths($subscription->duration_months ?? 6);
+
         if ($existing) {
             $startsAt  = now(); // langsung aktif
-            $expiresAt = $existing->expires_at->copy()->addMonths(6);
+            $expiresAt = $existing->expires_at->copy()->addMonths($durationMonths);
 
             // Hapus subscription lama, merge ke yang baru
             $existing->delete();
@@ -207,24 +231,32 @@ class PaymentController extends Controller
         Config::$isSanitized  = true;
         Config::$is3ds        = true;
 
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
         $pricing      = PricingComponent::pluck('price', 'key');
-        $existing     = auth()->user()->activeSubscription()->first();
+        $existing     = $user->activeSubscription()->first();
+        $durationMonths = $this->resolveDurationMonths($request->duration_months ?? 6);
 
-        $total = 0;
+        // Hitung berdasarkan konfigurasi paket final agar total lebih konsisten dan mudah dipahami user.
+        $hasWhatsapp = (bool) $request->has_whatsapp || ($existing?->has_whatsapp ?? false);
+        $hasDiscord  = (bool) $request->has_discord  || ($existing?->has_discord ?? false);
+        $hasTelegram = (bool) $request->has_telegram || ($existing?->has_telegram ?? false);
 
-        // Bot — hanya yang baru
-        if ($request->has_whatsapp && !($existing?->has_whatsapp)) $total += $pricing['whatsapp'];
-        if ($request->has_discord  && !($existing?->has_discord))  $total += $pricing['discord'];
-        if ($request->has_telegram && !($existing?->has_telegram)) $total += $pricing['telegram'];
+        if (!$hasWhatsapp && !$hasDiscord && !$hasTelegram) {
+            return response()->json(['error' => 'Pilih minimal 1 bot notifikasi!'], 422);
+        }
 
-        // Group & member — hanya tambahan
-        $currentGroups  = $existing?->max_groups  ?? 0;
-        $currentMembers = $existing?->max_members ?? 0;
-        $extraGroups    = max(0, $request->max_groups  - $currentGroups);
-        $extraMembers   = max(0, $request->max_members - $currentMembers);
+        $targetGroups  = max((int) $request->max_groups, (int) ($existing?->max_groups ?? 1));
+        $targetMembers = max((int) $request->max_members, (int) ($existing?->max_members ?? 10));
 
-        $total += $extraGroups  * $pricing['per_group'];
-        $total += $extraMembers * $pricing['per_member'];
+        $packageCostFor6Months = 0;
+        if ($hasWhatsapp) $packageCostFor6Months += $pricing['whatsapp'];
+        if ($hasDiscord)  $packageCostFor6Months += $pricing['discord'];
+        if ($hasTelegram) $packageCostFor6Months += $pricing['telegram'];
+        $packageCostFor6Months += ($targetGroups * $pricing['per_group']);
+        $packageCostFor6Months += ($targetMembers * $pricing['per_member']);
+
+        $total = (int) round(($packageCostFor6Months / 6) * $durationMonths);
 
         if ($total <= 0) {
             return response()->json(['error' => 'Tidak ada perubahan dari langganan saat ini!'], 422);
@@ -238,8 +270,8 @@ class PaymentController extends Controller
                 'gross_amount' => $total,
             ],
             'customer_details' => [
-                'first_name' => auth()->user()->name,
-                'email'      => auth()->user()->email,
+                'first_name' => $user->name,
+                'email'      => $user->email,
             ],
         ];
 
@@ -247,20 +279,22 @@ class PaymentController extends Controller
 
         // Merge dengan subscription yang ada
         $subscription = Subscription::create([
-            'user_id'      => auth()->id(),
-            'has_whatsapp' => $request->has_whatsapp || ($existing?->has_whatsapp ?? false),
-            'has_discord'  => $request->has_discord  || ($existing?->has_discord  ?? false),
-            'has_telegram' => $request->has_telegram || ($existing?->has_telegram ?? false),
-            'max_groups'   => max($request->max_groups,  $existing?->max_groups  ?? 0),
-            'max_members'  => max($request->max_members, $existing?->max_members ?? 0),
+            'user_id'      => $user->id,
+            'has_whatsapp' => $hasWhatsapp,
+            'has_discord'  => $hasDiscord,
+            'has_telegram' => $hasTelegram,
+            'max_groups'   => $targetGroups,
+            'max_members'  => $targetMembers,
             'total_price'  => $total,
+            'duration_months' => $durationMonths,
         ]);
 
         Payment::create([
-            'user_id'         => auth()->id(),
+            'user_id'         => $user->id,
             'subscription_id' => $subscription->id,
             'order_id'        => $orderId,
             'amount'          => $total,
+            'duration_months' => $durationMonths,
         ]);
 
         return response()->json(['token' => $snapToken]);
@@ -305,13 +339,15 @@ class PaymentController extends Controller
                     ->latest('expires_at')
                     ->first();
 
+                $durationMonths = $this->resolveDurationMonths($subscription->duration_months ?? 6);
+
                 if ($existing) {
                     $startsAt  = now();
-                    $expiresAt = $existing->expires_at->copy()->addMonths(6);
+                    $expiresAt = $existing->expires_at->copy()->addMonths($durationMonths);
                     $existing->delete();
                 } else {
                     $startsAt  = now();
-                    $expiresAt = now()->addMonths(6);
+                    $expiresAt = now()->addMonths($durationMonths);
                 }
 
                 $payment->update([

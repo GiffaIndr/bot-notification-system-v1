@@ -23,6 +23,13 @@ class InvitationController extends Controller
 
     public function join(Request $request)
     {
+        /** @var \App\Models\User|null $user */
+        $user = auth()->user();
+
+        if (!$user || !$user->activeSubscription()->exists()) {
+            return back()->with('error', 'Aktifkan paket terlebih dahulu sebelum join group.');
+        }
+
         $code = $request->code;
 
         // Kode PJ/Editor

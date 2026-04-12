@@ -186,7 +186,7 @@ php artisan serve
 
 ```bash
 cd bot-service
-node index.js
+node server.js
 ```
 
 > Scan QR code yang muncul menggunakan WhatsApp nomor bot.

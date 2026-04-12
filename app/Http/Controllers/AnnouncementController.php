@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use App\Models\AnnouncementAttachment;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class AnnouncementController extends Controller
 {
@@ -30,12 +31,16 @@ class AnnouncementController extends Controller
             'attachments.*' => 'file|max:20480|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xlsx,xls',
         ]);
 
+        $scheduledAt = $request->filled('scheduled_at')
+            ? Carbon::parse($request->scheduled_at)
+            : now();
+
         $announcement = Announcement::create([
             'group_id'         => $group->id,
             'user_id'          => auth()->id(),
             'title'            => $request->title,
             'content'          => $request->content,
-            'scheduled_at'     => $request->scheduled_at,
+            'scheduled_at'     => $scheduledAt,
             'repeat'           => $request->repeat,
             'use_picker'       => $request->boolean('use_picker'),
             'picker_mode'      => $request->picker_mode ?? 'members',
@@ -86,10 +91,14 @@ class AnnouncementController extends Controller
 
         $oldTitle = $announcement->title;
 
+        $scheduledAt = $request->filled('scheduled_at')
+            ? Carbon::parse($request->scheduled_at)
+            : now();
+
         $announcement->update([
             'title'            => $request->title,
             'content'          => $request->content,
-            'scheduled_at'     => $request->scheduled_at,
+            'scheduled_at'     => $scheduledAt,
             'repeat'           => $request->repeat,
             'use_picker'       => $request->boolean('use_picker'),
             'picker_mode'      => $request->picker_mode ?? 'members',

@@ -20,13 +20,13 @@ class SendScheduledAnnouncements extends Command
         $status       = $notification->isConnected();
 
         if (!$status['whatsapp'] && !$status['discord']) {
-            $this->error('❌ WhatsApp dan Discord service tidak terhubung!');
-            return;
+            $this->warn('⚠️ WhatsApp dan Discord service tidak terhubung. Lanjut kirim channel lain yang tersedia.');
         }
 
         $now = Carbon::now();
 
         $announcements = Announcement::with(['group.members', 'group.bots', 'attachments'])
+            ->whereNotNull('scheduled_at')
             ->where('scheduled_at', '<=', $now)
             ->get();
 
@@ -93,6 +93,26 @@ class SendScheduledAnnouncements extends Command
                 $phones = $announcement->group->members()
                     ->whereNotNull('phone')
                     ->pluck('phone')
+                    ->map(function ($phone) {
+                        $digits = preg_replace('/\D+/', '', (string) $phone);
+
+                        if (!$digits) {
+                            return null;
+                        }
+
+                        if (str_starts_with($digits, '0')) {
+                            return '62' . substr($digits, 1);
+                        }
+
+                        if (str_starts_with($digits, '8')) {
+                            return '62' . $digits;
+                        }
+
+                        return $digits;
+                    })
+                    ->filter()
+                    ->unique()
+                    ->values()
                     ->toArray();
 
                 if (!empty($phones)) {

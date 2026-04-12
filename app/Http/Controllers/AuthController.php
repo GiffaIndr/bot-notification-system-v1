@@ -11,6 +11,32 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
+    private function hasManageAccess(?User $user = null): bool
+    {
+        $userId = $user?->id ?? auth()->id();
+
+        if (!$userId) {
+            return false;
+        }
+
+        return GroupMember::where('user_id', $userId)
+            ->whereHas('role', fn($q) => $q->where('is_owner', true))
+            ->exists();
+    }
+
+    public function home()
+    {
+        if ($this->hasManageAccess(auth()->user())) {
+            return redirect()->route('dashboard.pages');
+        }
+
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $groups = $user->groups()->withPivot('role_id')->latest()->get();
+
+        return view('pages.home', compact('groups'));
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -18,12 +44,16 @@ class AuthController extends Controller
     {
         return view('auth.login');
     }
+
     public function dashboard()
     {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+
         $pricing      = PricingComponent::pluck('price', 'key');
-        $groups       = auth()->user()->groups()->withPivot('role_id')->take(4)->get();
-        $totalGroups  = auth()->user()->groups()->count();
-        $subscription = auth()->user()->activeSubscription()->first();
+        $groups       = $user->groups()->withPivot('role_id')->take(4)->get();
+        $totalGroups  = $user->groups()->count();
+        $subscription = $user->activeSubscription()->first();
         $groupCount   = GroupMember::where('user_id', auth()->id())
             ->whereHas('role', fn($q) => $q->where('is_owner', true))
             ->count();
@@ -61,7 +91,7 @@ class AuthController extends Controller
         ]);
         $users = $request->Only('email', 'password');
         if (Auth::attempt($users)) {
-            return redirect('dashboard')->with('success', 'berhasil login!');
+            return redirect()->route('home.pages')->with('success', 'berhasil login!');
         } else {
             return redirect()->back()->with('failed', 'gagal login, silahkan cek kembali');
         }
@@ -91,13 +121,16 @@ class AuthController extends Controller
             $phone = '62' . substr($phone, 1);
         }
 
-        User::create([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password),
             'phone' => $phone,
         ]);
-        return redirect('/')->with('success', 'berhasil menambah akun, silahkan login');
+
+        Auth::login($user);
+
+        return redirect()->route('home.pages')->with('success', 'Akun berhasil dibuat. Selamat datang!');
     }
 
     /**

@@ -43,6 +43,7 @@
             z-index: 1000;
             overflow-y: auto;
         }
+
         .sidebar::-webkit-scrollbar {
             width: 0px;
         }
@@ -158,7 +159,7 @@
         }
     </style>
 
-    <title>Annoucement Bot</title>
+    <title>Tasku</title>
 </head>
 
 <body>

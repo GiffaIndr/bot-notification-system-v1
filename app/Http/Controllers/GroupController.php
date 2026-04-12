@@ -189,6 +189,9 @@ class GroupController extends Controller
             ->orderByRaw('is_pinned DESC')
             ->orderByDesc('created_at')
             ->get();
+        
+        $announcementsPreview = $announcements->take(2);
+        $announcementsMore = $announcements->skip(2);
 
         $discordChannelName = null;
         $telegramGroupName  = null;
@@ -213,11 +216,33 @@ class GroupController extends Controller
             'members',
             'roles',
             'announcements',
+            'announcementsPreview',
+            'announcementsMore',
             'discordChannelName',
             'polls',
             'telegramGroupName',
         ));
     }
+
+    public function allAnnouncements(Group $group)
+    {
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
+
+        if (!$member) abort(403, 'Anda bukan anggota group ini.');
+
+        $role    = $member->role;
+        $announcements = $group->announcements()
+            ->with(['user', 'reactions', 'attachments'])
+            ->orderByRaw('is_pinned DESC')
+            ->orderByDesc('created_at')
+            ->get();
+
+        return view('pages.announcements', compact('group', 'role', 'announcements'));
+    }
+
     public function generateCode(Request $request, Group $group)
     {
         $member = GroupMember::where('group_id', $group->id)
