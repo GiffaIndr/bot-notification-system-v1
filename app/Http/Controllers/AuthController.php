@@ -44,6 +44,15 @@ class AuthController extends Controller
         return view('pages.home', compact('groups'));
     }
 
+    public function homePage()
+    {
+        /** @var \App\Models\User $user */
+        $user = auth()->user();
+        $groups = $user->groups()->withPivot('role_id')->latest()->get();
+
+        return view('pages.home', compact('groups'));
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -98,7 +107,7 @@ class AuthController extends Controller
         ]);
         $users = $request->Only('email', 'password');
         if (Auth::attempt($users)) {
-            return redirect()->route('landing')->with('success', 'berhasil login!');
+            return redirect()->route('home.pages')->with('success', 'berhasil login!');
         } else {
             return redirect()->back()->with('failed', 'gagal login, silahkan cek kembali');
         }
@@ -137,7 +146,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('landing')->with('success', 'Akun berhasil dibuat. Selamat datang!');
+        return redirect()->route('home.pages')->with('success', 'Akun berhasil dibuat. Selamat datang!');
     }
 
     /**
