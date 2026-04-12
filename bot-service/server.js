@@ -3,7 +3,10 @@ const {
     useMultiFileAuthState,
     DisconnectReason,
 } = require("@whiskeysockets/baileys");
-const { Client, GatewayIntentBits } = require("discord.js");
+const {
+    Client,
+    GatewayIntentBits
+} = require("discord.js");
 const express = require("express");
 const qrcode = require("qrcode-terminal");
 const pino = require("pino");
@@ -35,22 +38,33 @@ let sock = null;
 let isConnected = false;
 
 async function connectWhatsApp() {
-    const { state, saveCreds } = await useMultiFileAuthState("auth_info");
+    const {
+        state,
+        saveCreds
+    } = await useMultiFileAuthState("auth_info");
 
     sock = makeWASocket({
         auth: state,
-        logger: pino({ level: "silent" }),
+        logger: pino({
+            level: "silent"
+        }),
         version: [2, 3000, 1015901307],
         browser: ["Bot", "Chrome", "20.0.0"],
     });
 
     sock.ev.on("creds.update", saveCreds);
 
-    sock.ev.on("connection.update", ({ connection, lastDisconnect, qr }) => {
+    sock.ev.on("connection.update", ({
+        connection,
+        lastDisconnect,
+        qr
+    }) => {
         if (qr) {
             console.clear();
             console.log("📱 Scan QR code ini dengan WhatsApp kamu:\n");
-            qrcode.generate(qr, { small: true });
+            qrcode.generate(qr, {
+                small: true
+            });
         }
 
         if (connection === "close") {
@@ -83,52 +97,87 @@ discordClient.login(process.env.DISCORD_TOKEN);
 
 // Kirim WA ke 1 nomor
 app.post("/send", async (req, res) => {
-    const { phone, message } = req.body;
+    const {
+        phone,
+        message
+    } = req.body;
 
     if (!isConnected || !sock) {
         return res
             .status(500)
-            .json({ success: false, message: "WhatsApp belum terhubung" });
+            .json({
+                success: false,
+                message: "WhatsApp belum terhubung"
+            });
     }
 
     try {
         const jid = `${phone}@s.whatsapp.net`;
-        await sock.sendMessage(jid, { text: message });
-        return res.json({ success: true, message: "Pesan berhasil dikirim" });
+        await sock.sendMessage(jid, {
+            text: message
+        });
+        return res.json({
+            success: true,
+            message: "Pesan berhasil dikirim"
+        });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 });
 
 // Kirim WA ke banyak nomor
 app.post("/send-bulk", async (req, res) => {
-    const { phones, message } = req.body;
+    const {
+        phones,
+        message
+    } = req.body;
     const uniquePhones = normalizePhones(phones);
 
     if (!isConnected || !sock) {
         return res
             .status(500)
-            .json({ success: false, message: "WhatsApp belum terhubung" });
+            .json({
+                success: false,
+                message: "WhatsApp belum terhubung"
+            });
     }
 
     const results = [];
     for (const phone of uniquePhones) {
         try {
             const jid = `${phone}@s.whatsapp.net`;
-            await sock.sendMessage(jid, { text: message });
-            results.push({ phone, success: true });
+            await sock.sendMessage(jid, {
+                text: message
+            });
+            results.push({
+                phone,
+                success: true
+            });
             await new Promise((resolve) => setTimeout(resolve, 1000));
         } catch (error) {
-            results.push({ phone, success: false, error: error.message });
+            results.push({
+                phone,
+                success: false,
+                error: error.message
+            });
         }
     }
 
-    return res.json({ success: true, results });
+    return res.json({
+        success: true,
+        results
+    });
 });
 
 // Kirim Discord ke channel
 app.post("/discord/send", async (req, res) => {
-    const { channel_id, message } = req.body;
+    const {
+        channel_id,
+        message
+    } = req.body;
 
     try {
         const channel = await discordClient.channels.fetch(channel_id);
@@ -136,7 +185,10 @@ app.post("/discord/send", async (req, res) => {
         if (!channel) {
             return res
                 .status(404)
-                .json({ success: false, message: "Channel tidak ditemukan" });
+                .json({
+                    success: false,
+                    message: "Channel tidak ditemukan"
+                });
         }
 
         await channel.send(message);
@@ -145,7 +197,10 @@ app.post("/discord/send", async (req, res) => {
             message: "Pesan Discord berhasil dikirim",
         });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 });
 app.get("/discord/channel/:channel_id", async (req, res) => {
@@ -153,20 +208,36 @@ app.get("/discord/channel/:channel_id", async (req, res) => {
         const channel = await discordClient.channels.fetch(
             req.params.channel_id,
         );
-        return res.json({ success: true, name: channel.name });
+        return res.json({
+            success: true,
+            name: channel.name
+        });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 });
 // WA: terima caption
 app.post("/send-file", async (req, res) => {
-    const { phones, filename, type, mime_type, data, caption } = req.body;
+    const {
+        phones,
+        filename,
+        type,
+        mime_type,
+        data,
+        caption
+    } = req.body;
     const uniquePhones = normalizePhones(phones);
 
     if (!isConnected || !sock) {
         return res
             .status(500)
-            .json({ success: false, message: "WhatsApp belum terhubung" });
+            .json({
+                success: false,
+                message: "WhatsApp belum terhubung"
+            });
     }
 
     const buffer = Buffer.from(data, "base64");
@@ -190,18 +261,32 @@ app.post("/send-file", async (req, res) => {
                 });
             }
 
-            results.push({ phone, success: true });
+            results.push({
+                phone,
+                success: true
+            });
             await new Promise((resolve) => setTimeout(resolve, 1000));
         } catch (error) {
-            results.push({ phone, success: false, error: error.message });
+            results.push({
+                phone,
+                success: false,
+                error: error.message
+            });
         }
     }
 
-    return res.json({ success: true, results });
+    return res.json({
+        success: true,
+        results
+    });
 });
 
 app.post("/discord/send-with-files", async (req, res) => {
-    const { channel_id, message, files } = req.body;
+    const {
+        channel_id,
+        message,
+        files
+    } = req.body;
 
     try {
         const channel = await discordClient.channels.fetch(channel_id);
@@ -215,27 +300,45 @@ app.post("/discord/send-with-files", async (req, res) => {
             files: attachments,
         });
 
-        return res.json({ success: true });
+        return res.json({
+            success: true
+        });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 });
 
 // Kirim file Discord
 app.post("/discord/send-file", async (req, res) => {
-    const { channel_id, filename, mime_type, data } = req.body;
+    const {
+        channel_id,
+        filename,
+        mime_type,
+        data
+    } = req.body;
 
     try {
         const channel = await discordClient.channels.fetch(channel_id);
         const buffer = Buffer.from(data, "base64");
 
         await channel.send({
-            files: [{ attachment: buffer, name: filename }],
+            files: [{
+                attachment: buffer,
+                name: filename
+            }],
         });
 
-        return res.json({ success: true });
+        return res.json({
+            success: true
+        });
     } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+        return res.status(500).json({
+            success: false,
+            message: error.message
+        });
     }
 });
 // Cek status
