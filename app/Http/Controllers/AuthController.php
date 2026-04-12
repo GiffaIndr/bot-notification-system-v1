@@ -26,10 +26,17 @@ class AuthController extends Controller
 
     public function home()
     {
+        // Jika belum login, tampilkan landing page
+        if (!auth()->check()) {
+            return view('landing');
+        }
+
+        // Jika sudah login dan punya akses manage, ke dashboard
         if ($this->hasManageAccess(auth()->user())) {
             return redirect()->route('dashboard.pages');
         }
 
+        // Jika sudah login tapi bukan owner, tampilkan home page dengan groups
         /** @var \App\Models\User $user */
         $user = auth()->user();
         $groups = $user->groups()->withPivot('role_id')->latest()->get();

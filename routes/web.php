@@ -10,7 +10,8 @@ use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\GroupRoleController;
 use App\Http\Controllers\PollController;
 
-Route::get('/', [AuthController::class, 'index'])->name('login');
+Route::get('/', [AuthController::class, 'home'])->name('landing');
+Route::get('/login', [AuthController::class, 'index'])->name('login');
 Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login/auth', [AuthController::class, 'Auth'])->name('auth');
 Route::post('/register/create', [AuthController::class, 'registration'])->name('register.auth');
