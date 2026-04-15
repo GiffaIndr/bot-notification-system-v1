@@ -225,19 +225,6 @@
                             </div>
                         </div>
                         <div class="col-md-4">
-                            <label class="field-title">Jumlah Group</label>
-                            <div class="input-group rounded-pill overflow-hidden border bg-white">
-                                <button class="btn btn-light border-0" onclick="changeValue('input_groups', -1)"><i
-                                        class="fas fa-minus small"></i></button>
-                                <input type="number" id="input_groups" class="form-control border-0 text-center fw-bold"
-                                    value="{{ $subscription ? $subscription->max_groups : 1 }}"
-                                    min="{{ $subscription ? $subscription->max_groups : 1 }}" max="20"
-                                    onchange="calculatePrice()">
-                                <button class="btn btn-light border-0" onclick="changeValue('input_groups', 1)"><i
-                                        class="fas fa-plus small"></i></button>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
                             <label class="field-title">Maksimal Member</label>
                             <div class="input-group rounded-pill overflow-hidden border bg-white">
                                 <button class="btn btn-light border-0" onclick="changeValue('input_members', -5)"><i
@@ -266,10 +253,6 @@
                             <span>Durasi</span>
                             <strong><span id="selectedDuration">{{ $subscription?->duration_months ?? 6 }}</span>
                                 bulan</strong>
-                        </div>
-                        <div class="selected-item">
-                            <span>Jumlah Group</span>
-                            <strong id="selectedGroups">{{ $subscription ? $subscription->max_groups : 1 }}</strong>
                         </div>
                         <div class="selected-item">
                             <span>Maksimal Member</span>
@@ -358,7 +341,6 @@
             };
 
             setValue('input_duration', 'duration_months', 1, 24);
-            setValue('input_groups', 'max_groups', 1, 20);
             setValue('input_members', 'max_members', 2, 500);
         }
 
@@ -380,7 +362,7 @@
             if (hasDiscord) packageCostFor6Months += pricing.discord;
             if (hasTelegram) packageCostFor6Months += pricing.telegram;
 
-            const groups = parseInt(document.getElementById('input_groups')?.value) || 1;
+            const groups = 1; // Fixed: 1 group per purchase
             const members = parseInt(document.getElementById('input_members')?.value) || 10;
             const durationInput = document.getElementById('input_duration');
             let duration = parseInt(durationInput?.value) || 6;
@@ -396,8 +378,6 @@
             const tax = Math.round(subtotal * 0.10);
             const total = subtotal + tax;
 
-            const selectedGroups = document.getElementById('selectedGroups');
-            if (selectedGroups) selectedGroups.innerText = groups;
             const selectedMembers = document.getElementById('selectedMembers');
             if (selectedMembers) selectedMembers.innerText = members;
 
@@ -423,7 +403,7 @@
             const hasWa = document.getElementById('chk_wa')?.checked ?? false;
             const hasDiscord = document.getElementById('chk_discord')?.checked ?? false;
             const hasTelegram = document.getElementById('chk_telegram')?.checked ?? false;
-            const maxGroups = document.getElementById('input_groups')?.value ?? 1;
+            const maxGroups = 1; // Fixed: 1 group per purchase
             const maxMembers = document.getElementById('input_members')?.value ?? 10;
             const durationMonths = document.getElementById('input_duration')?.value ?? 6;
 
