@@ -165,9 +165,9 @@
         <div class="payments-hero mb-3">
             <div class="d-flex flex-column flex-md-row justify-content-between align-items-start gap-3">
                 <div>
-                    <span class="subtle-chip mb-2"><i class="fa-solid fa-wallet"></i> Billing Workspace</span>
-                    <h4 class="fw-bold mb-1 text-primary">Pembayaran & Paket</h4>
-                    <p class="mb-0 text-muted">Aktifkan atau upgrade paket kamu dari halaman ini.</p>
+                    <span class="subtle-chip mb-2"><i class="fa-solid fa-wallet"></i> Billing Akses Group</span>
+                    <h4 class="fw-bold mb-1 text-primary">Pembelian Akses Group</h4>
+                    <p class="mb-0 text-muted">Atur dan beli Akses Group kamu dari halaman ini.</p>
                 </div>
                 <a href="/paymentlogs" class="btn btn-outline-secondary rounded-pill">Riwayat Pembayaran</a>
             </div>
@@ -178,18 +178,18 @@
                 <div class="section-card p-4">
                     @if ($subscription)
                         <div class="p-3 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-25 mb-3">
-                            <small class="fw-bold text-success d-block mb-1">Langganan aktif</small>
+                            <small class="fw-bold text-success d-block mb-1">Akses Group aktif</small>
                             <small class="text-dark">Berlaku sampai {{ $subscription->expires_at->format('d M Y') }}</small>
                         </div>
                     @else
                         <div class="p-3 rounded-4 bg-warning bg-opacity-10 border border-warning border-opacity-25 mb-3">
-                            <small class="fw-bold text-warning d-block mb-1">Belum ada paket aktif</small>
-                            <small class="text-dark">Selesaikan pembayaran untuk membuka fitur create/join group
+                            <small class="fw-bold text-warning d-block mb-1">Belum ada Akses Group aktif</small>
+                            <small class="text-dark">Selesaikan pembayaran untuk membuka akses create/join group
                                 penuh.</small>
                         </div>
                     @endif
 
-                    <h6 class="fw-bold mb-3">Konfigurasi Paket</h6>
+                    <h6 class="fw-bold mb-3">Konfigurasi Akses Group</h6>
 
                     <div class="config-card mb-3">
                         <label class="field-title">Pilih Platform Bot</label>
@@ -205,8 +205,6 @@
                                             <i class="fab {{ $info[0] }} {{ $info[1] }}"></i>
                                             <span class="fw-bold text-dark small">{{ ucfirst($key) }}</span>
                                         </span>
-                                        <span class="badge bg-light text-dark border">Rp
-                                            {{ number_format($pricing[$key], 0, ',', '.') }}</span>
                                     </label>
                                 </div>
                             @endforeach

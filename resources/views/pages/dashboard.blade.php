@@ -2,7 +2,7 @@
 
 @section('content')
     <style>
-        /* Custom style khusus Dashboard */
+ha        /* Custom style khusus Dashboard */
         .dashboard-title {
             font-weight: 800;
             color: #334155;
@@ -120,11 +120,11 @@
         <h2 class="dashboard-title mb-4 text-primary">Dashboard</h2>
 
         <div class="row g-4">
-            {{-- Subscription Config --}}
+            {{-- Akses Group Config --}}
             <div class="col-lg-4">
                 <div class="card h-100 border-top border-primary border-5">
                     <div class="card-header fw-bold d-flex align-items-center">
-                        <i class="fas fa-crown text-warning me-2"></i> Subscription Plan
+                        <i class="fas fa-crown text-warning me-2"></i> Akses Group
                     </div>
                     <div class="card-body">
                         @if ($subscription)
@@ -140,7 +140,7 @@
                             </div>
                         @else
                             <div class="alert alert-warning border-0 shadow-sm mb-4 text-dark">
-                                <i class="fas fa-exclamation-triangle me-2"></i> Belum berlangganan.
+                                <i class="fas fa-exclamation-triangle me-2"></i> Belum ada Akses Group aktif.
                             </div>
                         @endif
 
@@ -151,22 +151,16 @@
                                     <span><input type="checkbox" id="chk_wa" onchange="calculatePrice()"
                                             {{ $subscription?->has_whatsapp ? 'checked' : '' }}><i
                                             class="fab fa-whatsapp text-success me-1"></i> WhatsApp</span>
-                                    <span class="badge bg-light text-dark border">Rp
-                                        {{ number_format($pricing['whatsapp'], 0, ',', '.') }}</span>
                                 </label>
                                 <label class="bot-check">
                                     <span><input type="checkbox" id="chk_discord" onchange="calculatePrice()"
                                             {{ $subscription?->has_discord ? 'checked' : '' }}><i
                                             class="fab fa-discord text-primary me-1"></i> Discord</span>
-                                    <span class="badge bg-light text-dark border">Rp
-                                        {{ number_format($pricing['discord'], 0, ',', '.') }}</span>
                                 </label>
                                 <label class="bot-check">
                                     <span><input type="checkbox" id="chk_telegram" onchange="calculatePrice()"
                                             {{ $subscription?->has_telegram ? 'checked' : '' }}><i
                                             class="fab fa-telegram text-info me-1"></i> Telegram</span>
-                                    <span class="badge bg-light text-dark border">Rp
-                                        {{ number_format($pricing['telegram'], 0, ',', '.') }}</span>
                                 </label>
                             </div>
 
@@ -186,7 +180,7 @@
                             </div>
 
                             <small class="text-muted d-block mb-3">
-                                Paket ini berlaku untuk <strong>1 group</strong> per pembayaran.
+                                Akses ini berlaku untuk <strong>1 group</strong> per pembayaran.
                             </small>
 
                             <div class="price-summary mb-3">
@@ -197,7 +191,7 @@
                             <button class="btn btn-sm btn-upgrade w-100 fw-bold py-2 shadow-sm rounded-3"
                                 onclick="payCustom()">
                                 <i class="fas fa-shopping-cart me-1"></i>
-                                Beli Paket
+                                Beli Akses Group
                             </button>
                         </div>
                     </div>
@@ -218,7 +212,8 @@
 
                                 @if (!$subscription)
                                     <div class="py-3">
-                                        <p class="text-muted small">Fitur ini terkunci. Silahkan langganan terlebih dahulu.
+                                        <p class="text-muted small">Fitur ini terkunci. Silakan beli Akses Group terlebih
+                                            dahulu.
                                         </p>
                                         <i class="fas fa-lock fs-1 text-light"></i>
                                     </div>

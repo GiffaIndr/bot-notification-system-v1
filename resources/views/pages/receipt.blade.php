@@ -16,7 +16,7 @@
                         </span>
                     </div>
                     <h4 class="fw-bold mb-1">Pembayaran Berhasil!</h4>
-                    <p class="text-muted mb-0">Terima kasih, langganan kamu telah aktif.</p>
+                    <p class="text-muted mb-0">Terima kasih, Akses Group kamu telah aktif.</p>
                 </div>
 
                 {{-- Detail --}}
@@ -48,7 +48,7 @@
                     <hr>
 
                     {{-- Fitur --}}
-                    <h6 class="fw-bold text-muted mb-3 small text-uppercase">Fitur yang Didapat</h6>
+                    <h6 class="fw-bold text-muted mb-3 small text-uppercase">Detail Akses Group</h6>
 
                     <div class="d-flex flex-column gap-2">
                         <div class="d-flex align-items-center gap-2">
@@ -80,7 +80,7 @@
 
                         <div class="d-flex align-items-center gap-2">
                             <i class="fa fa-circle-check text-success"></i>
-                            <span class="small"><i class="fa fa-layer-group text-secondary me-1"></i>Max
+                            <span class="small"><i class="fa fa-layer-group text-secondary me-1"></i>Akses
                                 {{ $payment->subscription?->max_groups }} Group</span>
                         </div>
 

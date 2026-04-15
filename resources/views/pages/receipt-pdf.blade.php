@@ -271,7 +271,7 @@
 
                 <div class="divider"></div>
 
-                <div class="feature-title">Subscription Benefits</div>
+                <div class="feature-title">Manfaat Akses Group</div>
                 <div class="feature-list">
                     <div class="feature-item">
                         <span
@@ -289,7 +289,7 @@
                     </div>
                     <div class="feature-item">
                         <span class="dot dot-check"></span>
-                        {{ $payment->subscription?->max_groups ?? '0' }} Groups Limit
+                        Akses {{ $payment->subscription?->max_groups ?? '0' }} Group
                     </div>
                 </div>
             </div>

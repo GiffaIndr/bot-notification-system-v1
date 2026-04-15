@@ -28,6 +28,11 @@
                          </a>
                      </li>
                      <li class="nav-item">
+                         <a href="/payments" class="nav-link {{ Request::is('payments') ? 'active' : '' }}">
+                             <i class="fa-solid fa-wallet"></i> Beli Akses Group
+                         </a>
+                     </li>
+                     <li class="nav-item">
                          <a href="/groups" class="nav-link link-groups {{ Request::is('groups') ? 'active' : '' }}">
                              <i class="fa-solid fa-layer-group"></i> Groups
                          </a>
