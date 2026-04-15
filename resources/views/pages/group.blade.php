@@ -391,7 +391,7 @@
                     </div>
 
                     <div class="card-body p-0">
-                        @forelse ($announcementsPreview as $announcement)
+                        @forelse ($announcements as $announcement)
                             <div
                                 class="card mb-4 shadow-sm announcement-item {{ $announcement->is_pinned ? 'is-pinned' : 'border-0' }}">
                                 <div class="card-body p-4">
@@ -577,16 +577,6 @@
                                 <p class="text-muted small">Cek kembali nanti untuk info terbaru.</p>
                             </div>
                         @endforelse
-
-                        {{-- Lihat Semua Button --}}
-                        @if ($announcementsMore->count() > 0)
-                            <div class="text-center mt-4 mb-3">
-                                <a href="/groups/{{ $group->id }}/announcements" class="btn btn-outline-primary btn-sm rounded-pill px-4 fw-bold">
-                                    <i class="fa fa-eye me-2"></i>Lihat Semua Announcement
-                                    <span class="badge bg-primary ms-2">{{ $announcementsMore->count() }}</span>
-                                </a>
-                            </div>
-                        @endif
                     </div>
                 </div>
                 {{-- Random Picker --}}
@@ -1389,9 +1379,6 @@
                                         <i class="fa fa-triangle-exclamation me-1"></i>Penuh
                                     </span>
                                 @endif
-                                <button class="btn btn-sm btn-primary px-2 py-1" data-bs-toggle="modal" data-bs-target="#modalInviteMember" style="font-size: 10px;">
-                                    <i class="fa fa-user-plus me-1"></i>Invite
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -2122,80 +2109,6 @@
                                 </button>
                             </div>
                         </form>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Modal Invite Member --}}
-            <div class="modal fade" id="modalInviteMember" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content border-0 shadow-lg">
-                        <div class="modal-header text-white" style="background: linear-gradient(45deg, #667eea, #764ba2);">
-                            <h5 class="modal-title d-flex align-items-center">
-                                <div class="bg-white rounded-circle p-2 me-3 d-flex align-items-center justify-content-center" style="width: 35px; height: 35px;">
-                                    <i class="fa fa-user-plus text-primary small"></i>
-                                </div>
-                                <span class="fw-bold">Undang Member</span>
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-
-                        <div class="modal-body p-4">
-                            {{-- Info Text --}}
-                            <p class="text-muted small mb-4">Bagikan kode undangan di bawah ini kepada calon member untuk bergabung dengan workspace Anda.</p>
-
-                            {{-- Editor Code Card --}}
-                            <div class="card border-0 bg-light mb-3" style="border-radius: 12px;">
-                                <div class="card-body p-3">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div>
-                                            <h6 class="mb-0 fw-bold text-dark">Kode Editor</h6>
-                                            <small class="text-muted">Akses penuh untuk mengelola workspace</small>
-                                        </div>
-                                        <span class="badge bg-primary">Editor</span>
-                                    </div>
-                                    <div class="input-group mt-2">
-                                        <input type="text" class="form-control form-control-sm border-1" value="{{ $group->invitation_code_pj }}" id="code_invite_pj" readonly style="border-radius: 8px 0 0 8px;">
-                                        <button class="btn btn-primary btn-sm" onclick="copyCode('code_invite_pj')" style="border-radius: 0 8px 8px 0;">
-                                            <i class="fa fa-copy"></i> Salin
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Member Code Card --}}
-                            <div class="card border-0 bg-light mb-3" style="border-radius: 12px;">
-                                <div class="card-body p-3">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <div>
-                                            <h6 class="mb-0 fw-bold text-dark">Kode Member</h6>
-                                            <small class="text-muted">Akses terbatas untuk melihat & berinteraksi</small>
-                                        </div>
-                                        <span class="badge bg-secondary">Member</span>
-                                    </div>
-                                    <div class="input-group mt-2">
-                                        <input type="text" class="form-control form-control-sm border-1" value="{{ $group->invitation_code_member }}" id="code_invite_member" readonly style="border-radius: 8px 0 0 8px;">
-                                        <button class="btn btn-primary btn-sm" onclick="copyCode('code_invite_member')" style="border-radius: 0 8px 8px 0;">
-                                            <i class="fa fa-copy"></i> Salin
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Info Box --}}
-                            <div class="alert alert-info alert-dismissible fade show mb-0" role="alert" style="border-radius: 10px;">
-                                <div class="d-flex align-items-start">
-                                    <i class="fa fa-info-circle me-2 mt-1"></i>
-                                    <div style="font-size: 13px;">
-                                        <strong>Tips:</strong> Member dapat menggunakan kode ini di halaman bergabung untuk masuk ke workspace Anda tanpa memerlukan undangan khusus.
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="modal-footer bg-light border-0 px-4 py-3" style="border-radius: 0 0 15px 15px;">
-                            <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Tutup</button>
-                        </div>
                     </div>
                 </div>
             </div>

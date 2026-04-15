@@ -20,6 +20,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware('auth')->group(function () {
 
     Route::get('/home', [AuthController::class, 'homePage'])->name('home.pages');
+    Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::get('/subscribe/{plan}', [SubscriptionController::class, 'subscribe']);
     Route::post('/groups', [GroupController::class, 'store']);
     Route::post('/invite/{group}/{role}', [InvitationController::class, 'generate']);

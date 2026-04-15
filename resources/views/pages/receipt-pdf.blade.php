@@ -145,7 +145,7 @@
         <div class="content">
             <div class="header-grid">
                 <div class="brand-side">
-                    <div class="brand-name">AnnounceBot</div>
+                    <div class="brand-name">Tasku</div>
                     <div class="order-id">#{{ $payment->order_id }}</div>
                 </div>
                 <div class="status-side">

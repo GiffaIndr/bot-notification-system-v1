@@ -14,6 +14,7 @@ use App\Models\Plan;
 use App\Models\GroupBot;
 use App\Models\GroupMember;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 
@@ -246,8 +247,8 @@ class PaymentController extends Controller
             return response()->json(['error' => 'Pilih minimal 1 bot notifikasi!'], 422);
         }
 
-        $targetGroups  = max((int) $request->max_groups, (int) ($existing?->max_groups ?? 1));
-        $targetMembers = max((int) $request->max_members, (int) ($existing?->max_members ?? 10));
+        $targetGroups  = 1;
+        $targetMembers = max((int) $request->max_members, (int) ($existing?->max_members ?? 2));
 
         $packageCostFor6Months = 0;
         if ($hasWhatsapp) $packageCostFor6Months += $pricing['whatsapp'];
@@ -256,7 +257,9 @@ class PaymentController extends Controller
         $packageCostFor6Months += ($targetGroups * $pricing['per_group']);
         $packageCostFor6Months += ($targetMembers * $pricing['per_member']);
 
-        $total = (int) round(($packageCostFor6Months / 6) * $durationMonths);
+        $subtotal = (int) round(($packageCostFor6Months / 6) * $durationMonths);
+        $tax = (int) round($subtotal * 0.10);
+        $total = $subtotal + $tax;
 
         if ($total <= 0) {
             return response()->json(['error' => 'Tidak ada perubahan dari langganan saat ini!'], 422);
@@ -278,7 +281,7 @@ class PaymentController extends Controller
         $snapToken = Snap::getSnapToken($params);
 
         // Merge dengan subscription yang ada
-        $subscription = Subscription::create([
+        $subscriptionPayload = [
             'user_id'      => $user->id,
             'has_whatsapp' => $hasWhatsapp,
             'has_discord'  => $hasDiscord,
@@ -286,16 +289,26 @@ class PaymentController extends Controller
             'max_groups'   => $targetGroups,
             'max_members'  => $targetMembers,
             'total_price'  => $total,
-            'duration_months' => $durationMonths,
-        ]);
+        ];
 
-        Payment::create([
+        if (Schema::hasColumn('subscriptions', 'duration_months')) {
+            $subscriptionPayload['duration_months'] = $durationMonths;
+        }
+
+        $subscription = Subscription::create($subscriptionPayload);
+
+        $paymentPayload = [
             'user_id'         => $user->id,
             'subscription_id' => $subscription->id,
             'order_id'        => $orderId,
             'amount'          => $total,
-            'duration_months' => $durationMonths,
-        ]);
+        ];
+
+        if (Schema::hasColumn('payments', 'duration_months')) {
+            $paymentPayload['duration_months'] = $durationMonths;
+        }
+
+        Payment::create($paymentPayload);
 
         return response()->json(['token' => $snapToken]);
     }

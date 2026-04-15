@@ -66,6 +66,7 @@ class AuthController extends Controller
         /** @var \App\Models\User $user */
         $user = auth()->user();
 
+        $plans        = Plan::orderBy('price')->get();
         $pricing      = PricingComponent::pluck('price', 'key');
         $groups       = $user->groups()->withPivot('role_id')->take(4)->get();
         $totalGroups  = $user->groups()->count();
@@ -76,6 +77,7 @@ class AuthController extends Controller
         $maxGroup     = $subscription ? $subscription->max_groups : 0;
 
         return view('pages.dashboard', compact(
+            'plans',
             'pricing',
             'groups',
             'totalGroups',

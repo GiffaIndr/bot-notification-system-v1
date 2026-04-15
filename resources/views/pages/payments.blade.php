@@ -198,7 +198,7 @@
                                 <div class="custom-checkbox-card">
                                     <input class="form-check-input d-none" type="checkbox" id="{{ $info[2] }}"
                                         onchange="calculatePrice()"
-                                        {{ $subscription?->{'has_' . $key} ? 'checked disabled' : '' }}>
+                                        {{ $subscription?->{'has_' . $key} ? 'checked' : '' }}>
                                     <label
                                         class="d-flex align-items-center justify-content-between p-2 border rounded-3 pointer mb-0"
                                         for="{{ $info[2] }}">
@@ -278,18 +278,26 @@
                             <span>Maksimal Member</span>
                             <strong id="selectedMembers">{{ $subscription ? $subscription->max_members : 10 }}</strong>
                         </div>
+                        <div class="selected-item">
+                            <span>Subtotal</span>
+                            <strong id="subtotalPrice">Rp 0</strong>
+                        </div>
+                        <div class="selected-item">
+                            <span>Pajak 10%</span>
+                            <strong id="taxPrice">Rp 0</strong>
+                        </div>
                     </div>
 
                     <div class="package-summary mb-3">
                         <p class="summary-label mb-1">Total Estimasi (<span
                                 id="durationLabel">{{ $subscription?->duration_months ?? 6 }}</span> Bulan)</p>
                         <h4 class="summary-value" id="totalPrice">Rp 0</h4>
-                        <small class="opacity-75">Harga dihitung proporsional terhadap durasi dan penambahan fitur.</small>
+                        <small class="opacity-75">Subtotal + pajak 10% dihitung proporsional terhadap durasi dan fitur.</small>
                     </div>
 
                     <button class="btn btn-primary w-100 fw-bold rounded-pill btn-pay pay-cta" onclick="pay()">
                         <i class="fa fa-bolt me-2"></i>
-                        {{ $subscription ? 'Upgrade Paket Sekarang' : 'Aktifkan Paket' }}
+                        Beli Sekarang
                     </button>
                 </div>
             </div>
@@ -325,6 +333,37 @@
             per_member: {{ $pricing['per_member'] }},
         };
 
+        function prefillFromQuery() {
+            const params = new URLSearchParams(window.location.search);
+            if (!params.has('from_dashboard')) {
+                return;
+            }
+
+            const setChecked = (id, key) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                if (el.disabled) return;
+                el.checked = params.get(key) === '1';
+            };
+
+            setChecked('chk_wa', 'has_whatsapp');
+            setChecked('chk_discord', 'has_discord');
+            setChecked('chk_telegram', 'has_telegram');
+
+            const setValue = (id, key, min, max) => {
+                const el = document.getElementById(id);
+                if (!el || !params.has(key)) return;
+                let value = parseInt(params.get(key), 10);
+                if (Number.isNaN(value)) return;
+                value = Math.max(min, Math.min(value, max));
+                el.value = value;
+            };
+
+            setValue('input_duration', 'duration_months', 1, 24);
+            setValue('input_groups', 'max_groups', 1, 20);
+            setValue('input_members', 'max_members', 2, 500);
+        }
+
         function calculatePrice() {
             let packageCostFor6Months = 0;
 
@@ -355,12 +394,19 @@
             if (selectedDuration) selectedDuration.innerText = duration;
             packageCostFor6Months += groups * pricing.per_group;
             packageCostFor6Months += members * pricing.per_member;
-            const total = Math.round((packageCostFor6Months / 6) * duration);
+            const subtotal = Math.round((packageCostFor6Months / 6) * duration);
+            const tax = Math.round(subtotal * 0.10);
+            const total = subtotal + tax;
 
             const selectedGroups = document.getElementById('selectedGroups');
             if (selectedGroups) selectedGroups.innerText = groups;
             const selectedMembers = document.getElementById('selectedMembers');
             if (selectedMembers) selectedMembers.innerText = members;
+
+            const subtotalEl = document.getElementById('subtotalPrice');
+            if (subtotalEl) subtotalEl.innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
+            const taxEl = document.getElementById('taxPrice');
+            if (taxEl) taxEl.innerText = 'Rp ' + tax.toLocaleString('id-ID');
 
             document.getElementById('totalPrice').innerText = 'Rp ' + total.toLocaleString('id-ID');
             return total;
@@ -388,6 +434,17 @@
                 return;
             }
 
+            if (typeof snap === 'undefined' || !snap || typeof snap.pay !== 'function') {
+                showToast('Snap Midtrans belum siap. Muat ulang halaman lalu coba lagi.', 'danger');
+                return;
+            }
+
+            const payButton = document.querySelector('button[onclick="pay()"]');
+            if (payButton) {
+                payButton.disabled = true;
+                payButton.innerHTML = '<i class="fa fa-spinner fa-spin me-2"></i>Memproses...';
+            }
+
             fetch('/payment/snap-token', {
                     method: 'POST',
                     headers: {
@@ -403,10 +460,29 @@
                         duration_months: durationMonths,
                     })
                 })
-                .then(res => res.json())
+                .then(async (res) => {
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        throw new Error(data.error || 'Gagal membuat token pembayaran.');
+                    }
+                    return data;
+                })
                 .then(data => {
                     if (data.error) {
                         showToast(data.error, 'danger');
+                        if (payButton) {
+                            payButton.disabled = false;
+                            payButton.innerHTML = '<i class="fa fa-bolt me-2"></i>Beli Sekarang';
+                        }
+                        return;
+                    }
+
+                    if (!data.token) {
+                        showToast('Token pembayaran tidak ditemukan.', 'danger');
+                        if (payButton) {
+                            payButton.disabled = false;
+                            payButton.innerHTML = '<i class="fa fa-bolt me-2"></i>Beli Sekarang';
+                        }
                         return;
                     }
 
@@ -430,11 +506,23 @@
                         },
                         onPending: function() {
                             showToast('Menunggu pembayaran...', 'warning');
+                            if (payButton) {
+                                payButton.disabled = false;
+                                payButton.innerHTML = '<i class="fa fa-bolt me-2"></i>Beli Sekarang';
+                            }
                         },
                         onError: function() {
                             showToast('Pembayaran gagal!', 'danger');
+                            if (payButton) {
+                                payButton.disabled = false;
+                                payButton.innerHTML = '<i class="fa fa-bolt me-2"></i>Beli Sekarang';
+                            }
                         },
                         onClose: function() {
+                            if (payButton) {
+                                payButton.disabled = false;
+                                payButton.innerHTML = '<i class="fa fa-bolt me-2"></i>Beli Sekarang';
+                            }
                             fetch('/payment/check-pending', {
                                     method: 'POST',
                                     headers: {
@@ -451,10 +539,18 @@
                                 });
                         }
                     });
+                })
+                .catch((err) => {
+                    showToast(err.message || 'Terjadi kendala saat memproses pembayaran.', 'danger');
+                    if (payButton) {
+                        payButton.disabled = false;
+                        payButton.innerHTML = '<i class="fa fa-bolt me-2"></i>Beli Sekarang';
+                    }
                 });
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            prefillFromQuery();
             calculatePrice();
 
             fetch('/payment/check-pending', {
