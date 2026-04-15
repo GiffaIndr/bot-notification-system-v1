@@ -197,8 +197,7 @@
                             @foreach (['whatsapp' => ['fa-whatsapp', 'text-success', 'chk_wa'], 'discord' => ['fa-discord', 'text-primary', 'chk_discord'], 'telegram' => ['fa-telegram', 'text-info', 'chk_telegram']] as $key => $info)
                                 <div class="custom-checkbox-card">
                                     <input class="form-check-input d-none" type="checkbox" id="{{ $info[2] }}"
-                                        onchange="calculatePrice()"
-                                        {{ $subscription?->{'has_' . $key} ? 'checked' : '' }}>
+                                        onchange="calculatePrice()" {{ $subscription?->{'has_' . $key} ? 'checked' : '' }}>
                                     <label
                                         class="d-flex align-items-center justify-content-between p-2 border rounded-3 pointer mb-0"
                                         for="{{ $info[2] }}">
@@ -292,7 +291,8 @@
                         <p class="summary-label mb-1">Total Estimasi (<span
                                 id="durationLabel">{{ $subscription?->duration_months ?? 6 }}</span> Bulan)</p>
                         <h4 class="summary-value" id="totalPrice">Rp 0</h4>
-                        <small class="opacity-75">Subtotal + pajak 10% dihitung proporsional terhadap durasi dan fitur.</small>
+                        <small class="opacity-75">Subtotal + pajak 10% dihitung proporsional terhadap durasi dan
+                            fitur.</small>
                     </div>
 
                     <button class="btn btn-primary w-100 fw-bold rounded-pill btn-pay pay-cta" onclick="pay()">

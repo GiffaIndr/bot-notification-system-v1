@@ -148,27 +148,40 @@
                             <label class="config-label">Bot Yang Dipakai</label>
                             <div class="d-flex flex-column gap-2 mb-3">
                                 <label class="bot-check">
-                                    <span><input type="checkbox" id="chk_wa" onchange="calculatePrice()" {{ $subscription?->has_whatsapp ? 'checked' : '' }}><i class="fab fa-whatsapp text-success me-1"></i> WhatsApp</span>
-                                    <span class="badge bg-light text-dark border">Rp {{ number_format($pricing['whatsapp'], 0, ',', '.') }}</span>
+                                    <span><input type="checkbox" id="chk_wa" onchange="calculatePrice()"
+                                            {{ $subscription?->has_whatsapp ? 'checked' : '' }}><i
+                                            class="fab fa-whatsapp text-success me-1"></i> WhatsApp</span>
+                                    <span class="badge bg-light text-dark border">Rp
+                                        {{ number_format($pricing['whatsapp'], 0, ',', '.') }}</span>
                                 </label>
                                 <label class="bot-check">
-                                    <span><input type="checkbox" id="chk_discord" onchange="calculatePrice()" {{ $subscription?->has_discord ? 'checked' : '' }}><i class="fab fa-discord text-primary me-1"></i> Discord</span>
-                                    <span class="badge bg-light text-dark border">Rp {{ number_format($pricing['discord'], 0, ',', '.') }}</span>
+                                    <span><input type="checkbox" id="chk_discord" onchange="calculatePrice()"
+                                            {{ $subscription?->has_discord ? 'checked' : '' }}><i
+                                            class="fab fa-discord text-primary me-1"></i> Discord</span>
+                                    <span class="badge bg-light text-dark border">Rp
+                                        {{ number_format($pricing['discord'], 0, ',', '.') }}</span>
                                 </label>
                                 <label class="bot-check">
-                                    <span><input type="checkbox" id="chk_telegram" onchange="calculatePrice()" {{ $subscription?->has_telegram ? 'checked' : '' }}><i class="fab fa-telegram text-info me-1"></i> Telegram</span>
-                                    <span class="badge bg-light text-dark border">Rp {{ number_format($pricing['telegram'], 0, ',', '.') }}</span>
+                                    <span><input type="checkbox" id="chk_telegram" onchange="calculatePrice()"
+                                            {{ $subscription?->has_telegram ? 'checked' : '' }}><i
+                                            class="fab fa-telegram text-info me-1"></i> Telegram</span>
+                                    <span class="badge bg-light text-dark border">Rp
+                                        {{ number_format($pricing['telegram'], 0, ',', '.') }}</span>
                                 </label>
                             </div>
 
                             <div class="row g-2 mb-3">
                                 <div class="col-6">
                                     <label class="config-label">Durasi</label>
-                                    <input type="number" id="input_duration" class="form-control compact-number" value="{{ $subscription?->duration_months ?? 6 }}" min="1" max="24" onchange="calculatePrice()">
+                                    <input type="number" id="input_duration" class="form-control compact-number"
+                                        value="{{ $subscription?->duration_months ?? 6 }}" min="1" max="24"
+                                        onchange="calculatePrice()">
                                 </div>
                                 <div class="col-6">
                                     <label class="config-label">Maks Anggota</label>
-                                    <input type="number" id="input_members" class="form-control compact-number" value="{{ $subscription?->max_members ?? 2 }}" min="2" max="500" step="1" onchange="calculatePrice()">
+                                    <input type="number" id="input_members" class="form-control compact-number"
+                                        value="{{ $subscription?->max_members ?? 2 }}" min="2" max="500"
+                                        step="1" onchange="calculatePrice()">
                                 </div>
                             </div>
 
@@ -181,7 +194,8 @@
                                 <div class="value" id="totalPrice">Rp 0</div>
                             </div>
 
-                            <button class="btn btn-sm btn-upgrade w-100 fw-bold py-2 shadow-sm rounded-3" onclick="payCustom()">
+                            <button class="btn btn-sm btn-upgrade w-100 fw-bold py-2 shadow-sm rounded-3"
+                                onclick="payCustom()">
                                 <i class="fas fa-shopping-cart me-1"></i>
                                 Beli Paket
                             </button>
@@ -277,7 +291,8 @@
                     <div class="col-12">
                         <div class="card border-0">
                             <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
-                                <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-user-friends me-2 text-primary"></i> My
+                                <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-user-friends me-2 text-primary"></i>
+                                    My
                                     Groups</h5>
                                 @if ($totalGroups > 3)
                                     <a href="/groups" class="btn btn-sm btn-light text-primary fw-bold">Lihat Semua
@@ -385,7 +400,8 @@
             const hasTelegram = document.getElementById('chk_telegram').checked;
             const maxGroups = fixedGroups;
             const maxMembers = Math.max(2, parseInt(document.getElementById('input_members').value || '2', 10));
-            const durationMonths = Math.max(1, Math.min(parseInt(document.getElementById('input_duration').value || '6', 10), 24));
+            const durationMonths = Math.max(1, Math.min(parseInt(document.getElementById('input_duration').value || '6',
+                10), 24));
             document.getElementById('input_members').value = maxMembers;
             document.getElementById('input_duration').value = durationMonths;
 
