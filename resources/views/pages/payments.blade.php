@@ -231,8 +231,8 @@
                                         class="fas fa-minus small"></i></button>
                                 <input type="number" id="input_members" class="form-control border-0 text-center fw-bold"
                                     value="{{ $subscription ? $subscription->max_members : 10 }}"
-                                    min="{{ $subscription ? $subscription->max_members : 5 }}" max="500"
-                                    step="5" onchange="calculatePrice()">
+                                    min="{{ $subscription ? $subscription->max_members : 5 }}" max="500" step="5"
+                                    onchange="calculatePrice()">
                                 <button class="btn btn-light border-0" onclick="changeValue('input_members', 5)"><i
                                         class="fas fa-plus small"></i></button>
                             </div>
