@@ -158,9 +158,9 @@
 
             <div class="form-group">
                 <label for="current_password">Current Password *</label>
-                <input type="password" id="current_password" name="current_password" 
-                       class="form-control @error('current_password') is-invalid @enderror" 
-                       placeholder="Enter your current password" required>
+                <input type="password" id="current_password" name="current_password"
+                    class="form-control @error('current_password') is-invalid @enderror"
+                    placeholder="Enter your current password" required>
                 @error('current_password')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -179,9 +179,9 @@
 
             <div class="form-group">
                 <label for="password">New Password *</label>
-                <input type="password" id="password" name="password" 
-                       class="form-control @error('password') is-invalid @enderror" 
-                       placeholder="Enter your new password" required>
+                <input type="password" id="password" name="password"
+                    class="form-control @error('password') is-invalid @enderror" placeholder="Enter your new password"
+                    required>
                 @error('password')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -189,9 +189,9 @@
 
             <div class="form-group">
                 <label for="password_confirmation">Confirm Password *</label>
-                <input type="password" id="password_confirmation" name="password_confirmation" 
-                       class="form-control @error('password_confirmation') is-invalid @enderror" 
-                       placeholder="Confirm your new password" required>
+                <input type="password" id="password_confirmation" name="password_confirmation"
+                    class="form-control @error('password_confirmation') is-invalid @enderror"
+                    placeholder="Confirm your new password" required>
                 @error('password_confirmation')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror

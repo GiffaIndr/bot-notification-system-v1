@@ -253,17 +253,17 @@ class PaymentController extends Controller
         // Hitung biaya berdasarkan formulasi baru:
         // Base plan (10 member) + additional capacity (per 5 member) + bot integrations
         $monthlyBaseCost = 0;
-        
+
         // Base plan: Rp 15.000 (10 member base)
         $monthlyBaseCost += $pricing['base_plan'];
-        
+
         // Additional members: Per 5 member blocks di atas 10 member base
         if ($targetMembers > 10) {
             $additionalMemberCount = $targetMembers - 10;
             $additionalPackets = ceil($additionalMemberCount / 5);
             $monthlyBaseCost += ($additionalPackets * $pricing['additional_members']);
         }
-        
+
         // Bot integration costs
         if ($hasWhatsapp) $monthlyBaseCost += $pricing['whatsapp'];
         if ($hasDiscord)  $monthlyBaseCost += $pricing['discord'];

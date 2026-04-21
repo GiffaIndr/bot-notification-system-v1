@@ -264,7 +264,8 @@
                     <div class="info-item">
                         <div class="info-label">Capacity</div>
                         <div class="info-value">
-                            {{ $user->activeSubscription->max_groups }} group(s) &bull; {{ $user->activeSubscription->max_members }} member(s)
+                            {{ $user->activeSubscription->max_groups }} group(s) &bull;
+                            {{ $user->activeSubscription->max_members }} member(s)
                         </div>
                     </div>
 

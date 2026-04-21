@@ -182,7 +182,8 @@
 
             <div class="form-group">
                 <label for="date_from">Date From</label>
-                <input type="date" id="date_from" name="date_from" class="form-control" value="{{ request('date_from') }}">
+                <input type="date" id="date_from" name="date_from" class="form-control"
+                    value="{{ request('date_from') }}">
             </div>
 
             <div class="form-group">
@@ -223,9 +224,9 @@
                         <tr>
                             <td>
                                 @php
-                                    $actionClass = match($log->action) {
+                                    $actionClass = match ($log->action) {
                                         'update_pricing' => 'action-update',
-                                        default => 'action-update'
+                                        default => 'action-update',
                                     };
                                 @endphp
                                 <span class="action-badge {{ $actionClass }}">

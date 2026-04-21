@@ -180,14 +180,15 @@
         <form action="{{ route('superadmin.users.index') }}" method="GET" class="search-form">
             <div class="form-group" style="flex: 1;">
                 <label for="search">Search by Name or Email</label>
-                <input type="text" id="search" name="search" class="form-control" 
-                       placeholder="Enter name or email..." value="{{ request('search') }}">
+                <input type="text" id="search" name="search" class="form-control" placeholder="Enter name or email..."
+                    value="{{ request('search') }}">
             </div>
             <button type="submit" class="btn-search">
                 <i class="fas fa-search me-2"></i>Search
             </button>
             @if (request('search'))
-                <a href="{{ route('superadmin.users.index') }}" class="btn-search" style="background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
+                <a href="{{ route('superadmin.users.index') }}" class="btn-search"
+                    style="background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
                     <i class="fas fa-times"></i>Reset
                 </a>
             @endif

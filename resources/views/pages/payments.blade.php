@@ -231,8 +231,8 @@
                                         class="fas fa-minus small"></i></button>
                                 <input type="number" id="input_members" class="form-control border-0 text-center fw-bold"
                                     value="{{ $subscription ? $subscription->max_members : 10 }}"
-                                    min="{{ $subscription ? $subscription->max_members : 10 }}" max="500" step="5"
-                                    onchange="calculatePrice()">
+                                    min="{{ $subscription ? $subscription->max_members : 10 }}" max="500"
+                                    step="5" onchange="calculatePrice()">
                                 <button class="btn btn-light border-0" onclick="changeValue('input_members', 5)"><i
                                         class="fas fa-plus small"></i></button>
                             </div>
@@ -359,20 +359,20 @@
             // Hitung biaya perbulan berdasarkan formulasi baru:
             // Base plan (10 member) + additional capacity (per 5 member) + bot integrations
             let monthlyCost = 0;
-            
+
             // Base plan: Rp 15.000 (10 member base)
             monthlyCost += pricing.base_plan;
-            
+
             // Get member count
             const members = parseInt(document.getElementById('input_members')?.value) || 10;
-            
+
             // Additional members: Per 5 member blocks di atas 10 member base
             if (members > 10) {
                 const additionalMemberCount = members - 10;
                 const additionalPackets = Math.ceil(additionalMemberCount / 5);
                 monthlyCost += (additionalPackets * pricing.additional_members);
             }
-            
+
             // Bot integration costs
             if (hasWa) monthlyCost += pricing.whatsapp;
             if (hasDiscord) monthlyCost += pricing.discord;

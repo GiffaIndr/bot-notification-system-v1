@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -110,6 +111,7 @@
         }
     </style>
 </head>
+
 <body>
     <div class="login-container">
         <div class="login-header">
@@ -135,8 +137,8 @@
 
             <div class="form-group">
                 <label class="form-label"><i class="fas fa-envelope me-2"></i>Email Address</label>
-                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" 
-                       placeholder="Enter your email" value="{{ old('email') }}" required>
+                <input type="email" name="email" class="form-control @error('email') is-invalid @enderror"
+                    placeholder="Enter your email" value="{{ old('email') }}" required>
                 @error('email')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -144,8 +146,8 @@
 
             <div class="form-group">
                 <label class="form-label"><i class="fas fa-lock me-2"></i>Password</label>
-                <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" 
-                       placeholder="Enter your password" required>
+                <input type="password" name="password" class="form-control @error('password') is-invalid @enderror"
+                    placeholder="Enter your password" required>
                 @error('password')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -169,4 +171,5 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

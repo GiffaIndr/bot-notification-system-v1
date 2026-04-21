@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -157,6 +158,7 @@
     </style>
     @yield('css')
 </head>
+
 <body>
     <div class="sidebar">
         <div class="brand">
@@ -164,32 +166,32 @@
             Super Admin
         </div>
         <nav class="nav flex-column">
-            <a class="nav-link {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}" 
-               href="{{ route('superadmin.dashboard') }}">
+            <a class="nav-link {{ request()->routeIs('superadmin.dashboard') ? 'active' : '' }}"
+                href="{{ route('superadmin.dashboard') }}">
                 <i class="fas fa-chart-line"></i> Dashboard
             </a>
-            <a class="nav-link {{ request()->routeIs('superadmin.users.*') ? 'active' : '' }}" 
-               href="{{ route('superadmin.users.index') }}">
+            <a class="nav-link {{ request()->routeIs('superadmin.users.*') ? 'active' : '' }}"
+                href="{{ route('superadmin.users.index') }}">
                 <i class="fas fa-users"></i> Users
             </a>
-            <a class="nav-link {{ request()->routeIs('superadmin.pricing.*') ? 'active' : '' }}" 
-               href="{{ route('superadmin.pricing.index') }}">
+            <a class="nav-link {{ request()->routeIs('superadmin.pricing.*') ? 'active' : '' }}"
+                href="{{ route('superadmin.pricing.index') }}">
                 <i class="fas fa-tag"></i> Pricing
             </a>
-            <a class="nav-link {{ request()->routeIs('superadmin.revenue*') ? 'active' : '' }}" 
-               href="{{ route('superadmin.revenue') }}">
+            <a class="nav-link {{ request()->routeIs('superadmin.revenue*') ? 'active' : '' }}"
+                href="{{ route('superadmin.revenue') }}">
                 <i class="fas fa-money-bill-wave"></i> Revenue
             </a>
-            <a class="nav-link {{ request()->routeIs('superadmin.activity-logs*') ? 'active' : '' }}" 
-               href="{{ route('superadmin.activity-logs') }}">
+            <a class="nav-link {{ request()->routeIs('superadmin.activity-logs*') ? 'active' : '' }}"
+                href="{{ route('superadmin.activity-logs') }}">
                 <i class="fas fa-history"></i> Activity Logs
             </a>
             <hr style="border-color: rgba(255, 255, 255, 0.1); margin: 20px 0;">
             <a class="nav-link" href="{{ route('superadmin.change-password') }}">
                 <i class="fas fa-key"></i> Change Password
             </a>
-            <a class="nav-link" href="{{ route('superadmin.logout') }}" 
-               onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+            <a class="nav-link" href="{{ route('superadmin.logout') }}"
+                onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                 <i class="fas fa-sign-out-alt"></i> Logout
             </a>
             <form id="logout-form" action="{{ route('superadmin.logout') }}" method="POST" style="display: none;">
@@ -244,4 +246,5 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @yield('js')
 </body>
+
 </html>

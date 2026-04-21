@@ -189,11 +189,11 @@
                                 <tr>
                                     <td>
                                         @php
-                                            $actionClass = match($log->action) {
+                                            $actionClass = match ($log->action) {
                                                 'update_pricing' => 'action-update',
                                                 'create_*' => 'action-create',
                                                 'delete_*' => 'action-delete',
-                                                default => 'action-update'
+                                                default => 'action-update',
                                             };
                                         @endphp
                                         <span class="action-badge {{ $actionClass }}">

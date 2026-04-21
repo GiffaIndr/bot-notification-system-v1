@@ -179,18 +179,19 @@
         <form action="{{ route('superadmin.revenue') }}" method="GET" class="filter-form">
             <div class="form-group">
                 <label for="start_date">Start Date</label>
-                <input type="date" id="start_date" name="start_date" class="form-control" 
-                       value="{{ $startDate?->format('Y-m-d') }}">
+                <input type="date" id="start_date" name="start_date" class="form-control"
+                    value="{{ $startDate?->format('Y-m-d') }}">
             </div>
             <div class="form-group">
                 <label for="end_date">End Date</label>
-                <input type="date" id="end_date" name="end_date" class="form-control" 
-                       value="{{ $endDate?->format('Y-m-d') }}">
+                <input type="date" id="end_date" name="end_date" class="form-control"
+                    value="{{ $endDate?->format('Y-m-d') }}">
             </div>
             <button type="submit" class="btn-filter">
                 <i class="fas fa-search me-2"></i>Filter
             </button>
-            <a href="{{ route('superadmin.revenue') }}" class="btn-filter" style="background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; text-decoration: none;">
+            <a href="{{ route('superadmin.revenue') }}" class="btn-filter"
+                style="background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; text-decoration: none;">
                 <i class="fas fa-times"></i>Reset
             </a>
         </form>

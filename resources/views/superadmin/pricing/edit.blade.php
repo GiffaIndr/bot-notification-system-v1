@@ -148,8 +148,9 @@
 
                 <div class="form-group">
                     <label for="name">Name *</label>
-                    <input type="text" id="name" name="name" class="form-control @error('name') is-invalid @enderror"
-                           value="{{ old('name', $pricing->name) }}" required>
+                    <input type="text" id="name" name="name"
+                        class="form-control @error('name') is-invalid @enderror" value="{{ old('name', $pricing->name) }}"
+                        required>
                     @error('name')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -161,8 +162,9 @@
 
                 <div class="form-group">
                     <label for="price">Price (Rp) *</label>
-                    <input type="number" id="price" name="price" class="form-control @error('price') is-invalid @enderror"
-                           value="{{ old('price', $pricing->price) }}" min="0" step="1" required>
+                    <input type="number" id="price" name="price"
+                        class="form-control @error('price') is-invalid @enderror"
+                        value="{{ old('price', $pricing->price) }}" min="0" step="1" required>
                     @error('price')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -179,7 +181,7 @@
                 <div class="form-group">
                     <label for="description">Description</label>
                     <textarea id="description" name="description" class="form-control @error('description') is-invalid @enderror"
-                              rows="3">{{ old('description', $pricing->description) }}</textarea>
+                        rows="3">{{ old('description', $pricing->description) }}</textarea>
                     @error('description')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
