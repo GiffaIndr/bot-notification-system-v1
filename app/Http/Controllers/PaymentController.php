@@ -247,17 +247,30 @@ class PaymentController extends Controller
             return response()->json(['error' => 'Pilih minimal 1 bot notifikasi!'], 422);
         }
 
-        $targetGroups  = 1;
-        $targetMembers = max((int) $request->max_members, (int) ($existing?->max_members ?? 2));
+        $targetGroups = 1;
+        $targetMembers = max((int) $request->max_members, (int) ($existing?->max_members ?? 10));
 
-        $packageCostFor6Months = 0;
-        if ($hasWhatsapp) $packageCostFor6Months += $pricing['whatsapp'];
-        if ($hasDiscord)  $packageCostFor6Months += $pricing['discord'];
-        if ($hasTelegram) $packageCostFor6Months += $pricing['telegram'];
-        $packageCostFor6Months += ($targetGroups * $pricing['per_group']);
-        $packageCostFor6Months += ($targetMembers * $pricing['per_member']);
+        // Hitung biaya berdasarkan formulasi baru:
+        // Base plan (10 member) + additional capacity (per 5 member) + bot integrations
+        $monthlyBaseCost = 0;
+        
+        // Base plan: Rp 15.000 (10 member base)
+        $monthlyBaseCost += $pricing['base_plan'];
+        
+        // Additional members: Per 5 member blocks di atas 10 member base
+        if ($targetMembers > 10) {
+            $additionalMemberCount = $targetMembers - 10;
+            $additionalPackets = ceil($additionalMemberCount / 5);
+            $monthlyBaseCost += ($additionalPackets * $pricing['additional_members']);
+        }
+        
+        // Bot integration costs
+        if ($hasWhatsapp) $monthlyBaseCost += $pricing['whatsapp'];
+        if ($hasDiscord)  $monthlyBaseCost += $pricing['discord'];
+        if ($hasTelegram) $monthlyBaseCost += $pricing['telegram'];
 
-        $subtotal = (int) round(($packageCostFor6Months / 6) * $durationMonths);
+        // Hitung total berdasarkan durasi
+        $subtotal = (int) round($monthlyBaseCost * $durationMonths);
         $tax = (int) round($subtotal * 0.10);
         $total = $subtotal + $tax;
 

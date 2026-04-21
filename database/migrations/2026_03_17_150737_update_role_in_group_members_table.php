@@ -19,10 +19,14 @@ return new class extends Migration
 
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::table('group_members', function (Blueprint $table) {
             $table->string('role')->default('member');
-            $table->dropForeign(['role_id']);
-            $table->dropColumn('role_id');
+            if (Schema::hasColumn('group_members', 'role_id')) {
+                $table->dropForeign(['role_id']);
+                $table->dropColumn('role_id');
+            }
         });
+        Schema::enableForeignKeyConstraints();
     }
 };

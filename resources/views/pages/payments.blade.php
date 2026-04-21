@@ -231,7 +231,7 @@
                                         class="fas fa-minus small"></i></button>
                                 <input type="number" id="input_members" class="form-control border-0 text-center fw-bold"
                                     value="{{ $subscription ? $subscription->max_members : 10 }}"
-                                    min="{{ $subscription ? $subscription->max_members : 5 }}" max="500" step="5"
+                                    min="{{ $subscription ? $subscription->max_members : 10 }}" max="500" step="5"
                                     onchange="calculatePrice()">
                                 <button class="btn btn-light border-0" onclick="changeValue('input_members', 5)"><i
                                         class="fas fa-plus small"></i></button>
@@ -307,11 +307,11 @@
         }
 
         const pricing = {
+            base_plan: {{ $pricing['base_plan'] }},
+            additional_members: {{ $pricing['additional_members'] }},
             whatsapp: {{ $pricing['whatsapp'] }},
             discord: {{ $pricing['discord'] }},
             telegram: {{ $pricing['telegram'] }},
-            per_group: {{ $pricing['per_group'] }},
-            per_member: {{ $pricing['per_member'] }},
         };
 
         function prefillFromQuery() {
@@ -341,12 +341,10 @@
             };
 
             setValue('input_duration', 'duration_months', 1, 24);
-            setValue('input_members', 'max_members', 2, 500);
+            setValue('input_members', 'max_members', 10, 500);
         }
 
         function calculatePrice() {
-            let packageCostFor6Months = 0;
-
             const hasWa = document.getElementById('chk_wa')?.checked ?? false;
             const hasDiscord = document.getElementById('chk_discord')?.checked ?? false;
             const hasTelegram = document.getElementById('chk_telegram')?.checked ?? false;
@@ -358,12 +356,29 @@
             const selectedBotsEl = document.getElementById('selectedBots');
             if (selectedBotsEl) selectedBotsEl.innerText = selectedBots.length ? selectedBots.join(', ') : '-';
 
-            if (hasWa) packageCostFor6Months += pricing.whatsapp;
-            if (hasDiscord) packageCostFor6Months += pricing.discord;
-            if (hasTelegram) packageCostFor6Months += pricing.telegram;
-
-            const groups = 1; // Fixed: 1 group per purchase
+            // Hitung biaya perbulan berdasarkan formulasi baru:
+            // Base plan (10 member) + additional capacity (per 5 member) + bot integrations
+            let monthlyCost = 0;
+            
+            // Base plan: Rp 15.000 (10 member base)
+            monthlyCost += pricing.base_plan;
+            
+            // Get member count
             const members = parseInt(document.getElementById('input_members')?.value) || 10;
+            
+            // Additional members: Per 5 member blocks di atas 10 member base
+            if (members > 10) {
+                const additionalMemberCount = members - 10;
+                const additionalPackets = Math.ceil(additionalMemberCount / 5);
+                monthlyCost += (additionalPackets * pricing.additional_members);
+            }
+            
+            // Bot integration costs
+            if (hasWa) monthlyCost += pricing.whatsapp;
+            if (hasDiscord) monthlyCost += pricing.discord;
+            if (hasTelegram) monthlyCost += pricing.telegram;
+
+            // Get duration
             const durationInput = document.getElementById('input_duration');
             let duration = parseInt(durationInput?.value) || 6;
             duration = Math.max(1, Math.min(duration, 24));
@@ -372,9 +387,9 @@
             if (durationLabel) durationLabel.innerText = duration;
             const selectedDuration = document.getElementById('selectedDuration');
             if (selectedDuration) selectedDuration.innerText = duration;
-            packageCostFor6Months += groups * pricing.per_group;
-            packageCostFor6Months += members * pricing.per_member;
-            const subtotal = Math.round((packageCostFor6Months / 6) * duration);
+
+            // Hitung subtotal berdasarkan durasi
+            const subtotal = Math.round(monthlyCost * duration);
             const tax = Math.round(subtotal * 0.10);
             const total = subtotal + tax;
 

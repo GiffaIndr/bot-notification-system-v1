@@ -26,8 +26,8 @@ class InvitationController extends Controller
         /** @var \App\Models\User|null $user */
         $user = auth()->user();
 
-        if (!$user || !$user->activeSubscription()->exists()) {
-            return back()->with('error', 'Aktifkan paket terlebih dahulu sebelum join group.');
+        if (!$user) {
+            return back()->with('error', 'Silakan login terlebih dahulu.');
         }
 
         $code = $request->code;

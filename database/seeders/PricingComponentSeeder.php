@@ -11,34 +11,34 @@ class PricingComponentSeeder extends Seeder
     {
         $components = [
             [
+                'key'         => 'base_plan',
+                'name'        => 'Harga Dasar (10 Member)',
+                'price'       => 15000,
+                'description' => 'Harga dasar untuk group dengan 10 anggota',
+            ],
+            [
+                'key'         => 'additional_members',
+                'name'        => 'Tambahan Kapasitas (per 5 Member)',
+                'price'       => 5000,
+                'description' => 'Tambahan per 5 anggota di atas 10 member base',
+            ],
+            [
                 'key'         => 'whatsapp',
-                'name'        => 'WhatsApp Bot',
-                'price'       => 20000,
+                'name'        => 'Integrasi Bot WhatsApp',
+                'price'       => 15000,
                 'description' => 'Notifikasi via WhatsApp ke semua member',
             ],
             [
                 'key'         => 'discord',
-                'name'        => 'Discord Bot',
-                'price'       => 20000,
+                'name'        => 'Integrasi Bot Discord',
+                'price'       => 10000,
                 'description' => 'Notifikasi via Discord ke channel pilihan',
             ],
             [
                 'key'         => 'telegram',
-                'name'        => 'Telegram Bot',
-                'price'       => 20000,
+                'name'        => 'Integrasi Bot Telegram',
+                'price'       => 10000,
                 'description' => 'Notifikasi via Telegram ke group pilihan',
-            ],
-            [
-                'key'         => 'per_group',
-                'name'        => 'Per Group',
-                'price'       => 40000,
-                'description' => 'Harga per group yang dibuat',
-            ],
-            [
-                'key'         => 'per_member',
-                'name'        => 'Per Member',
-                'price'       => 8000,
-                'description' => 'Harga per member dalam group',
             ],
         ];
 

@@ -11,11 +11,22 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Skip if subscription_id already exists
+        if (Schema::hasColumn('payments', 'subscription_id')) {
+            return;
+        }
+
         Schema::table('payments', function (Blueprint $table) {
             $table->foreignId('subscription_id')->nullable()->after('user_id')->constrained('subscriptions')->nullOnDelete();
-            $table->dropForeign(['plan_id']);
-            $table->dropColumn('plan_id');
         });
+
+        // Drop old plan_id column if exists
+        if (Schema::hasColumn('payments', 'plan_id')) {
+            Schema::table('payments', function (Blueprint $table) {
+                $table->dropForeign(['plan_id']);
+                $table->dropColumn('plan_id');
+            });
+        }
     }
 
     /**
@@ -23,8 +34,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('payments', function (Blueprint $table) {
-            //
-        });
+        if (Schema::hasColumn('payments', 'subscription_id')) {
+            Schema::table('payments', function (Blueprint $table) {
+                $table->dropForeign(['subscription_id']);
+                $table->dropColumn('subscription_id');
+            });
+        }
     }
 };
