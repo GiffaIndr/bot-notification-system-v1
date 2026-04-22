@@ -21,7 +21,7 @@ return [
         'scheme' => 'https',
     ],
     'bot_service' => [
-        'url' => env('BOT_SERVICE_URL', env('WHATSAPP_SERVICE_URL', 'http://localhost:3000')),
+        'url' => env('BOT_SERVICE_BASE_URL', env('BOT_SERVICE_URL', env('WHATSAPP_SERVICE_URL', 'http://localhost:3000'))),
         'key' => env('BOT_SERVICE_API_KEY'),
     ],
     'whatsapp' => [

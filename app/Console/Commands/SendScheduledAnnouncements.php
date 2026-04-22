@@ -33,23 +33,56 @@ class SendScheduledAnnouncements extends Command
         }
 
         foreach ($announcements as $announcement) {
+            $message = "🔊 *{$announcement->title}* 🔊\n\n{$announcement->content}";
+
             $telegramBot = $announcement->group->bots->where('type', 'telegram')->first();
-            if (!$telegramBot || !$telegramBot->telegram_chat_id) {
+            $discordBot  = $announcement->group->bots->where('type', 'discord')->first();
+
+            $hasTarget = false;
+            $telegramOk = null;
+            $discordOk = null;
+            $warnings = [];
+
+            if ($telegramBot?->telegram_chat_id) {
+                $hasTarget = true;
+                $telegramResponse = $notification->sendTelegram($telegramBot->telegram_chat_id, $message);
+                $telegramOk = $telegramResponse['ok'] === true;
+
+                if ($telegramOk) {
+                    $this->info("✅ Announcement #{$announcement->id} terkirim ke Telegram.");
+                } else {
+                    $statusCode = $telegramResponse['status'] ?? 500;
+                    $warnings[] = "Telegram gagal (HTTP {$statusCode}).";
+                }
+            }
+
+            if ($discordBot?->discord_channel_id) {
+                $hasTarget = true;
+                $discordOk = $notification->sendDiscord($discordBot->discord_channel_id, $message);
+
+                if ($discordOk) {
+                    $this->info("✅ Announcement #{$announcement->id} terkirim ke Discord.");
+                } else {
+                    $warnings[] = "Discord gagal mengirim ke channel {$discordBot->discord_channel_id}.";
+                }
+            }
+
+            if (!$hasTarget) {
                 $announcement->update(['status' => 'failed']);
-                $this->warn("⚠️ Announcement #{$announcement->id} gagal: Telegram chat_id belum tersedia.");
+                $this->warn("⚠️ Announcement #{$announcement->id} gagal: target Telegram/Discord belum diset.");
                 continue;
             }
 
-            $message = "🔊 *{$announcement->title}* 🔊\n\n{$announcement->content}";
-            $response = $notification->sendTelegram($telegramBot->telegram_chat_id, $message);
+            $allSucceeded = (!is_null($telegramOk) ? $telegramOk : true) && (!is_null($discordOk) ? $discordOk : true);
 
-            if ($response['ok'] === true) {
+            if ($allSucceeded) {
                 $announcement->update(['status' => 'sent']);
-                $this->info("✅ Announcement #{$announcement->id} terkirim.");
-            } else {
-                $announcement->update(['status' => 'failed']);
-                $statusCode = $response['status'] ?? 500;
-                $this->warn("❌ Announcement #{$announcement->id} gagal (HTTP {$statusCode}).");
+                continue;
+            }
+
+            $announcement->update(['status' => 'failed']);
+            foreach ($warnings as $warning) {
+                $this->warn("❌ Announcement #{$announcement->id}: {$warning}");
             }
         }
 

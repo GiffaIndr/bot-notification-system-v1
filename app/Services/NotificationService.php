@@ -21,11 +21,13 @@ class NotificationService
 
     protected function client(int $timeout = 30)
     {
-        $client = Http::timeout($timeout);
+        $client = Http::timeout($timeout)->withHeaders([
+            'Content-Type' => 'application/json',
+        ]);
 
         if (!empty($this->serviceKey)) {
             $client = $client->withHeaders([
-                'X-Service-Key' => $this->serviceKey,
+                'x-service-key' => $this->serviceKey,
             ]);
         }
 
@@ -51,16 +53,156 @@ class NotificationService
     // Kirim Discord ke channel
     public function sendDiscord(string $channelId, string $message): bool
     {
+        $result = $this->sendDiscordMessage($channelId, $message);
+        return (bool) ($result['ok'] ?? false);
+    }
+
+    public function sendDiscordMessage(string $channelId, string $message): array
+    {
         try {
             $response = $this->client(10)->post("{$this->baseUrl}/discord/send", [
                 'channel_id' => $channelId,
                 'message'    => $message,
             ]);
 
-            return $response->successful();
+            return [
+                'status' => $response->status(),
+                'ok' => $response->successful(),
+                'data' => $response->json() ?? [],
+            ];
         } catch (\Exception $e) {
             Log::error('Discord send error: ' . $e->getMessage());
-            return false;
+            return [
+                'status' => 500,
+                'ok' => false,
+                'data' => ['message' => $e->getMessage()],
+            ];
+        }
+    }
+
+    public function getDiscordInviteUrl(): ?string
+    {
+        try {
+            $response = $this->client(5)->get("{$this->baseUrl}/discord/invite-link");
+
+            if (!$response->successful()) {
+                return null;
+            }
+
+            return $response->json('invite_link')
+                ?? $response->json('data.invite_link')
+                ?? $response->json('invite_url')
+                ?? $response->json('url');
+        } catch (\Exception $e) {
+            Log::error('Discord invite url error: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+    public function getDiscordGuilds(): array
+    {
+        try {
+            $response = $this->client(5)->get("{$this->baseUrl}/discord/guilds");
+
+            return [
+                'status' => $response->status(),
+                'ok' => $response->successful(),
+                'data' => $response->json('data') ?? $response->json() ?? [],
+            ];
+        } catch (\Exception $e) {
+            Log::error('Discord guilds fetch error: ' . $e->getMessage());
+            return [
+                'status' => 500,
+                'ok' => false,
+                'data' => [],
+            ];
+        }
+    }
+
+    public function createDiscordConnectToken(?string $state = null): array
+    {
+        try {
+            $query = [];
+            if (!empty($state)) {
+                $query['state'] = $state;
+            }
+
+            $response = $this->client(10)->get("{$this->baseUrl}/discord/connect-link", $query);
+
+            return [
+                'status' => $response->status(),
+                'ok' => $response->successful(),
+                'data' => $response->json() ?? [],
+            ];
+        } catch (\Exception $e) {
+            Log::error('Discord connect link error: ' . $e->getMessage());
+            return [
+                'status' => 500,
+                'ok' => false,
+                'data' => ['message' => $e->getMessage()],
+            ];
+        }
+    }
+
+    public function checkDiscordConnectClaim(string $token): array
+    {
+        try {
+            $response = $this->client(10)->post("{$this->baseUrl}/discord/connect/claim", [
+                'token' => $token,
+            ]);
+
+            return [
+                'status' => $response->status(),
+                'ok' => $response->successful(),
+                'data' => $response->json() ?? [],
+            ];
+        } catch (\Exception $e) {
+            Log::error('Discord connect claim error: ' . $e->getMessage());
+            return [
+                'status' => 500,
+                'ok' => false,
+                'data' => ['message' => $e->getMessage()],
+            ];
+        }
+    }
+
+    public function getDiscordGuildChannels(string $guildId): array
+    {
+        try {
+            $response = $this->client(5)->get("{$this->baseUrl}/discord/guilds/{$guildId}/channels");
+
+            return [
+                'status' => $response->status(),
+                'ok' => $response->successful(),
+                'data' => $response->json('data') ?? $response->json() ?? [],
+            ];
+        } catch (\Exception $e) {
+            Log::error('Discord guild channels fetch error: ' . $e->getMessage());
+            return [
+                'status' => 500,
+                'ok' => false,
+                'data' => [],
+            ];
+        }
+    }
+
+    public function getDiscordChannelInfo(string $channelId): array
+    {
+        try {
+            $response = $this->client(5)->get("{$this->baseUrl}/discord/channel/{$channelId}");
+
+            return [
+                'status' => $response->status(),
+                'ok' => $response->successful(),
+                'data' => $response->json('data') ?? $response->json() ?? [],
+            ];
+        } catch (\Exception $e) {
+            Log::error('Discord channel info error: ' . $e->getMessage());
+            return [
+                'status' => 500,
+                'ok' => false,
+                'data' => [],
+            ];
         }
     }
 
@@ -139,19 +281,6 @@ class NotificationService
                 'ok' => false,
                 'data' => ['message' => $e->getMessage()],
             ];
-        }
-    }
-    public function getDiscordInviteUrl(string $state): ?string
-    {
-        try {
-            $response = $this->client(5)->get("{$this->baseUrl}/discord/invite-url", [
-                'state' => $state,
-            ]);
-
-            return $response->json('url') ?? $response->json('invite_url');
-        } catch (\Exception $e) {
-            Log::error('Discord invite url error: ' . $e->getMessage());
-            return null;
         }
     }
     public function getTelegramConnectLink(string $token): ?string

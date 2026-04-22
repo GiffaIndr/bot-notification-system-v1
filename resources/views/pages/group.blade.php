@@ -1087,36 +1087,77 @@
                                             </div>
                                         @elseif ($bot->type === 'discord')
                                             <div class="mb-3 p-3 bg-white border rounded-3 shadow-xs">
-                                                <div class="d-flex align-items-center mb-3">
-                                                    <div class="small fw-bold text-dark flex-grow-1">
-                                                        <i class="fa fa-hashtag text-muted me-1"></i>
-                                                        {{ $discordChannelName ?? 'Channel belum diset' }}
+                                                @if ($discordServerName || $discordChannelName)
+                                                    <div class="mb-3 p-3 rounded-3 border bg-light">
+                                                        <div class="small fw-bold text-dark mb-1">
+                                                            <i class="fa fa-server text-muted me-1"></i>
+                                                            {{ $discordServerName ?? 'Server belum diset' }}
+                                                        </div>
+                                                        <div class="small text-muted">
+                                                            <i class="fa fa-hashtag text-muted me-1"></i>
+                                                            {{ $discordChannelName ?? 'Channel belum diset' }}
+                                                        </div>
                                                     </div>
-                                                    <a href="{{ $discordInviteUrl ?? '#' }}" target="_blank"
-                                                        @if (!$discordInviteUrl) onclick="event.preventDefault(); showToast('Link invite belum tersedia dari bot service.', 'warning')" @else onclick="showToast('Membuka halaman invite...', 'info')" @endif
-                                                        class="text-primary small text-decoration-none fw-bold">
-                                                        Invite Bot <i class="fa fa-external-link ms-1"
-                                                            style="font-size: 10px;"></i>
-                                                    </a>
-                                                </div>
+                                                @endif
 
                                                 <form method="POST"
-                                                    action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/channel"
-                                                    onsubmit="handleChannelSave(event, this)">
-                                                    @csrf @method('PUT')
-                                                    <div class="input-group">
-                                                        <input type="text" name="discord_channel_id"
-                                                            class="form-control form-control-sm border-end-0 bg-light"
-                                                            style="font-size: 12px;"
-                                                            value="{{ $bot->discord_channel_id }}"
-                                                            placeholder="Channel ID (misal: 12345...)">
-                                                        <button class="btn btn-sm btn-primary px-3 shadow-none"><i
-                                                                class="fa fa-floppy-disk"></i></button>
-                                                    </div>
-                                                    <small class="text-muted mt-2 d-block"
-                                                        style="font-size: 10px;">Gunakan Developer Mode di Discord untuk
-                                                        menyalin ID Channel.</small>
+                                                    action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/discord-connect"
+                                                    class="mb-3">
+                                                    @csrf
+                                                    <button
+                                                        class="btn btn-sm {{ !$bot->discord_channel_id ? 'btn-primary' : 'btn-outline-primary' }} fw-bold w-100">
+                                                        <i class="fa fa-link me-1"></i>
+                                                        {{ !$bot->discord_channel_id ? 'Hubungkan Discord' : 'Buat Ulang Koneksi Discord' }}
+                                                    </button>
                                                 </form>
+
+                                                @if (session('discord_connect_command'))
+                                                    @php $isCurrentDiscordBot = (int) session('discord_connect_bot_id') === (int) $bot->id; @endphp
+                                                @endif
+
+                                                @if (session('discord_connect_command') && $isCurrentDiscordBot)
+                                                    <div class="border rounded-3 p-3 bg-light">
+                                                        <div class="small fw-bold text-dark mb-2">Instruksi claim Discord</div>
+
+                                                        @if (session('discord_invite_link'))
+                                                            <a class="btn btn-sm btn-outline-primary w-100 mb-2"
+                                                                href="{{ session('discord_invite_link') }}" target="_blank"
+                                                                rel="noopener">
+                                                                <i class="fa fa-external-link me-1"></i> Invite Bot ke Server
+                                                            </a>
+                                                        @endif
+
+                                                        <div class="small text-muted mb-2">
+                                                            Setelah bot masuk ke server, jalankan command ini di channel target:
+                                                        </div>
+
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control bg-white"
+                                                                id="discordConnectCommand"
+                                                                value="{{ session('discord_connect_command') }}" readonly>
+                                                            <button class="btn btn-outline-primary" type="button"
+                                                                onclick="copyDiscordConnectCommand()">
+                                                                <i class="fa fa-copy"></i>
+                                                            </button>
+                                                        </div>
+
+                                                        @if (session('discord_connect_expires_at'))
+                                                            <small class="text-muted d-block mt-2" style="font-size: 10px;">
+                                                                Berlaku sampai: {{ session('discord_connect_expires_at') }}
+                                                            </small>
+                                                        @endif
+
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-primary mt-2 w-100"
+                                                            onclick="pollDiscordClaim({{ $group->id }}, {{ $bot->id }})">
+                                                            <i class="fa fa-satellite-dish me-1"></i> Cek Status Koneksi
+                                                        </button>
+
+                                                        <small class="text-muted d-block mt-2" style="font-size: 10px;">
+                                                            Token claim one-time. Jika expired, buat ulang koneksi.
+                                                        </small>
+                                                    </div>
+                                                @endif
                                             </div>
                                         @elseif ($bot->type === 'telegram')
                                             <div class="p-3 bg-white border rounded-3">
@@ -2192,14 +2233,62 @@
                     showToast('Menyimpan perubahan...', 'primary');
                 }
 
-                function handleChannelSave(event, form) {
-                    const channelId = document.getElementById('discordChannelInput').value.trim();
-                    if (!channelId) {
-                        event.preventDefault();
-                        showToast('Channel ID wajib diisi!', 'warning');
-                        return;
+                function copyDiscordConnectCommand() {
+                    const input = document.getElementById('discordConnectCommand');
+                    if (!input) return;
+
+                    input.select();
+                    input.setSelectionRange(0, 99999);
+                    navigator.clipboard.writeText(input.value).then(() => {
+                        showToast('Command Discord disalin.', 'success');
+                    }).catch(() => {
+                        showToast('Gagal menyalin command Discord.', 'danger');
+                    });
+                }
+
+                async function pollDiscordClaim(groupId, botId) {
+                    showToast('Mengecek status koneksi Discord...', 'info');
+
+                    const maxAttempts = 40;
+                    const intervalMs = 3000;
+
+                    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                        try {
+                            const response = await fetch(`/groups/${groupId}/bots/${botId}/discord-connect/claim`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json',
+                                },
+                            });
+
+                            const payload = await response.json();
+
+                            if (response.status === 202) {
+                                if (attempt === maxAttempts) {
+                                    showToast(payload.message || 'Belum ada claim Discord. Coba lagi sebentar.',
+                                        'warning');
+                                }
+                                await new Promise(resolve => setTimeout(resolve, intervalMs));
+                                continue;
+                            }
+
+                            if (response.ok && payload.success) {
+                                showToast(payload.message || 'Discord berhasil terhubung.', 'success');
+                                window.location.reload();
+                                return;
+                            }
+
+                            showToast(payload.message || 'Gagal memeriksa status koneksi Discord.', 'danger');
+                            return;
+                        } catch (error) {
+                            if (attempt === maxAttempts) {
+                                showToast('Gagal polling koneksi Discord.', 'danger');
+                            }
+                            await new Promise(resolve => setTimeout(resolve, intervalMs));
+                        }
                     }
-                    showToast('Menyimpan Channel ID...', 'primary');
                 }
 
                 function copyTelegramConnectLink() {

@@ -161,17 +161,185 @@ class GroupController extends Controller
 
         if (!$member || !$member->role->can_manage_bot) abort(403);
 
-        $bot->update(['discord_channel_id' => $request->discord_channel_id]);
+        if ($bot->type !== 'discord') {
+            return back()->with('error', 'Bot yang dipilih bukan Discord.');
+        }
+
+        return back()->with('error', 'Gunakan koneksi Discord berbasis claim token, bukan input Channel ID manual.');
+    }
+
+    public function beginDiscordConnect(Request $request, Group $group, GroupBot $bot)
+    {
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
+
+        if (!$member || !$member->role->can_manage_bot) {
+            abort(403);
+        }
+
+        if ($bot->type !== 'discord') {
+            abort(404);
+        }
+
+        $notification = new NotificationService();
+        $state = implode(':', [
+            'group',
+            $group->id,
+            'bot',
+            $bot->id,
+            'user',
+            auth()->id(),
+        ]);
+
+        $result = $notification->createDiscordConnectToken($state);
+        $payload = $result['data'] ?? [];
+        $token = data_get($payload, 'data.token') ?? data_get($payload, 'token');
+        $command = data_get($payload, 'data.command') ?? data_get($payload, 'command');
+        $statusText = data_get($payload, 'data.status') ?? data_get($payload, 'status');
+        $expiresAt = data_get($payload, 'data.expires_at') ?? data_get($payload, 'expires_at');
+        $stateFromService = data_get($payload, 'data.state') ?? data_get($payload, 'state') ?? $state;
+        $inviteLink = $notification->getDiscordInviteUrl();
+
+        if (!$result['ok'] || empty($token)) {
+            return back()->with('error', data_get($payload, 'message', 'Bot service belum mengembalikan token claim Discord.'));
+        }
+
+        if (empty($command)) {
+            $command = '/claim token:' . $token;
+        }
+
+        $bot->forceFill([
+            'discord_connect_token' => $token,
+            'discord_connect_state' => $stateFromService,
+            'discord_connect_token_generated_at' => now(),
+        ])->save();
+
+        ActivityLogService::log(
+            groupId: $group->id,
+            type: 'bot_connection_requested',
+            description: auth()->user()->name . ' menyiapkan koneksi Discord',
+            meta: [
+                'bot_type' => 'discord',
+                'token' => $token,
+                'state' => $stateFromService,
+            ]
+        );
+
+        return back()
+            ->with('success', 'Perintah claim Discord siap. Invite bot lalu jalankan command di channel target.')
+            ->with('discord_connect_bot_id', $bot->id)
+            ->with('discord_connect_command', $command)
+            ->with('discord_connect_status', $statusText)
+            ->with('discord_connect_expires_at', $expiresAt)
+            ->with('discord_invite_link', $inviteLink);
+    }
+
+    public function pollDiscordConnectClaim(Request $request, Group $group, GroupBot $bot)
+    {
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
+
+        if (!$member || !$member->role->can_manage_bot) {
+            abort(403);
+        }
+
+        if ($bot->type !== 'discord') {
+            abort(404);
+        }
+
+        if (empty($bot->discord_connect_token)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token claim Discord tidak ada. Buat command claim baru.',
+            ], 400);
+        }
+
+        $notification = new NotificationService();
+        $result = $notification->checkDiscordConnectClaim($bot->discord_connect_token);
+        $payload = $result['data'] ?? [];
+        $status = (int) ($result['status'] ?? 500);
+
+        if ($status === 202) {
+            return response()->json([
+                'success' => false,
+                'pending' => true,
+                'message' => data_get($payload, 'message', 'Token belum diklaim di Discord.'),
+            ], 202);
+        }
+
+        if ($status >= 400) {
+            if (in_array($status, [404, 410], true)) {
+                $bot->forceFill([
+                    'discord_connect_token' => null,
+                    'discord_connect_state' => null,
+                    'discord_connect_token_generated_at' => null,
+                ])->save();
+            }
+
+            return response()->json([
+                'success' => false,
+                'message' => data_get($payload, 'message', 'Gagal claim koneksi Discord.'),
+            ], $status);
+        }
+
+        $data = data_get($payload, 'data', []);
+        $guildId = data_get($data, 'guild.id') ?? data_get($payload, 'guild.id');
+        $guildName = data_get($data, 'guild.name') ?? data_get($payload, 'guild.name');
+        $channelId = data_get($data, 'channel.id') ?? data_get($payload, 'channel.id');
+        $channelName = data_get($data, 'channel.name') ?? data_get($payload, 'channel.name');
+        $claimedById = data_get($data, 'claimed_by.id') ?? data_get($payload, 'claimed_by.id');
+        $claimedByUsername = data_get($data, 'claimed_by.username') ?? data_get($payload, 'claimed_by.username');
+
+        if (empty($guildId) || empty($channelId)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bot service belum mengembalikan guild/channel hasil claim.',
+            ], 422);
+        }
+
+        $bot->forceFill([
+            'discord_guild_id' => (string) $guildId,
+            'discord_server_name' => $guildName,
+            'discord_channel_id' => (string) $channelId,
+            'discord_channel_name' => $channelName,
+            'discord_connect_token' => null,
+            'discord_connect_state' => null,
+            'discord_connect_token_generated_at' => null,
+        ])->save();
 
         ActivityLogService::log(
             groupId: $group->id,
             type: 'bot_connected',
             description: auth()->user()->name . ' menghubungkan bot Discord',
-            meta: ['bot_type' => 'discord', 'channel_id' => $request->discord_channel_id]
+            meta: [
+                'bot_type' => 'discord',
+                'guild_id' => (string) $guildId,
+                'guild_name' => $guildName,
+                'channel_id' => (string) $channelId,
+                'channel_name' => $channelName,
+                'claimed_by_discord_user_id' => $claimedById,
+                'claimed_by_discord_username' => $claimedByUsername,
+            ]
         );
 
-        return back()->with('success', 'Discord channel berhasil disimpan.');
+        return response()->json([
+            'success' => true,
+            'message' => data_get($payload, 'message', 'Discord channel berhasil terhubung.'),
+            'data' => [
+                'guild_id' => (string) $guildId,
+                'guild_name' => $guildName,
+                'channel_id' => (string) $channelId,
+                'channel_name' => $channelName,
+                'claimed_by_discord_user_id' => $claimedById,
+                'claimed_by_discord_username' => $claimedByUsername,
+            ],
+        ]);
     }
+
     public function show(Group $group)
     {
         $member = GroupMember::where('group_id', $group->id)
@@ -193,7 +361,9 @@ class GroupController extends Controller
         $announcementsPreview = $announcements->take(2);
         $announcementsMore = $announcements->skip(2);
 
-        $discordChannelName = null;
+        $discordServerName   = null;
+        $discordChannelName  = null;
+        $discordGuildId      = null;
         $discordInviteUrl    = null;
         $telegramGroupName   = null;
 
@@ -203,9 +373,19 @@ class GroupController extends Controller
             $telegramBot  = $group->bots->where('type', 'telegram')->first();
 
             if ($discordBot?->discord_channel_id) {
-                $discordChannelName = $notification->getDiscordChannelName($discordBot->discord_channel_id);
+                $discordGuildId = $discordBot->discord_guild_id;
+                $discordServerName = $discordBot->discord_server_name;
+                $discordChannelName = $discordBot->discord_channel_name;
+
+                if (!$discordServerName || !$discordChannelName) {
+                    $discordInfo = $notification->getDiscordChannelInfo($discordBot->discord_channel_id);
+                    $discordData = $discordInfo['data'] ?? [];
+
+                    $discordServerName = $discordServerName ?: ($discordData['server_name'] ?? null);
+                    $discordChannelName = $discordChannelName ?: ($discordData['channel_name'] ?? null);
+                }
             }
-            $discordInviteUrl = $notification->getDiscordInviteUrl((string) $group->id);
+            $discordInviteUrl = $notification->getDiscordInviteUrl();
             if ($telegramBot?->telegram_chat_id) {
                 $telegramGroupName = $notification->getTelegramChatName($telegramBot->telegram_chat_id) ?: $group->name;
             }
@@ -220,6 +400,8 @@ class GroupController extends Controller
             'announcements',
             'announcementsPreview',
             'announcementsMore',
+            'discordGuildId',
+            'discordServerName',
             'discordChannelName',
             'discordInviteUrl',
             'polls',
@@ -428,7 +610,7 @@ class GroupController extends Controller
     {
         return $this->beginTelegramConnect($request, $group, $bot);
     }
-    // GroupController.php
+
     public function picker(Request $request, Group $group)
     {
         $member = GroupMember::where('group_id', $group->id)
@@ -454,6 +636,7 @@ class GroupController extends Controller
             'picked' => $picked->values()->toArray(),
         ]);
     }
+
     public function update(Request $request, Group $group)
     {
         $member = GroupMember::where('group_id', $group->id)
