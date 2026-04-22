@@ -7,9 +7,9 @@ use App\Models\GroupBot;
 use App\Models\GroupRole;
 use App\Models\GroupMember;
 use App\Services\ActivityLogService;
+use App\Services\NotificationService;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
 
 class GroupController extends Controller
 {
@@ -194,18 +194,20 @@ class GroupController extends Controller
         $announcementsMore = $announcements->skip(2);
 
         $discordChannelName = null;
-        $telegramGroupName  = null;
+        $discordInviteUrl    = null;
+        $telegramGroupName   = null;
 
         if ($role->can_manage_bot) {
-            $notification = new \App\Services\NotificationService();
+            $notification = new NotificationService();
             $discordBot   = $group->bots->where('type', 'discord')->first();
             $telegramBot  = $group->bots->where('type', 'telegram')->first();
 
             if ($discordBot?->discord_channel_id) {
                 $discordChannelName = $notification->getDiscordChannelName($discordBot->discord_channel_id);
             }
+            $discordInviteUrl = $notification->getDiscordInviteUrl((string) $group->id);
             if ($telegramBot?->telegram_chat_id) {
-                $telegramGroupName = $notification->getTelegramChatName($telegramBot->telegram_chat_id);
+                $telegramGroupName = $notification->getTelegramChatName($telegramBot->telegram_chat_id) ?: $group->name;
             }
         }
         $polls = $group->polls()->with(['options.votes', 'votes', 'user'])->get();
@@ -219,6 +221,7 @@ class GroupController extends Controller
             'announcementsPreview',
             'announcementsMore',
             'discordChannelName',
+            'discordInviteUrl',
             'polls',
             'telegramGroupName',
         ));
@@ -277,18 +280,9 @@ class GroupController extends Controller
 
         if (!$member || !$member->role->can_manage_bot) abort(403);
 
-        $bot->update(['telegram_chat_id' => $request->telegram_chat_id]);
-
-        ActivityLogService::log(
-            groupId: $group->id,
-            type: 'bot_connected',
-            description: auth()->user()->name . ' menghubungkan bot Telegram',
-            meta: ['bot_type' => 'telegram', 'chat_id' => $request->telegram_chat_id]
-        );
-
-        return back()->with('success', 'Telegram Chat ID berhasil disimpan.');
+        return back()->with('error', 'Gunakan koneksi Telegram berbasis token, bukan input Chat ID manual.');
     }
-    public function fetchTelegramChat(Request $request, Group $group, GroupBot $bot)
+    public function beginTelegramConnect(Request $request, Group $group, GroupBot $bot)
     {
         $member = GroupMember::where('group_id', $group->id)
             ->where('user_id', auth()->id())
@@ -299,35 +293,140 @@ class GroupController extends Controller
             abort(403);
         }
 
-        $token    = config('services.telegram.token');
-        $response = Http::get("https://api.telegram.org/bot{$token}/getUpdates");
-
-        if (!$response->successful()) {
-            return back()->with('error', 'Gagal fetch data dari Telegram.');
+        if ($bot->type !== 'telegram') {
+            abort(404);
         }
 
-        $updates = $response->json('result');
+        $notification = new NotificationService();
+        $state = implode(':', [
+            'group',
+            $group->id,
+            'bot',
+            $bot->id,
+            'user',
+            auth()->id(),
+        ]);
 
-        if (empty($updates)) {
-            return back()->with('error', 'Tidak ada update dari Telegram. Pastikan sudah ketik /start di group Telegram kamu.');
+        $result = $notification->requestTelegramConnectLink($state);
+        $payload = $result['data'] ?? [];
+        $token = data_get($payload, 'data.token') ?? data_get($payload, 'token');
+        $connectLink = data_get($payload, 'connect_url') ?? data_get($payload, 'url');
+
+        if (!$result['ok'] || empty($token) || empty($connectLink)) {
+            return back()->with('error', data_get($payload, 'message', 'Bot service belum mengembalikan link koneksi Telegram.'));
         }
 
-        $chatId = null;
-        foreach (array_reverse($updates) as $update) {
-            $chat = $update['message']['chat'] ?? null;
-            if ($chat && in_array($chat['type'], ['group', 'supergroup'])) {
-                $chatId = $chat['id'];
-                break;
+        $bot->forceFill([
+            'telegram_connect_token' => $token,
+            'telegram_connect_token_generated_at' => now(),
+        ])->save();
+
+        ActivityLogService::log(
+            groupId: $group->id,
+            type: 'bot_connection_requested',
+            description: auth()->user()->name . ' menyiapkan koneksi Telegram',
+            meta: ['bot_type' => 'telegram', 'token' => $token]
+        );
+
+        return back()
+            ->with('success', 'Link koneksi Telegram siap. Buka link di bawah lalu tambahkan bot ke grup target.')
+            ->with('telegram_connect_link', $connectLink)
+            ->with('telegram_connect_bot_id', $bot->id);
+    }
+
+    public function pollTelegramConnectClaim(Request $request, Group $group, GroupBot $bot)
+    {
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
+
+        if (!$member || !$member->role->can_manage_bot) {
+            abort(403);
+        }
+
+        if ($bot->type !== 'telegram') {
+            abort(404);
+        }
+
+        if (empty($bot->telegram_connect_token)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Token koneksi tidak ada. Buat link koneksi baru.',
+            ], 400);
+        }
+
+        $notification = new NotificationService();
+        $result = $notification->claimTelegramConnect($bot->telegram_connect_token);
+        $payload = $result['data'] ?? [];
+        $status = (int) ($result['status'] ?? 500);
+
+        if ($status === 202) {
+            return response()->json([
+                'success' => false,
+                'pending' => true,
+                'message' => data_get($payload, 'message', 'Belum ada group yang claim token ini.'),
+            ], 202);
+        }
+
+        if ($status >= 400) {
+            if (in_array($status, [404, 410], true)) {
+                $bot->forceFill([
+                    'telegram_connect_token' => null,
+                    'telegram_connect_token_generated_at' => null,
+                ])->save();
             }
+
+            return response()->json([
+                'success' => false,
+                'message' => data_get($payload, 'message', 'Gagal claim koneksi Telegram.'),
+            ], $status);
         }
 
-        if (!$chatId) {
-            return back()->with('error', 'Tidak ditemukan group Telegram. Pastikan bot sudah di-add ke group dan sudah ketik /start.');
+        $chatId = data_get($payload, 'data.chat.id')
+            ?? data_get($payload, 'chat.id')
+            ?? data_get($payload, 'chat_id');
+        $chatName = data_get($payload, 'data.chat.title')
+            ?? data_get($payload, 'chat.title')
+            ?? data_get($payload, 'chat_title');
+
+        if (empty($chatId)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bot service belum mengembalikan chat id hasil claim.',
+            ], 422);
         }
 
-        $bot->update(['telegram_chat_id' => $chatId]);
+        $bot->forceFill([
+            'telegram_chat_id' => (string) $chatId,
+            'telegram_connect_token' => null,
+            'telegram_connect_token_generated_at' => null,
+        ])->save();
 
-        return back()->with('success', "Berhasil terhubung ke group Telegram!");
+        ActivityLogService::log(
+            groupId: $group->id,
+            type: 'bot_connected',
+            description: auth()->user()->name . ' menghubungkan bot Telegram',
+            meta: [
+                'bot_type' => 'telegram',
+                'chat_id' => (string) $chatId,
+                'chat_name' => $chatName,
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => data_get($payload, 'message', 'Telegram group berhasil terhubung.'),
+            'data' => [
+                'chat_id' => (string) $chatId,
+                'chat_name' => $chatName,
+            ],
+        ]);
+    }
+
+    public function fetchTelegramChat(Request $request, Group $group, GroupBot $bot)
+    {
+        return $this->beginTelegramConnect($request, $group, $bot);
     }
     // GroupController.php
     public function picker(Request $request, Group $group)

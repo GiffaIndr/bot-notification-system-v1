@@ -20,8 +20,12 @@ return [
         'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
         'scheme' => 'https',
     ],
+    'bot_service' => [
+        'url' => env('BOT_SERVICE_URL', env('WHATSAPP_SERVICE_URL', 'http://localhost:3000')),
+        'key' => env('BOT_SERVICE_API_KEY'),
+    ],
     'whatsapp' => [
-        'url' => env('WHATSAPP_SERVICE_URL', 'http://localhost:3000'),
+        'url' => env('WHATSAPP_SERVICE_URL', env('BOT_SERVICE_URL', 'http://localhost:3000')),
     ],
 
     'postmark' => [
@@ -29,12 +33,9 @@ return [
     ],
 
     'discord' => [
-        'client_id' => env('DISCORD_CLIENT_ID'),
     ],
 
     'telegram' => [
-        'token'    => env('TELEGRAM_BOT_TOKEN'),
-        'username' => env('TELEGRAM_BOT_USERNAME'),
     ],
 
     'ses' => [

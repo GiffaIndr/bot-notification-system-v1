@@ -14,6 +14,7 @@ class Announcement extends Model
         'title',
         'content',
         'scheduled_at',
+        'status',
         'repeat',
         'use_picker',
         'picker_mode',

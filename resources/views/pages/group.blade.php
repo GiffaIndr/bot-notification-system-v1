@@ -1086,25 +1086,14 @@
                                                     nomor member yang terdaftar.</small>
                                             </div>
                                         @elseif ($bot->type === 'discord')
-                                            @php
-                                                $inviteUrl =
-                                                    'https://discord.com/oauth2/authorize?client_id=' .
-                                                    config('services.discord.client_id') .
-                                                    '&permissions=3072&scope=bot&state=' .
-                                                    $group->id .
-                                                    '&redirect_uri=' .
-                                                    urlencode(config('services.discord.redirect_uri')) .
-                                                    '&response_type=code';
-                                            @endphp
-
                                             <div class="mb-3 p-3 bg-white border rounded-3 shadow-xs">
                                                 <div class="d-flex align-items-center mb-3">
                                                     <div class="small fw-bold text-dark flex-grow-1">
                                                         <i class="fa fa-hashtag text-muted me-1"></i>
                                                         {{ $discordChannelName ?? 'Channel belum diset' }}
                                                     </div>
-                                                    <a href="{{ $inviteUrl }}" target="_blank"
-                                                        onclick="showToast('Membuka halaman invite...', 'info')"
+                                                    <a href="{{ $discordInviteUrl ?? '#' }}" target="_blank"
+                                                        @if (!$discordInviteUrl) onclick="event.preventDefault(); showToast('Link invite belum tersedia dari bot service.', 'warning')" @else onclick="showToast('Membuka halaman invite...', 'info')" @endif
                                                         class="text-primary small text-decoration-none fw-bold">
                                                         Invite Bot <i class="fa fa-external-link ms-1"
                                                             style="font-size: 10px;"></i>
@@ -1134,13 +1123,8 @@
                                                 @if (!$bot->telegram_chat_id)
                                                     <div
                                                         class="bg-light p-2 rounded-2 mb-3 small border-start border-info border-4">
-                                                        <ol class="mb-0 ps-3">
-                                                            <li>Tambahkan
-                                                                <strong>{{ config('services.telegram.username') }}</strong>
-                                                                ke grup.
-                                                            </li>
-                                                            <li>Ketik <code>/start</code> di grup tersebut.</li>
-                                                        </ol>
+                                                        <div class="fw-bold mb-1 text-dark">Hubungkan Telegram tanpa input ID.</div>
+                                                        <div class="text-muted">Klik tombol di bawah, lalu tambahkan bot ke grup target. Sistem akan menangkap grup yang benar memakai token sekali pakai.</div>
                                                     </div>
                                                 @else
                                                     <div class="d-flex align-items-center mb-2 small fw-bold text-success">
@@ -1149,30 +1133,44 @@
                                                     </div>
                                                 @endif
 
-                                                <div class="d-grid mb-3">
-                                                    <a href="/groups/{{ $group->id }}/bots/{{ $bot->id }}/fetch-telegram-chat"
-                                                        class="btn btn-sm {{ !$bot->telegram_chat_id ? 'btn-info text-white' : 'btn-outline-info' }} fw-bold"
-                                                        onclick="showToast('Mencari Chat ID...', 'info')">
-                                                        <i class="fa fa-sync-alt me-1"></i>
-                                                        {{ !$bot->telegram_chat_id ? 'Hubungkan Otomatis' : 'Perbarui Koneksi' }}
-                                                    </a>
-                                                </div>
-
                                                 <form method="POST"
-                                                    action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/telegram-chat"
-                                                    onsubmit="handleTelegramSave(event, this)">
-                                                    @csrf @method('PUT')
-                                                    <label class="small fw-bold text-muted mb-1"
-                                                        style="font-size: 10px;">INPUT MANUAL ID</label>
-                                                    <div class="input-group">
-                                                        <input type="text" name="telegram_chat_id"
-                                                            class="form-control form-control-sm bg-light"
-                                                            value="{{ $bot->telegram_chat_id }}"
-                                                            placeholder="-100xxxxxxx">
-                                                        <button class="btn btn-sm btn-info text-white px-3 shadow-none"><i
-                                                                class="fa fa-floppy-disk"></i></button>
-                                                    </div>
+                                                    action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/telegram-connect"
+                                                    class="mb-3">
+                                                    @csrf
+                                                    <button class="btn btn-sm {{ !$bot->telegram_chat_id ? 'btn-info text-white' : 'btn-outline-info' }} fw-bold w-100">
+                                                        <i class="fa fa-link me-1"></i>
+                                                        {{ !$bot->telegram_chat_id ? 'Buat Link Koneksi Telegram' : 'Buat Ulang Koneksi' }}
+                                                    </button>
                                                 </form>
+
+                                                @if (session('telegram_connect_link'))
+                                                    @php $isCurrentTelegramBot = (int) session('telegram_connect_bot_id') === (int) $bot->id; @endphp
+                                                @endif
+
+                                                @if (session('telegram_connect_link') && $isCurrentTelegramBot)
+                                                    <div class="border rounded-3 p-3 bg-light">
+                                                        <div class="small fw-bold text-dark mb-2">Link koneksi siap dipakai</div>
+                                                        <div class="input-group input-group-sm">
+                                                            <input type="text" class="form-control bg-white"
+                                                                id="telegramConnectLink"
+                                                                value="{{ session('telegram_connect_link') }}" readonly>
+                                                            <button class="btn btn-outline-info" type="button"
+                                                                onclick="copyTelegramConnectLink()">
+                                                                <i class="fa fa-copy"></i>
+                                                            </button>
+                                                            <a class="btn btn-info text-white" href="{{ session('telegram_connect_link') }}" target="_blank" rel="noopener">
+                                                                Buka Telegram
+                                                            </a>
+                                                        </div>
+                                                        <button type="button" class="btn btn-sm btn-outline-info mt-2 w-100"
+                                                            onclick="pollTelegramClaim({{ $group->id }}, {{ $bot->id }})">
+                                                            <i class="fa fa-satellite-dish me-1"></i> Cek Status Koneksi
+                                                        </button>
+                                                        <small class="text-muted d-block mt-2" style="font-size: 10px;">
+                                                            Token ini sekali pakai. Jika ada dua orang klik bersamaan, token terakhir yang aktif.
+                                                        </small>
+                                                    </div>
+                                                @endif
                                             </div>
                                         @endif
                                     </div>
@@ -1529,9 +1527,10 @@
                                         <label class="form-label fw-bold small text-muted">
                                             <i class="fa fa-calendar-alt me-1 text-primary"></i>Jadwal Kirim
                                         </label>
-                                        <input type="datetime-local" name="scheduled_at"
+                                        <input type="datetime-local" name="scheduled_at" id="createScheduled"
                                             class="form-control form-control-sm border-2 shadow-sm"
                                             style="border-radius: 8px;">
+                                        <small class="text-muted">Kosong = kirim sekarang</small>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label fw-bold small text-muted">
@@ -1693,6 +1692,7 @@
                                         <input type="datetime-local" name="scheduled_at" id="editScheduled"
                                             class="form-control form-control-sm border-2 shadow-sm"
                                             style="border-radius: 8px;">
+                                        <small class="text-muted">Kosong = kirim sekarang</small>
                                     </div>
                                     <div class="col-md-6 mb-3">
                                         <label class="form-label fw-bold small text-muted">
@@ -2192,14 +2192,61 @@
                     showToast('Menyimpan Channel ID...', 'primary');
                 }
 
-                function handleTelegramSave(event, form) {
-                    const chatId = document.getElementById('telegramChatInput').value.trim();
-                    if (!chatId) {
-                        event.preventDefault();
-                        showToast('Chat ID wajib diisi!', 'warning');
-                        return;
+                function copyTelegramConnectLink() {
+                    const input = document.getElementById('telegramConnectLink');
+                    if (!input) return;
+
+                    input.select();
+                    input.setSelectionRange(0, 99999);
+                    navigator.clipboard.writeText(input.value).then(() => {
+                        showToast('Link koneksi disalin.', 'success');
+                    }).catch(() => {
+                        showToast('Gagal menyalin link.', 'danger');
+                    });
+                }
+
+                async function pollTelegramClaim(groupId, botId) {
+                    showToast('Mengecek status koneksi Telegram...', 'info');
+
+                    const maxAttempts = 12;
+                    const intervalMs = 2500;
+
+                    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+                        try {
+                            const response = await fetch(`/groups/${groupId}/bots/${botId}/telegram-connect/claim`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json',
+                                },
+                            });
+
+                            const payload = await response.json();
+
+                            if (response.status === 202) {
+                                if (attempt === maxAttempts) {
+                                    showToast(payload.message || 'Belum ada group yang claim token. Coba lagi sebentar.', 'warning');
+                                }
+                                await new Promise(resolve => setTimeout(resolve, intervalMs));
+                                continue;
+                            }
+
+                            if (response.ok && payload.success) {
+                                showToast(payload.message || 'Telegram berhasil terhubung.', 'success');
+                                window.location.reload();
+                                return;
+                            }
+
+                            showToast(payload.message || 'Gagal memeriksa status koneksi.', 'danger');
+                            return;
+                        } catch (error) {
+                            if (attempt === maxAttempts) {
+                                showToast('Gagal polling koneksi Telegram.', 'danger');
+                            }
+                            await new Promise(resolve => setTimeout(resolve, intervalMs));
+                        }
                     }
-                    showToast('Menyimpan Chat ID...', 'primary');
                 }
 
                 // Modal Edit Announcement

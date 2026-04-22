@@ -123,13 +123,9 @@ php artisan migrate --seed
 php artisan storage:link
 ```
 
-### 4. Install Node.js Service
+### 4. Install Bot Service Terpisah
 
-```bash
-cd bot-service
-npm install
-cp .env.example .env
-```
+Bot service sekarang dikelola di repository terpisah. Clone dan setup repo `bot-service` yang baru, lalu arahkan `BOT_SERVICE_URL` dari Laravel ke URL service tersebut.
 
 ---
 
@@ -154,19 +150,12 @@ DB_PASSWORD=
 MIDTRANS_SERVER_KEY=your_server_key
 MIDTRANS_CLIENT_KEY=your_client_key
 
-# Discord
-DISCORD_CLIENT_ID=your_client_id
-DISCORD_REDIRECT_URI=http://localhost/discord/callback
-
-# Telegram
-TELEGRAM_BOT_TOKEN=your_bot_token
-TELEGRAM_BOT_USERNAME=your_bot_username
-
-# WhatsApp Service (Node.js)
-WHATSAPP_SERVICE_URL=http://localhost:3000
+# Bot Service (Node.js)
+BOT_SERVICE_URL=http://localhost:3000
+BOT_SERVICE_API_KEY=your_service_key
 ```
 
-### Node.js `bot-service/.env`
+### Bot Service `.env`
 
 ```env
 DISCORD_TOKEN=your_discord_bot_token
@@ -182,12 +171,9 @@ DISCORD_TOKEN=your_discord_bot_token
 php artisan serve
 ```
 
-### Terminal 2 — Node.js Bot Service
+### Terminal 2 — Bot Service Terpisah
 
-```bash
-cd bot-service
-node server.js
-```
+Jalankan service bot dari repository barunya sesuai instruksi pada repo tersebut.
 
 > Scan QR code yang muncul menggunakan WhatsApp nomor bot.
 
@@ -274,7 +260,8 @@ Contoh: WA + Discord + 2 Group + 20 Member = **Rp 116.000 / 6 bulan**
 
 ### Telegram
 - Setup via BotFather
-- Auto-detect Chat ID
+- Hubungkan group memakai link koneksi token satu kali
+- Bot service menutup koneksi ke Laravel lewat endpoint claim yang aman
 - Support foto & dokumen
 
 ### Format Pesan Bot

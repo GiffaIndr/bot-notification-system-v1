@@ -37,6 +37,8 @@ Route::middleware('auth')->group(function () {
     Route::delete('/groups/{group}/announcements/{announcement}', [AnnouncementController::class, 'destroy']);
     Route::put('/groups/{group}/bots/{bot}/channel', [GroupController::class, 'updateBotChannel']);
     Route::put('/groups/{group}/bots/{bot}/telegram-chat', [GroupController::class, 'updateTelegramChat']);
+    Route::post('/groups/{group}/bots/{bot}/telegram-connect', [GroupController::class, 'beginTelegramConnect']);
+    Route::post('/groups/{group}/bots/{bot}/telegram-connect/claim', [GroupController::class, 'pollTelegramConnectClaim']);
     Route::get('/groups/{group}/bots/{bot}/fetch-telegram-chat', [GroupController::class, 'fetchTelegramChat']);
 
     Route::post('/groups/{group}/roles/assign', [GroupRoleController::class, 'assignRole']);

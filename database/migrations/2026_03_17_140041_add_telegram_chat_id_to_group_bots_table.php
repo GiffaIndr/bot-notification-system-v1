@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::table('group_bots', function (Blueprint $table) {
             $table->string('telegram_chat_id')->nullable()->after('discord_channel_id');
+            $table->string('telegram_connect_token', 64)->nullable()->unique()->after('telegram_chat_id');
+            $table->timestamp('telegram_connect_token_generated_at')->nullable()->after('telegram_connect_token');
         });
     }
 
