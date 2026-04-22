@@ -189,7 +189,7 @@ class GroupController extends Controller
             ->orderByRaw('is_pinned DESC')
             ->orderByDesc('created_at')
             ->get();
-        
+
         $announcementsPreview = $announcements->take(2);
         $announcementsMore = $announcements->skip(2);
 

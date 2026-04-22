@@ -1123,8 +1123,11 @@
                                                 @if (!$bot->telegram_chat_id)
                                                     <div
                                                         class="bg-light p-2 rounded-2 mb-3 small border-start border-info border-4">
-                                                        <div class="fw-bold mb-1 text-dark">Hubungkan Telegram tanpa input ID.</div>
-                                                        <div class="text-muted">Klik tombol di bawah, lalu tambahkan bot ke grup target. Sistem akan menangkap grup yang benar memakai token sekali pakai.</div>
+                                                        <div class="fw-bold mb-1 text-dark">Hubungkan Telegram tanpa input
+                                                            ID.</div>
+                                                        <div class="text-muted">Klik tombol di bawah, lalu tambahkan bot ke
+                                                            grup target. Sistem akan menangkap grup yang benar memakai token
+                                                            sekali pakai.</div>
                                                     </div>
                                                 @else
                                                     <div class="d-flex align-items-center mb-2 small fw-bold text-success">
@@ -1137,7 +1140,8 @@
                                                     action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/telegram-connect"
                                                     class="mb-3">
                                                     @csrf
-                                                    <button class="btn btn-sm {{ !$bot->telegram_chat_id ? 'btn-info text-white' : 'btn-outline-info' }} fw-bold w-100">
+                                                    <button
+                                                        class="btn btn-sm {{ !$bot->telegram_chat_id ? 'btn-info text-white' : 'btn-outline-info' }} fw-bold w-100">
                                                         <i class="fa fa-link me-1"></i>
                                                         {{ !$bot->telegram_chat_id ? 'Buat Link Koneksi Telegram' : 'Buat Ulang Koneksi' }}
                                                     </button>
@@ -1149,7 +1153,8 @@
 
                                                 @if (session('telegram_connect_link') && $isCurrentTelegramBot)
                                                     <div class="border rounded-3 p-3 bg-light">
-                                                        <div class="small fw-bold text-dark mb-2">Link koneksi siap dipakai</div>
+                                                        <div class="small fw-bold text-dark mb-2">Link koneksi siap dipakai
+                                                        </div>
                                                         <div class="input-group input-group-sm">
                                                             <input type="text" class="form-control bg-white"
                                                                 id="telegramConnectLink"
@@ -1158,16 +1163,20 @@
                                                                 onclick="copyTelegramConnectLink()">
                                                                 <i class="fa fa-copy"></i>
                                                             </button>
-                                                            <a class="btn btn-info text-white" href="{{ session('telegram_connect_link') }}" target="_blank" rel="noopener">
+                                                            <a class="btn btn-info text-white"
+                                                                href="{{ session('telegram_connect_link') }}"
+                                                                target="_blank" rel="noopener">
                                                                 Buka Telegram
                                                             </a>
                                                         </div>
-                                                        <button type="button" class="btn btn-sm btn-outline-info mt-2 w-100"
+                                                        <button type="button"
+                                                            class="btn btn-sm btn-outline-info mt-2 w-100"
                                                             onclick="pollTelegramClaim({{ $group->id }}, {{ $bot->id }})">
                                                             <i class="fa fa-satellite-dish me-1"></i> Cek Status Koneksi
                                                         </button>
                                                         <small class="text-muted d-block mt-2" style="font-size: 10px;">
-                                                            Token ini sekali pakai. Jika ada dua orang klik bersamaan, token terakhir yang aktif.
+                                                            Token ini sekali pakai. Jika ada dua orang klik bersamaan, token
+                                                            terakhir yang aktif.
                                                         </small>
                                                     </div>
                                                 @endif
@@ -1861,7 +1870,8 @@
                                                             class="fa fa-plus text-primary"></i></div>
                                                     <div>
                                                         <h6 class="mb-0 small fw-bold">Buat Announcement</h6>
-                                                        <p class="text-muted mb-0" style="font-size: 0.7rem;">Member bisa
+                                                        <p class="text-muted mb-0" style="font-size: 0.7rem;">Member
+                                                            bisa
                                                             membuat pengumuman baru</p>
                                                     </div>
                                                 </div>
@@ -2226,7 +2236,8 @@
 
                             if (response.status === 202) {
                                 if (attempt === maxAttempts) {
-                                    showToast(payload.message || 'Belum ada group yang claim token. Coba lagi sebentar.', 'warning');
+                                    showToast(payload.message || 'Belum ada group yang claim token. Coba lagi sebentar.',
+                                        'warning');
                                 }
                                 await new Promise(resolve => setTimeout(resolve, intervalMs));
                                 continue;

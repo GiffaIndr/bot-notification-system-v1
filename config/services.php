@@ -32,11 +32,9 @@ return [
         'token' => env('POSTMARK_TOKEN'),
     ],
 
-    'discord' => [
-    ],
+    'discord' => [],
 
-    'telegram' => [
-    ],
+    'telegram' => [],
 
     'ses' => [
         'key' => env('AWS_ACCESS_KEY_ID'),
