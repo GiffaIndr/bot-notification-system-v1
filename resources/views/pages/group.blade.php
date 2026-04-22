@@ -1117,18 +1117,21 @@
 
                                                 @if (session('discord_connect_command') && $isCurrentDiscordBot)
                                                     <div class="border rounded-3 p-3 bg-light">
-                                                        <div class="small fw-bold text-dark mb-2">Instruksi claim Discord</div>
+                                                        <div class="small fw-bold text-dark mb-2">Instruksi claim Discord
+                                                        </div>
 
                                                         @if (session('discord_invite_link'))
                                                             <a class="btn btn-sm btn-outline-primary w-100 mb-2"
-                                                                href="{{ session('discord_invite_link') }}" target="_blank"
-                                                                rel="noopener">
-                                                                <i class="fa fa-external-link me-1"></i> Invite Bot ke Server
+                                                                href="{{ session('discord_invite_link') }}"
+                                                                target="_blank" rel="noopener">
+                                                                <i class="fa fa-external-link me-1"></i> Invite Bot ke
+                                                                Server
                                                             </a>
                                                         @endif
 
                                                         <div class="small text-muted mb-2">
-                                                            Setelah bot masuk ke server, jalankan command ini di channel target:
+                                                            Setelah bot masuk ke server, jalankan command ini di channel
+                                                            target:
                                                         </div>
 
                                                         <div class="input-group input-group-sm">
@@ -1142,7 +1145,8 @@
                                                         </div>
 
                                                         @if (session('discord_connect_expires_at'))
-                                                            <small class="text-muted d-block mt-2" style="font-size: 10px;">
+                                                            <small class="text-muted d-block mt-2"
+                                                                style="font-size: 10px;">
                                                                 Berlaku sampai: {{ session('discord_connect_expires_at') }}
                                                             </small>
                                                         @endif
@@ -1893,7 +1897,8 @@
                                         <input type="color" name="color"
                                             class="form-control form-control-color border-0 bg-transparent"
                                             id="colorPicker" value="#6c757d" title="Pilih warna role">
-                                        <label for="colorPicker" class="ms-2 small text-muted">Warna ini akan muncul pada
+                                        <label for="colorPicker" class="ms-2 small text-muted">Warna ini akan muncul
+                                            pada
                                             lencana member</label>
                                     </div>
                                 </div>
