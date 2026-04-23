@@ -45,9 +45,9 @@
     /* ID Styling */
     .order-id {
         font-family: 'JetBrains Mono', 'Fira Code', monospace;
-        color: #4f46e5;
+        color: var(--tasku-deep);
         font-weight: 600;
-        background: #eef2ff;
+        background: #e9f4fa;
         padding: 4px 10px;
         border-radius: 6px;
         font-size: 0.85rem;
@@ -72,21 +72,15 @@
         padding: 8px 16px;
     }
     .pagination .page-item.active .page-link {
-        background-color: #4f46e5;
+        background-color: var(--tasku-primary);
         color: white;
-        box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+        box-shadow: 0 4px 10px rgba(51, 118, 163, 0.3);
     }
 </style>
 
 <div class="container-fluid py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb mb-1">
-                    <li class="breadcrumb-item"><a href="/dashboard" class="text-decoration-none text-muted">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Riwayat</li>
-                </ol>
-            </nav>
             <h3 class="fw-bold text-dark">Riwayat Pembayaran</h3>
         </div>
         <button class="btn btn-white shadow-sm border-0 px-3 py-2" onclick="location.reload()">

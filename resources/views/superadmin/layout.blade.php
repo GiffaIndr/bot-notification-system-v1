@@ -7,17 +7,18 @@
     <title>@yield('title') - Super Admin Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/tasku-theme.css') }}">
     <style>
         :root {
-            --primary: #7c3aed;
-            --primary-dark: #6d28d9;
+            --primary: var(--tasku-primary);
+            --primary-dark: var(--tasku-deep);
             --danger: #ef4444;
-            --success: #10b981;
+            --success: #3376a3;
             --warning: #f59e0b;
         }
 
         body {
-            background: #f8fafc;
+            background: var(--tasku-bg);
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
@@ -29,7 +30,7 @@
             width: 250px;
             left: 0;
             top: 0;
-            box-shadow: 0 10px 30px rgba(124, 58, 237, 0.1);
+            box-shadow: 0 10px 30px rgba(22, 69, 115, 0.15);
         }
 
         .sidebar .brand {

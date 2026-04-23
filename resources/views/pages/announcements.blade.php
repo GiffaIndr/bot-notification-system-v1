@@ -1,470 +1,385 @@
 @extends('layout.sidebar')
 
 @section('content')
+    <div class="container-fluid pb-5 pt-3">
+        <div class="row justify-content-center">
+            <div class="col-12 col-xxl-10">
 
-<style>
-    .header-wrapper {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 20px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
-        margin-bottom: 2rem;
-        border: 1px solid rgba(0, 0, 0, 0.02);
-    }
+                {{-- 1. HEADER --}}
+                <div
+                    class="bg-white p-4 rounded-4 shadow-sm mb-4 border d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div class="d-flex align-items-center">
+                        <a href="/groups/{{ $group->id }}"
+                            class="btn btn-light btn-sm rounded-circle border me-3 d-flex align-items-center justify-content-center shadow-xs"
+                            style="width: 40px; height: 40px;">
+                            <i class="fa fa-arrow-left text-secondary"></i>
+                        </a>
+                        <div>
+                            <h2 class="fs-4 fw-bold mb-0 text-dark">Arsip Pengumuman</h2>
+                            <p class="text-muted small mb-0">{{ $group->name }} • {{ $announcements->total() }} Informasi
+                            </p>
+                        </div>
+                    </div>
+                    @if ($role->can_create_announcement)
+                        <button class="btn btn-primary fw-bold px-4 rounded-3 shadow-sm" data-bs-toggle="modal"
+                            data-bs-target="#modalCreate">
+                            <i class="fa fa-plus-circle me-2"></i>Buat Baru
+                        </button>
+                    @endif
+                </div>
 
-    .btn-back {
-        display: inline-flex;
-        align-items: center;
-        padding: 6px 12px;
-        background: #f8fafc;
-        border-radius: 10px;
-        color: #64748b !important;
-        font-size: 0.85rem;
-        font-weight: 600;
-        transition: all 0.2s;
-        margin-bottom: 8px;
-        text-decoration: none;
-    }
-
-    .btn-back:hover {
-        background: #e2e8f0;
-        color: #475569 !important;
-        transform: translateX(-3px);
-    }
-
-    .group-title {
-        font-size: 1.75rem;
-        letter-spacing: -0.5px;
-        color: #1e293b;
-    }
-
-    .role-badge-pill {
-        display: inline-flex;
-        align-items: center;
-        padding: 8px 16px;
-        border-radius: 12px;
-        color: white;
-        font-weight: 700;
-        font-size: 0.9rem;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        border: 2px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .announcement-container {
-        border: none;
-        border-radius: 20px;
-        overflow: hidden;
-    }
-
-    .announcement-header {
-        background: white;
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid #f1f5f9 !important;
-    }
-
-    /* Card per Item Announcement */
-    .announcement-item {
-        border-radius: 0;
-        transition: transform 0.2s ease;
-        background: #ffffff;
-    }
-
-    .announcement-item:hover {
-        transform: translateY(-2px);
-    }
-
-    /* Pinned Style */
-    .announcement-item.is-pinned {
-        background: linear-gradient(to right, #fffdf5, #ffffff);
-        border-left: 5px solid #f59e0b !important;
-    }
-
-    /* Gaya Lampiran/Attachment */
-    .attachment-card {
-        background: #f8fafc;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 8px 12px;
-        transition: all 0.2s;
-        min-width: 200px;
-    }
-
-    .attachment-card:hover {
-        background: #f1f5f9;
-        border-color: #cbd5e1;
-    }
-
-    /* Badge Info Pengumuman */
-    .info-badge {
-        font-size: 11px;
-        background: #f1f5f9;
-        color: #475569;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-weight: 600;
-    }
-
-    /* Gaya Reaksi (Emoji) */
-    .btn-reaction {
-        border: 1px solid #f1f5f9;
-        background: #ffffff;
-        padding: 4px 10px;
-        border-radius: 50px;
-        font-size: 0.8rem;
-        transition: all 0.2s;
-    }
-
-    .btn-reaction:hover {
-        background: #f8fafc;
-        border-color: #e2e8f0;
-    }
-
-    .btn-reaction.active {
-        background: #eff6ff;
-        border-color: #3b82f6;
-        color: #1d4ed8;
-    }
-
-    /* Sidebar Actions (Pin/Edit/Delete) */
-    .action-group .btn {
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 10px;
-        margin-bottom: 5px;
-        font-size: 12px;
-    }
-
-    @media (max-width: 768px) {
-        .header-wrapper {
-            flex-direction: column;
-            align-items: flex-start !important;
-            gap: 1rem;
-        }
-    }
-</style>
-
-<div class="header-wrapper d-flex justify-content-between align-items-center">
-    <div class="d-flex align-items-center">
-        <div class="me-3 d-none d-md-flex align-items-center justify-content-center rounded-circle shadow-sm"
-            style="width: 60px; height: 60px; background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); color: white;">
-            <i class="fa fa-bullhorn fs-4"></i>
-        </div>
-
-        <div>
-            <a href="/groups/{{ $group->id }}" class="btn-back text-decoration-none">
-                <i class="fa fa-arrow-left me-2"></i>Kembali ke Workspace
-            </a>
-            <h2 class="group-title mb-0 fw-bold">{{ $group->name }} - Semua Announcement</h2>
-        </div>
-    </div>
-
-    <div class="text-end">
-        <div class="text-muted small">
-            <i class="fa fa-bullhorn me-1 text-primary"></i>
-            <strong>{{ $announcements->count() }}</strong> Announcement
-        </div>
-    </div>
-</div>
-
-<div class="row g-4">
-    <div class="col-md-8">
-        <div class="card announcement-container shadow-sm">
-            <div class="card-header announcement-header fw-bold d-flex justify-content-between align-items-center bg-white">
-                <span class="fs-5 text-dark">
-                    <i class="fa fa-bullhorn text-primary me-2"></i>Daftar Announcement
-                </span>
-                @if ($role->can_create_announcement)
-                    <a href="/groups/{{ $group->id }}" class="btn btn-sm btn-primary fw-bold px-3 shadow-sm">
-                        <i class="fa fa-plus-circle me-1"></i>Buat Baru
-                    </a>
-                @endif
-            </div>
-
-            <div class="card-body p-0">
-                @forelse ($announcements as $announcement)
-                    <div class="card mb-4 shadow-sm announcement-item {{ $announcement->is_pinned ? 'is-pinned' : 'border-0' }}">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-start">
-
-                                <div class="flex-grow-1">
-                                    {{-- Header: Title & Pin Icon --}}
-                                    <div class="d-flex align-items-center mb-2">
-                                        @if ($announcement->is_pinned)
-                                            <div class="bg-warning bg-opacity-10 p-2 rounded-circle me-3">
-                                                <i class="fa fa-thumbtack text-warning"
-                                                    style="font-size: 14px;"></i>
-                                            </div>
-                                        @endif
-                                        <h5 class="fw-bold text-dark mb-0" style="letter-spacing: -0.5px;">
-                                            {{ $announcement->title }}</h5>
+                {{-- 2. TOOLBAR: Search, Filter, & Sort (Simetris & Profesional) --}}
+                <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white border">
+                    <div class="card-body p-3 p-lg-4">
+                        <form method="GET" action="{{ route('groups.announcements.index', $group) }}">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-12 col-lg-4">
+                                    <label class="small fw-bold text-muted mb-2 text-uppercase">Cari Kata Kunci</label>
+                                    <div class="input-group border rounded-3 overflow-hidden shadow-xs">
+                                        <span class="input-group-text bg-white border-0 ps-3 text-muted"><i
+                                                class="fa-solid fa-search"></i></span>
+                                        <input type="text" name="q" class="form-control border-0 py-2"
+                                            placeholder="Judul atau isi pesan..." value="{{ $search }}">
                                     </div>
-
-                                    {{-- Content --}}
-                                    <p class="text-secondary mb-4"
-                                        style="font-size: 0.95rem; line-height: 1.7; white-space: pre-line; color: #4b5563 !important;">
-                                        {{ $announcement->content }}
-                                    </p>
-
-                                    {{-- Attachments Section --}}
-                                    @if ($announcement->attachments->isNotEmpty())
-                                        <div class="d-flex flex-wrap gap-2 mb-4">
-                                            @foreach ($announcement->attachments as $attachment)
-                                                <a href="{{ $attachment->url }}" target="_blank"
-                                                    class="attachment-card text-decoration-none text-dark d-flex align-items-center">
-                                                    @if ($attachment->type === 'image')
-                                                        <img src="{{ $attachment->url }}" class="rounded me-2"
-                                                            style="width:35px; height:35px; object-fit:cover;">
-                                                    @else
-                                                        @php
-                                                            $icon = match (true) {
-                                                                str_contains($attachment->mime_type, 'pdf')
-                                                                    => 'fa-file-pdf text-danger',
-                                                                str_contains($attachment->mime_type, 'word')
-                                                                    => 'fa-file-word text-primary',
-                                                                str_contains($attachment->mime_type, 'sheet')
-                                                                    => 'fa-file-excel text-success',
-                                                                default => 'fa-file text-secondary',
-                                                            };
-                                                        @endphp
-                                                        <i class="fa {{ $icon }} fa-lg me-3"></i>
-                                                    @endif
-                                                    <div class="overflow-hidden">
-                                                        <div class="small fw-bold text-truncate"
-                                                            style="max-width: 140px;">{{ $attachment->filename }}
-                                                        </div>
-                                                        <div class="text-muted" style="font-size: 9px;">
-                                                            {{ $attachment->formatted_size }}</div>
-                                                    </div>
-                                                </a>
-                                            @endforeach
-                                        </div>
-                                    @endif
-
-                                    {{-- Footer Metadata --}}
-                                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-                                        <span class="info-badge">
-                                            <i class="fa fa-user-circle me-1 text-primary"></i>
-                                            {{ $announcement->user->name }}
-                                        </span>
-                                        <span class="info-badge">
-                                            <i class="fa fa-calendar-alt me-1"></i>
-                                            {{ $announcement->created_at->format('d M, H:i') }}
-                                        </span>
-                                        @if ($announcement->scheduled_at)
-                                            <span class="info-badge text-primary" style="background: #eff6ff;">
-                                                <i class="fa fa-clock me-1"></i> Terjadwal:
-                                                {{ $announcement->scheduled_at->format('d M, H:i') }}
-                                            </span>
-                                        @endif
-                                        @if ($announcement->repeat !== 'none')
-                                            <span class="info-badge text-success" style="background: #f0fdf4;">
-                                                <i class="fa fa-sync-alt me-1"></i>
-                                                {{ ucfirst($announcement->repeat) }}
-                                            </span>
-                                        @endif
-                                    </div>
-
-                                    {{-- Reactions --}}
-                                    <div class="d-flex flex-wrap gap-1" id="reactions-{{ $announcement->id }}">
-                                        @php
-                                            $emojis = ['👍', '❤️', '😂', '😮', '😢', '😡'];
-                                            $reactionCounts = $announcement->reactions->groupBy('emoji');
-                                            $myReactions = $announcement->reactions
-                                                ->where('user_id', auth()->id())
-                                                ->pluck('emoji')
-                                                ->toArray();
-                                        @endphp
-                                        @foreach ($emojis as $emoji)
-                                            @php
-                                                $count = $reactionCounts->get($emoji)?->count() ?? 0;
-                                                $reacted = in_array($emoji, $myReactions);
-                                            @endphp
-                                            <button
-                                                onclick="react({{ $announcement->id }}, '{{ $emoji }}', this)"
-                                                class="btn-reaction {{ $reacted ? 'active' : '' }}">
-                                                {{ $emoji }} <span
-                                                    class="ms-1 fw-bold">{{ $count > 0 ? $count : '' }}</span>
-                                            </button>
+                                </div>
+                                <div class="col-6 col-lg-2">
+                                    <label class="small fw-bold text-muted mb-2 text-uppercase">Status</label>
+                                    <select name="filter"
+                                        class="form-select border rounded-3 py-2 shadow-xs fw-semibold text-secondary">
+                                        <option value="all" @selected($filter === 'all')>Semua</option>
+                                        <option value="pinned" @selected($filter === 'pinned')>Pinned</option>
+                                        <option value="scheduled" @selected($filter === 'scheduled')>Terjadwal</option>
+                                        <option value="repeat" @selected($filter === 'repeat')>Berulang</option>
+                                        <option value="attachment" @selected($filter === 'attachment')>Ada Lampiran
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-6 col-lg-3">
+                                    <label class="small fw-bold text-muted mb-2 text-uppercase">Kategori</label>
+                                    <select name="category_id"
+                                        class="form-select border rounded-3 py-2 shadow-xs fw-semibold text-secondary">
+                                        <option value="">Semua kategori</option>
+                                        @foreach ($categories as $category)
+                                            <option value="{{ $category->id }}"
+                                                @selected((string) $categoryId === (string) $category->id)>
+                                                {{ $category->name }}</option>
                                         @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-6 col-lg-2">
+                                    <label class="small fw-bold text-muted mb-2 text-uppercase">Urutkan</label>
+                                    <select name="sort"
+                                        class="form-select border rounded-3 py-2 shadow-xs fw-semibold text-secondary">
+                                        <option value="latest" @selected($sort === 'latest')>Terbaru</option>
+                                        <option value="oldest" @selected($sort === 'oldest')>Terlama</option>
+                                        <option value="pinned" @selected($sort === 'pinned')>Prioritas Pin</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 col-lg-1 d-grid">
+                                    <button type="submit" class="btn btn-primary">Terapkan</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                {{-- 3. FEED PENGUMUMAN --}}
+                <div id="announcementContainer">
+                    @forelse ($announcements as $announcement)
+                        <div class="card border-0 shadow-sm rounded-4 mb-3 transition-all">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start gap-3">
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                            @if ($announcement->is_pinned)
+                                                <span
+                                                    class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1"
+                                                    style="font-size: 10px;">
+                                                    <i class="fa fa-thumbtack me-1"></i>DISEMATKAN
+                                                </span>
+                                            @endif
+                                            @if ($announcement->category)
+                                                <span class="badge bg-light text-primary border rounded-pill px-2 py-1"
+                                                    style="font-size: 10px;">
+                                                    <i class="fa fa-tag me-1"></i>{{ $announcement->category->name }}
+                                                </span>
+                                            @endif
+                                            @if ($announcement->deadline_mode && $announcement->deadline_at)
+                                                <span class="badge bg-light text-danger border rounded-pill px-2 py-1"
+                                                    style="font-size: 10px;">
+                                                    <i class="fa fa-hourglass-half me-1"></i>Tenggat:
+                                                    {{ $announcement->deadline_at->format('d M Y, H:i') }}
+                                                </span>
+                                            @endif
+                                            <span class="badge bg-light text-secondary border rounded-pill px-2 py-1"
+                                                style="font-size: 10px;">
+                                                <i class="fa fa-paper-plane me-1"></i>Kirim pertama:
+                                                {{ $announcement->scheduled_at?->format('d M Y, H:i') }}
+                                            </span>
+                                            @if ($announcement->reminder_enabled && $announcement->reminder_at)
+                                                <span class="badge bg-light text-warning border rounded-pill px-2 py-1"
+                                                    style="font-size: 10px;">
+                                                    <i class="fa fa-bell me-1"></i>Pengingat:
+                                                    {{ $announcement->reminder_at->format('d M Y, H:i') }}
+                                                </span>
+                                            @endif
+                                            <span class="text-muted" style="font-size: 11px;">
+                                                <i
+                                                    class="fa fa-clock me-1"></i>{{ $announcement->created_at->format('d M Y, H:i') }}
+                                            </span>
+                                        </div>
+
+                                        <h5 class="fw-bold text-dark mb-2">{{ $announcement->title }}</h5>
+                                        <p class="text-secondary mb-3 lh-base">{{ $announcement->content }}</p>
+
+                                        @if ($announcement->attachments->isNotEmpty())
+                                            <div class="d-flex flex-wrap gap-2 mb-3">
+                                                @foreach ($announcement->attachments as $attachment)
+                                                    <a href="{{ $attachment->url }}" target="_blank"
+                                                        class="btn btn-sm btn-light border text-dark py-1 px-2 rounded-2 shadow-xs"
+                                                        style="font-size: 11px;">
+                                                        <i class="fa fa-paperclip me-1 text-primary"></i>
+                                                        {{ Str::limit($attachment->filename, 20) }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                        @endif
+
+                                        <div class="d-flex align-items-center gap-2 mt-2 pt-2 border-top">
+                                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold shadow-xs"
+                                                style="width: 24px; height: 24px; font-size: 9px;">
+                                                {{ strtoupper(substr($announcement->user->name, 0, 1)) }}
+                                            </div>
+                                            <span class="small fw-semibold text-secondary">Oleh
+                                                {{ $announcement->user->name }}</span>
+                                        </div>
+
+                                        @if ($role->can_edit_announcement)
+                                            <form method="POST"
+                                                action="{{ route('groups.announcements.category.update', [$group, $announcement]) }}"
+                                                class="mt-3 pt-2 border-top">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <label class="small text-muted mb-0">Kategori</label>
+                                                    <select name="category_id" class="form-select form-select-sm"
+                                                        onchange="this.form.submit()">
+                                                        <option value="">Tanpa kategori</option>
+                                                        @foreach ($categories as $category)
+                                                            <option value="{{ $category->id }}"
+                                                                @selected((int) $announcement->category_id === (int) $category->id)>
+                                                                {{ $category->name }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                            </form>
+                                        @endif
                                     </div>
 
-                                    {{-- Random Picker Result (Inner Card) --}}
-                                    @if ($announcement->use_picker)
-                                        <div class="mt-4 p-3 rounded-4 border border-warning border-opacity-25"
-                                            style="background: #fffcf0;">
-                                            <div
-                                                class="d-flex align-items-center justify-content-between flex-wrap gap-2">
-                                                <div class="small fw-bold text-warning text-uppercase">
-                                                    <i class="fa fa-dice me-2"></i> RANDOM PICKER
-                                                </div>
-                                                <button
-                                                    class="btn btn-sm {{ $announcement->picked_result ? 'btn-warning' : 'btn-outline-warning' }} rounded-pill px-3 fw-bold"
-                                                    id="btnPick-{{ $announcement->id }}"
-                                                    onclick="previewPick({{ $announcement->id }})">
-                                                    <i
-                                                        class="fa fa-{{ $announcement->picked_result ? 'rotate' : 'shuffle' }} me-1"></i>
-                                                    {{ $announcement->picked_result ? 'Undi Ulang' : 'Undi Sekarang' }}
-                                                </button>
-                                            </div>
-                                            <div id="pickResult-{{ $announcement->id }}"
-                                                class="mt-3 {{ $announcement->picked_result ? '' : 'd-none' }}">
-                                                <div id="spinner-{{ $announcement->id }}"
-                                                    class="fw-bold text-dark small mb-2 opacity-75">
-                                                    {{ $announcement->picked_result ? '🎉 Hasil Undian:' : '' }}
-                                                </div>
-                                                <div id="names-{{ $announcement->id }}"
-                                                    class="d-flex flex-wrap gap-2">
-                                                    {{-- Hasil undian akan muncul di sini --}}
-                                                </div>
-                                            </div>
+                                    {{-- Action Dropdown --}}
+                                    @if ($role->can_edit_announcement)
+                                        <div class="dropdown">
+                                            <button class="btn btn-light btn-sm rounded-3 border shadow-xs"
+                                                data-bs-toggle="dropdown">
+                                                <i class="fa fa-ellipsis-v text-muted"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
+                                                <li>
+                                                    <form method="POST"
+                                                        action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}/pin">
+                                                        @csrf
+                                                        <button class="dropdown-item small">
+                                                            <i class="fa fa-thumbtack me-2 text-warning"></i>
+                                                            {{ $announcement->is_pinned ? 'Lepas Pin' : 'Sematkan' }}
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li>
+                                                    <button class="dropdown-item small text-danger"
+                                                        onclick="confirmDelete({{ $announcement->id }})">
+                                                        <i class="fa fa-trash me-2"></i>Hapus
+                                                    </button>
+                                                </li>
+                                            </ul>
                                         </div>
                                     @endif
                                 </div>
-
-                                {{-- Admin Actions Column --}}
-                                @if ($role->can_edit_announcement)
-                                    <div class="action-group d-flex flex-column ms-3">
-                                        <form method="POST"
-                                            action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}/pin">
-                                            @csrf
-                                            <button type="submit"
-                                                class="btn {{ $announcement->is_pinned ? 'btn-warning shadow-sm' : 'btn-light border' }}"
-                                                title="Pin/Unpin">
-                                                <i class="fa fa-thumbtack"></i>
-                                            </button>
-                                        </form>
-
-                                        <button class="btn btn-light border text-primary" data-bs-toggle="modal"
-                                            data-bs-target="#modalEdit" data-id="{{ $announcement->id }}"
-                                            data-title="{{ $announcement->title }}"
-                                            data-content="{{ $announcement->content }}"
-                                            data-attachments="{{ json_encode($announcement->attachments) }}">
-                                            <i class="fa fa-pen"></i>
-                                        </button>
-
-                                        <button class="btn btn-light border text-danger"
-                                            onclick="confirmDelete({{ $announcement->id }})">
-                                            <i class="fa fa-trash"></i>
-                                        </button>
-
-                                        <form id="deleteForm{{ $announcement->id }}" method="POST"
-                                            action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}"
-                                            class="d-none">
-                                            @csrf @method('DELETE')
-                                        </form>
-                                    </div>
-                                @endif
                             </div>
+                            <form id="deleteForm{{ $announcement->id }}" method="POST"
+                                action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}" class="d-none">
+                                @csrf
+                                @method('DELETE')
+                            </form>
                         </div>
-                    </div>
-                @empty
-                    <div class="text-center py-5">
-                        <div class="bg-light d-inline-block p-4 rounded-circle mb-3">
-                            <i class="fa fa-bullhorn fa-3x text-muted opacity-25"></i>
+                    @empty
+                        <div class="text-center py-5 bg-white rounded-4 border border-dashed shadow-sm">
+                            <i class="fa fa-bullhorn fa-3x text-muted opacity-25 mb-3"></i>
+                            <h6 class="text-muted">Belum ada pengumuman apapun.</h6>
                         </div>
-                        <h5 class="text-secondary fw-bold">Belum ada pengumuman</h5>
-                        <p class="text-muted small">Cek kembali nanti untuk info terbaru.</p>
+                    @endforelse
+                </div>
+
+                @if ($announcements->hasPages())
+                    <div class="d-flex justify-content-center mt-4">
+                        {{ $announcements->onEachSide(1)->links('pagination::bootstrap-5') }}
                     </div>
-                @endforelse
+                @endif
+
             </div>
         </div>
     </div>
 
-    {{-- Sidebar Info --}}
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm mb-4" style="position: sticky; top: 90px;">
-            <div class="card-body">
-                <h6 class="fw-bold text-dark mb-3">
-                    <i class="fa fa-info-circle text-primary me-2"></i>Informasi Workspace
-                </h6>
-                <div class="list-group list-group-flush">
-                    <div class="list-group-item px-0 py-2 border-0">
-                        <small class="text-muted">Nama Workspace</small>
-                        <div class="fw-bold text-dark">{{ $group->name }}</div>
-                    </div>
-                    <div class="list-group-item px-0 py-2 border-0">
-                        <small class="text-muted">Total Announcement</small>
-                        <div class="fw-bold text-dark">{{ $announcements->count() }}</div>
-                    </div>
-                    <div class="list-group-item px-0 py-2 border-0">
-                        <small class="text-muted">Dibuat Pada</small>
-                        <div class="fw-bold text-dark">{{ $group->created_at->format('d M Y') }}</div>
-                    </div>
+    @if ($role->can_create_announcement)
+        <div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content border-0 shadow rounded-4">
+                    <form method="POST" action="/groups/{{ $group->id }}/announcements" enctype="multipart/form-data">
+                        @csrf
+                        <div class="modal-header border-bottom-0 pb-0">
+                            <h5 class="modal-title fw-bold">Buat Pengumuman Baru</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body pt-3">
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Judul</label>
+                                <input type="text" name="title" class="form-control" maxlength="255" required>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Isi Pengumuman</label>
+                                <textarea name="content" class="form-control" rows="4" required></textarea>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small text-muted">Kategori</label>
+                                    <select name="category_id" class="form-select">
+                                        <option value="">Tanpa kategori</option>
+                                        @foreach ($categories as $category)
+                                            <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small text-muted">Pengulangan</label>
+                                    <select name="repeat" class="form-select" required>
+                                        <option value="none">Tidak berulang</option>
+                                        <option value="daily">Harian</option>
+                                        <option value="weekly">Mingguan</option>
+                                        <option value="monthly">Bulanan</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small text-muted">Waktu kirim pertama</label>
+                                    <input type="datetime-local" name="scheduled_at" class="form-control"
+                                        value="{{ old('scheduled_at', now()->format('Y-m-d\\TH:i')) }}" required>
+                                    <small class="text-muted">Ini waktu kirim awal pengumuman, bukan tenggat.</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small text-muted">Lampiran (maks. 3)</label>
+                                    <input type="file" name="attachments[]" class="form-control" multiple>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input js-deadline-mode" type="checkbox" role="switch"
+                                            id="deadline_mode_archive" name="deadline_mode" value="1">
+                                        <label class="form-check-label" for="deadline_mode_archive">Aktifkan mode tenggat
+                                            waktu</label>
+                                    </div>
+                                    <small class="text-muted d-none js-deadline-hint">Mode tenggat hanya tersedia jika
+                                        pengulangan diatur ke "Tidak berulang".</small>
+                                </div>
+                                <div class="col-md-6 d-none js-deadline-fields">
+                                    <label class="form-label small text-muted">Tenggat waktu</label>
+                                    <input type="datetime-local" name="deadline_at" class="form-control"
+                                        value="{{ old('deadline_at') }}">
+                                </div>
+                                <div class="col-12 d-none js-deadline-fields">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input js-reminder-enabled" type="checkbox"
+                                            role="switch" id="reminder_enabled_archive" name="reminder_enabled"
+                                            value="1">
+                                        <label class="form-check-label" for="reminder_enabled_archive">Aktifkan pengingat
+                                            sekali sebelum tenggat</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 d-none js-reminder-fields">
+                                    <label class="form-label small text-muted">Waktu pengingat sebelum tenggat</label>
+                                    <div class="input-group">
+                                        <input type="number" name="reminder_offset_value" class="form-control"
+                                            min="1" max="365" placeholder="1" value="{{ old('reminder_offset_value', 1) }}">
+                                        <select name="reminder_offset_unit" class="form-select">
+                                            <option value="day" @selected(old('reminder_offset_unit', 'day') === 'day')>Hari</option>
+                                            <option value="hour" @selected(old('reminder_offset_unit') === 'hour')>Jam</option>
+                                        </select>
+                                    </div>
+                                    <small class="text-muted">Contoh: isi 1 Hari berarti pengingat dikirim 1 hari sebelum tenggat.</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-top-0 pt-0">
+                            <button type="button" class="btn btn-light border" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-primary">Simpan Pengumuman</button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    @endif
 
-<script>
-    function react(announcementId, emoji, btn) {
-        fetch(`/groups/{{ $group->id }}/announcements/${announcementId}/react`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                },
-                body: JSON.stringify({
-                    emoji: emoji
-                })
-            })
-            .then(res => res.json())
-            .then(data => {
-                // Update semua tombol reaction untuk announcement ini
-                const container = document.getElementById(`reactions-${announcementId}`);
-                const buttons = container.querySelectorAll('.btn-reaction');
+    <script>
+        function bindDeadlineReminderForm(root) {
+            const deadlineMode = root.querySelector('.js-deadline-mode');
+            const reminderEnabled = root.querySelector('.js-reminder-enabled');
+            const deadlineFields = root.querySelectorAll('.js-deadline-fields');
+            const reminderFields = root.querySelectorAll('.js-reminder-fields');
+            const repeatSelect = root.querySelector('select[name="repeat"]');
+            const deadlineHint = root.querySelector('.js-deadline-hint');
 
-                buttons.forEach(button => {
-                    const buttonEmoji = button.textContent.trim().split(' ')[0];
-                    const count = data.reactions[buttonEmoji] || 0;
-                    const isReacted = data.myReactions.includes(buttonEmoji);
+            if (!deadlineMode) return;
 
-                    button.className = `btn-reaction ${isReacted ? 'active' : ''}`;
-                    const countSpan = button.querySelector('span');
-                    if (countSpan) {
-                        countSpan.textContent = count > 0 ? count : '';
+            const toggle = () => {
+                const isRepeatMode = repeatSelect && repeatSelect.value !== 'none';
+
+                if (isRepeatMode) {
+                    deadlineMode.checked = false;
+                    deadlineMode.disabled = true;
+                    if (reminderEnabled) {
+                        reminderEnabled.checked = false;
                     }
-                });
-            })
-            .catch(() => {});
-    }
+                } else {
+                    deadlineMode.disabled = false;
+                }
 
-    function confirmDelete(announcementId) {
-        if (confirm('Yakin ingin menghapus announcement ini?')) {
-            document.getElementById(`deleteForm${announcementId}`).submit();
-        }
-    }
+                if (deadlineHint) {
+                    deadlineHint.classList.toggle('d-none', !isRepeatMode);
+                }
 
-    function previewPick(announcementId) {
-        fetch(`/groups/{{ $group->id }}/announcements/${announcementId}/pick`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                deadlineFields.forEach(el => el.classList.toggle('d-none', !deadlineMode.checked));
+                const reminderActive = deadlineMode.checked && reminderEnabled && reminderEnabled.checked;
+                reminderFields.forEach(el => el.classList.toggle('d-none', !reminderActive));
+            };
+
+            deadlineMode.addEventListener('change', toggle);
+            if (reminderEnabled) {
+                reminderEnabled.addEventListener('change', toggle);
             }
-        })
-        .then(res => res.json())
-        .then(data => {
-            const button = document.getElementById(`btnPick-${announcementId}`);
-            const spinner = document.getElementById(`spinner-${announcementId}`);
-            const names = document.getElementById(`names-${announcementId}`);
-            const result = document.getElementById(`pickResult-${announcementId}`);
+            if (repeatSelect) {
+                repeatSelect.addEventListener('change', toggle);
+            }
 
-            button.textContent = '🔄 Undi Ulang';
-            button.className = 'btn btn-sm btn-warning rounded-pill px-3 fw-bold';
+            toggle();
+        }
 
-            spinner.innerHTML = '🎉 Hasil Undian:';
-            names.innerHTML = data.picked_users.map(user =>
-                `<span class="badge bg-success">${user}</span>`
-            ).join('');
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.modal form').forEach(bindDeadlineReminderForm);
+        });
 
-            result.classList.remove('d-none');
-        })
-        .catch(() => alert('Gagal melakukan undian'));
-    }
-</script>
-
+        function confirmDelete(id) {
+            if (confirm('Hapus pengumuman ini?')) {
+                document.getElementById('deleteForm' + id).submit();
+            }
+        }
+    </script>
 @endsection

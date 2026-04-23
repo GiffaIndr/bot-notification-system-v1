@@ -1,345 +1,196 @@
 @extends('layout.cdn')
 
 @section('content2')
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Manrope:wght@400;600;700;800&display=swap');
+<div class="min-vh-100 pb-5 text-dark" style="background-color: #f4f7fa; font-family: 'Plus Jakarta Sans', sans-serif;">
 
-        :root {
-            --bg: #eef8ff;
-            --ink: #102022;
-            --ink-soft: #52666c;
-            --surface: #ffffff;
-            --line: #cfe6ff;
-            --primary: #00b7ff;
-            --primary-dark: #008fe0;
-            --muted-chip: #e6f4ff;
-        }
-
-        .home-shell {
-            min-height: 100vh;
-            padding: 28px 12px 40px;
-            color: var(--ink);
-            font-family: 'Manrope', sans-serif;
-            background:
-                radial-gradient(circle at 6% 6%, #c8ebff 0, transparent 34%),
-                radial-gradient(circle at 92% 15%, #ffe6c8 0, transparent 24%),
-                radial-gradient(circle at 80% 86%, #bde3ff 0, transparent 30%),
-                var(--bg);
-        }
-
-        .home-wrap {
-            width: 100%;
-            max-width: 960px;
-            margin: 0 auto;
-        }
-
-        .topbar {
-            margin-bottom: 18px;
-        }
-
-        .topbar-inner {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid #ffffff;
-            border-radius: 999px;
-            box-shadow: 0 10px 24px rgba(12, 59, 48, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 12px 10px 18px;
-            gap: 12px;
-        }
-
-        .brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            letter-spacing: 0.01em;
-            color: #112b26;
-        }
-
-        .brand .logo {
-            width: 34px;
-            height: 34px;
-            border-radius: 11px;
-            background: linear-gradient(145deg, var(--primary), #4dd2ff);
-            color: #fff;
-            display: grid;
-            place-items: center;
-            box-shadow: 0 8px 16px rgba(0, 151, 255, 0.35);
-        }
-
-        .btn-home {
-            border: 0;
-            text-decoration: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-            font-weight: 700;
-            font-size: 0.9rem;
-            border-radius: 999px;
-            padding: 9px 14px;
-        }
-
-        .btn-home:hover {
-            transform: translateY(-1px);
-        }
-
-        .btn-home-primary {
-            color: #fff;
-            background: linear-gradient(145deg, var(--primary), #0096ff);
-            box-shadow: 0 10px 24px rgba(0, 151, 255, 0.35);
-        }
-
-        .btn-home-ghost {
-            color: var(--ink);
-            background: #fff;
-            border: 1px solid #d1e2d8;
-        }
-
-        .btn-home-ghost:hover {
-            background: #f5fbff;
-            border-color: #b9dcfb;
-        }
-
-        .home-main {
-            padding: 0;
-        }
-
-        .welcome {
-            margin-bottom: 20px;
-        }
-
-        .hero-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            border-radius: 999px;
-            background: var(--muted-chip);
-            color: #0b78c7;
-            border: 1px solid #b9dcfb;
-            padding: 7px 12px;
-            font-size: 0.76rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            margin-bottom: 12px;
-        }
-
-        .welcome h5 {
-            margin: 0 0 8px;
-            font-weight: 700;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(1.45rem, 2.2vw, 2.2rem);
-            letter-spacing: -0.02em;
-        }
-
-        .welcome p {
-            margin: 0;
-            color: var(--ink-soft);
-            max-width: 68ch;
-        }
-
-        .section-title {
-            margin: 0;
-            font-size: 1rem;
-            font-weight: 700;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .section-title i {
-            color: var(--primary-dark);
-        }
-
-        .section-note {
-            color: #64748b;
-            margin-bottom: 10px;
-            font-size: 0.9rem;
-        }
-
-        .section-block {
-            margin-bottom: 18px;
-            padding: 14px 14px 16px;
-            border-top: 1px solid #d7e9fb;
-            border-left: 4px solid #b8dcfb;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(241, 249, 255, 0.62));
-            border-radius: 10px;
-        }
-
-        .section-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 6px;
-        }
-
-        .mini-chip {
-            border-radius: 999px;
-            background: #e6f4ff;
-            color: #0b78c7;
-            border: 1px solid #b9dcfb;
-            padding: 4px 9px;
-            font-size: 0.7rem;
-            font-weight: 800;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-        }
-
-        .group-list-title {
-            margin: 0 0 12px;
-            font-size: 1rem;
-            font-weight: 700;
-        }
-
-        .group-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px dashed #cde3f8;
-        }
-
-        .group-item:last-child {
-            border-bottom: 0;
-        }
-
-        .role-pill {
-            display: inline-block;
-            font-size: 0.75rem;
-            font-weight: 700;
-            border-radius: 999px;
-            padding: 4px 10px;
-        }
-
-        .home-input {
-            border-radius: 12px;
-            border: 1px solid #c8def2;
-            min-height: 46px;
-        }
-
-        .home-input:focus {
-            border-color: #8acbff;
-            box-shadow: 0 0 0 .2rem rgba(0, 151, 255, 0.17);
-        }
-
-        @media (max-width: 768px) {
-            .topbar-inner {
-                border-radius: 16px;
-            }
-
-            .brand span {
-                display: none;
-            }
-        }
-    </style>
-
-    <div class="home-shell">
-        <div class="home-wrap">
-            <div class="topbar">
-                <div class="topbar-inner">
-                    <div class="brand">
-                        <span class="logo"><i class="fa-solid fa-bolt"></i></span>
-                        <span>Tasku Home</span>
-                    </div>
-                    <form action="{{ route('logout') }}" method="POST">
-                        @csrf
-                        <button class="btn-home btn-home-ghost" type="submit">
-                            <i class="fa-solid fa-right-from-bracket"></i>
-                            Logout
-                        </button>
-                    </form>
+    {{-- 1. NAVBAR: Sederhana & Simetris --}}
+    <nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm py-2 mb-0 mb-lg-4">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold m-0" href="{{ url('/home') }}">
+                <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px;">
+                    <i class="fa-solid fa-bolt fs-6"></i>
                 </div>
-            </div>
+                <span>Tasku</span>
+            </a>
+            <form action="{{ route('logout') }}" method="POST" class="ms-auto">
+                @csrf
+                <button class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold border-2" type="submit">
+                    <i class="fa-solid fa-right-from-bracket me-1"></i> <span class="d-none d-sm-inline">Keluar</span>
+                </button>
+            </form>
+        </div>
+    </nav>
 
-            @if (session('info'))
-                <div class="alert alert-info">{{ session('info') }}</div>
-            @endif
-            @if (session('success'))
-                <div class="alert alert-success">{{ session('success') }}</div>
-            @endif
-            @if (session('error'))
-                <div class="alert alert-danger">{{ session('error') }}</div>
-            @endif
+    <div class="container pt-4 pt-lg-5">
+        <div class="row justify-content-center g-4">
+            <div class="col-12 col-xxl-11">
 
-            <div class="home-main">
-                <div class="welcome">
-                    <span class="hero-tag"><i class="fa-solid fa-wave-square"></i> Home Workspace</span>
-                    <h5>Welcome, {{ auth()->user()->name }}</h5>
-                    <p>Gabung ke group yang sudah ada, atau buat group baru kalau kamu ingin mulai mengelola tim.</p>
-                </div>
-
-                <section class="section-block">
-                    <div class="section-head">
-                        <h6 class="section-title"><i class="fa-solid fa-user-plus"></i> Join Group</h6>
-                        <span class="mini-chip">Invite Code</span>
-                    </div>
-                    <p class="section-note">Masukkan kode undangan dari admin.</p>
-                    <form action="/join" method="POST" class="row g-2">
-                        @csrf
-                        <div class="col-12">
-                            <input type="text" name="code" class="form-control home-input"
-                                placeholder="Contoh: A1B2C3D4" required>
+                {{-- 2. TOP SECTION: Pembaruan Terakhir (Kini Mandiri & Simetris) --}}
+                <div class="row g-4 mb-4">
+                    <div class="col-12 col-lg-7">
+                        <div class="d-flex flex-column justify-content-center h-100 py-2">
+                            <h1 class="fw-bold mb-2" style="font-size: 1.75rem; letter-spacing: -1px;">Halo, {{ auth()->user()->name }}!</h1>
+                            <p class="text-muted mb-0 fs-6">Selamat datang kembali di pusat kolaborasi Anda.</p>
                         </div>
-                        <div class="col-12 d-grid">
-                            <button class="btn-home btn-home-primary" type="submit">
-                                <i class="fa-solid fa-arrow-right-to-bracket"></i>
-                                Join Group
-                            </button>
-                        </div>
-                    </form>
-                </section>
-
-                <section class="section-block">
-                    <div class="section-head">
-                        <h6 class="section-title"><i class="fa-solid fa-layer-group"></i> Create Group</h6>
-                        <span class="mini-chip">Manage</span>
                     </div>
-                    <p class="section-note">Untuk membuat group baru, lanjutkan ke dashboard manage.</p>
-                    <div class="d-grid">
-                        <a href="/dashboard" class="btn-home btn-home-ghost">
-                            <i class="fa-solid fa-gauge-high"></i>
-                            Go to Dashboard
-                        </a>
-                    </div>
-                </section>
-
-                <section>
-                    <h6 class="group-list-title">Group Saya</h6>
-
-                    @forelse ($groups as $group)
-                        @php
-                            $memberRole = \App\Models\GroupMember::where('group_id', $group->id)
-                                ->where('user_id', auth()->id())
-                                ->with('role')
-                                ->first();
-                        @endphp
-
-                        <div class="group-item">
-                            <div>
-                                <div class="fw-semibold">{{ $group->name }}</div>
-                                @if ($memberRole?->role)
-                                    <span class="role-pill"
-                                        style="background-color: {{ $memberRole->role->color }}20; color: {{ $memberRole->role->color }};">
-                                        {{ $memberRole->role->name }}
+                    <div class="col-12 col-lg-5">
+                        <div class="card border-0 shadow-sm rounded-4 bg-white border border-info-subtle">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <span class="badge bg-info bg-opacity-10 text-info rounded-pill px-2 py-1" style="font-size: 10px;">
+                                        <i class="fa-solid fa-bullhorn me-1"></i>UPDATE TERBARU
                                     </span>
+                                </div>
+                                @if ($latestAnnouncement)
+                                    <div class="d-flex align-items-start gap-2">
+                                        <div class="flex-grow-1 min-w-0">
+                                            <div class="fw-bold text-dark small text-truncate">{{ $latestAnnouncement->title }}</div>
+                                            <div class="text-muted" style="font-size: 11px;">Grup: {{ $latestAnnouncement->group->name }} • {{ $latestAnnouncement->created_at->diffForHumans() }}</div>
+                                        </div>
+                                        <a href="/groups/{{ $latestAnnouncement->group_id }}" class="btn btn-light btn-sm rounded-circle border p-0 d-flex align-items-center justify-content-center shadow-xs" style="width: 28px; height: 28px;">
+                                            <i class="fa-solid fa-chevron-right text-primary" style="font-size: 10px;"></i>
+                                        </a>
+                                    </div>
+                                @else
+                                    <p class="text-muted small italic mb-0">Belum ada pembaruan hari ini.</p>
                                 @endif
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <a href="/groups/{{ $group->id }}" class="btn btn-outline-primary btn-sm">Buka</a>
+                {{-- 3. ACTION CARDS: Gabung & Buat (Simetris & Ukuran Standar) --}}
+                <div class="row g-4 mb-5">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border">
+                            <div class="card-body p-4 d-flex flex-column h-100">
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="bg-primary bg-opacity-10 text-primary p-2 px-3 rounded-3 border"><i class="fa-solid fa-user-plus"></i></div>
+                                    <h5 class="fw-bold mb-0">Gabung Grup</h5>
+                                </div>
+                                <p class="text-muted small mb-4">Masukkan kode undangan dari admin untuk bergabung.</p>
+                                <form action="{{ url('/join') }}" method="POST" class="mt-auto">
+                                    @csrf
+                                    <div class="input-group">
+                                        <input type="text" name="code" class="form-control border-2 shadow-none py-2 fw-bold" placeholder="ABC-123" required style="border-radius: 10px 0 0 10px; text-transform: uppercase;">
+                                        <button class="btn btn-primary px-4 fw-bold shadow-sm" type="submit" style="border-radius: 0 10px 10px 0;">Gabung</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm rounded-4 h-100 bg-white border">
+                            <div class="card-body p-4 d-flex flex-column h-100">
+                                <div class="d-flex align-items-center gap-3 mb-3">
+                                    <div class="bg-success bg-opacity-10 text-success p-2 px-3 rounded-3 border"><i class="fa-solid fa-plus"></i></div>
+                                    <h5 class="fw-bold mb-0 text-dark">Buat Grup Baru</h5>
+                                </div>
+                                <p class="text-muted small mb-4">Siapkan ruang kerja baru dan kelola anggota tim Anda sendiri.</p>
+                                <div class="mt-auto">
+                                    <a href="{{ url('/dashboard') }}" class="btn btn-outline-dark w-100 fw-bold py-2 rounded-3 shadow-xs">
+                                        Ke Dashboard Manajemen <i class="fa-solid fa-arrow-right ms-2"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- 4. BROWSE SECTION: Search & My Groups --}}
+                <div class="bg-white p-3 p-md-4 rounded-4 shadow-sm mb-4 border">
+                    <div class="row g-3 align-items-center">
+                        <div class="col-12 col-md-6">
+                            <h5 class="fw-bold text-dark m-0"><i class="fa-solid fa-layer-group me-2 text-muted"></i>Grup Saya</h5>
+                        </div>
+                        <div class="col-12 col-md-6 text-md-end">
+                            <div class="d-inline-flex gap-2 p-1 bg-light border rounded-pill shadow-xs">
+                                <button class="btn btn-sm px-3 rounded-pill fw-bold active-filter" data-group-filter="all">Semua</button>
+                                <button class="btn btn-sm px-3 rounded-pill fw-bold text-muted" data-group-filter="pemilik">Pemilik</button>
+                                <button class="btn btn-sm px-3 rounded-pill fw-bold text-muted" data-group-filter="anggota">Anggota</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="input-group mt-3 border rounded-3 overflow-hidden shadow-xs">
+                        <span class="input-group-text bg-white border-0 text-muted ps-3"><i class="fa-solid fa-search"></i></span>
+                        <input type="text" id="groupSearch" class="form-control border-0 py-2" placeholder="Cari nama grup Anda...">
+                    </div>
+                </div>
+
+                {{-- GRID GRUP --}}
+                <div class="row g-3" id="groupGrid">
+                    @forelse ($groups as $group)
+                        @php
+                            $membership = $groupMemberships[$group->id] ?? null;
+                            $isOwner = $membership?->role?->is_owner;
+                            $initial = strtoupper(substr($group->name, 0, 2));
+                        @endphp
+                        <div class="col-12 col-md-6 col-xl-4 group-item" data-group-item data-name="{{ strtolower($group->name) }}" data-role="{{ $isOwner ? 'pemilik' : 'anggota' }}">
+                            <div class="card border-0 shadow-sm rounded-4 h-100 transition-all hover-card bg-white border">
+                                <div class="card-body p-3 d-flex align-items-center gap-3">
+                                    <div class="d-flex align-items-center justify-content-center rounded-3 bg-secondary bg-opacity-10 text-dark fw-bold flex-shrink-0 shadow-xs" style="width: 48px; height: 48px; font-size: 1.1rem;">
+                                        {{ $initial }}
+                                    </div>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <h6 class="fw-bold text-dark mb-1 text-truncate pe-3">{{ $group->name }}</h6>
+                                        <div class="d-flex gap-1 flex-wrap">
+                                            <span class="badge border text-muted fw-medium rounded-pill" style="font-size: 9px; letter-spacing: 0.5px;">{{ $isOwner ? 'PEMILIK' : 'ANGGOTA' }}</span>
+                                            @if($group->announcements_count > 0)
+                                                <span class="badge bg-warning text-dark rounded-pill fw-bold shadow-xs" style="font-size: 9px;">
+                                                    <i class="fa-solid fa-bell me-1"></i>{{ $group->announcements_count }} Info
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    <a href="{{ url('/groups/' . $group->id) }}" class="btn btn-light border btn-sm rounded-pill px-3 fw-bold shadow-xs">Buka</a>
+                                </div>
+                            </div>
                         </div>
                     @empty
-                        <div class="text-muted">Belum ada group. Join dulu pakai kode, atau buat group baru.</div>
+                        <div class="col-12 text-center py-5 bg-white rounded-4 border border-dashed shadow-sm">
+                            <p class="text-muted small mb-0">Belum ada grup yang diikuti.</p>
+                        </div>
                     @endforelse
-                </section>
+                </div>
+
             </div>
         </div>
     </div>
+</div>
+
+<style>
+    .shadow-xs { box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
+    .transition-all { transition: all 0.25s ease; }
+    .hover-card:hover { transform: translateY(-3px); border-color: var(--tasku-primary) !important; box-shadow: 0 8px 20px rgba(0,0,0,0.06) !important; }
+    .active-filter { background: var(--tasku-primary) !important; color: white !important; box-shadow: 0 2px 8px rgba(51, 118, 163, 0.35); }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const searchInput = document.getElementById('groupSearch');
+        const filterBtns = document.querySelectorAll('[data-group-filter]');
+        const groupItems = document.querySelectorAll('[data-group-item]');
+
+        const runFilter = () => {
+            const query = searchInput.value.toLowerCase().trim();
+            const activeFilter = document.querySelector('.active-filter').dataset.groupFilter;
+
+            groupItems.forEach(item => {
+                const isMatch = item.dataset.name.includes(query) &&
+                                (activeFilter === 'all' || item.dataset.role === activeFilter);
+                item.style.display = isMatch ? 'block' : 'none';
+            });
+        };
+
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active-filter', 'text-white'));
+                btn.classList.add('active-filter');
+                runFilter();
+            });
+        });
+        searchInput.addEventListener('input', runFilter);
+    });
+</script>
 @endsection

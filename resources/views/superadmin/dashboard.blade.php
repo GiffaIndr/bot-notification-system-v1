@@ -37,18 +37,18 @@
         }
 
         .stat-icon.blue {
-            background: #dbeafe;
-            color: #0284c7;
+            background: #e9f4fa;
+            color: var(--tasku-primary);
         }
 
         .stat-icon.green {
-            background: #dcfce7;
-            color: #16a34a;
+            background: #e7f3f9;
+            color: var(--tasku-deep);
         }
 
         .stat-icon.purple {
-            background: #f3e8ff;
-            color: #a855f7;
+            background: #e8f2f8;
+            color: var(--tasku-primary);
         }
 
         .stat-icon.orange {

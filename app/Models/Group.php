@@ -49,6 +49,11 @@ class Group extends Model
         return $this->hasMany(Announcement::class);
     }
 
+    public function announcementCategories()
+    {
+        return $this->hasMany(GroupAnnouncementCategory::class);
+    }
+
     public function bots()
     {
         return $this->hasMany(GroupBot::class);

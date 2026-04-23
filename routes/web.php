@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/groups/{group}/generate-code', [GroupController::class, 'generateCode']);
     Route::post('/payment/sync-bots', [PaymentController::class, 'syncBotsManual']);
     Route::post('/groups/{group}/announcements', [AnnouncementController::class, 'store']);
+    Route::get('/groups/{group}/announcements', [GroupController::class, 'allAnnouncements'])->name('groups.announcements.index');
     Route::get('/groups/{group}/announcements/{announcement}/edit', [AnnouncementController::class, 'edit']);
     Route::put('/groups/{group}/announcements/{announcement}', [AnnouncementController::class, 'update']);
     Route::delete('/groups/{group}/announcements/{announcement}', [AnnouncementController::class, 'destroy']);
@@ -61,9 +62,14 @@ Route::middleware('auth')->group(function () {
     Route::post('/groups/{group}/polls/{poll}/close', [PollController::class, 'close']);
     Route::delete('/groups/{group}/polls/{poll}', [PollController::class, 'destroy']);
     Route::post('/groups/{group}/announcements/{announcement}/react', [AnnouncementController::class, 'react']);
+    Route::put('/groups/{group}/announcements/{announcement}/category', [AnnouncementController::class, 'updateCategory'])->name('groups.announcements.category.update');
     Route::post('/groups/{group}/announcements/{announcement}/pick', [AnnouncementController::class, 'previewPick']);
     Route::post('/groups/{group}/picker', [GroupController::class, 'picker']);
     Route::post('/groups/{group}/announcements/{announcement}/pin', [AnnouncementController::class, 'pin']);
     Route::delete('/groups/{group}/announcements/{announcement}/attachments/{attachment}', [AnnouncementController::class, 'deleteAttachment']);
+
+    Route::post('/groups/{group}/announcement-categories', [GroupController::class, 'storeAnnouncementCategory'])->name('groups.categories.store');
+    Route::put('/groups/{group}/announcement-categories/{category}', [GroupController::class, 'updateAnnouncementCategory'])->name('groups.categories.update');
+    Route::delete('/groups/{group}/announcement-categories/{category}', [GroupController::class, 'destroyAnnouncementCategory'])->name('groups.categories.destroy');
     Route::get('/payment/receipt/{orderId}/print', [PaymentController::class, 'printReceipt']);
 });

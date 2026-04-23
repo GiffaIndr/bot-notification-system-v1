@@ -10,10 +10,19 @@ class Announcement extends Model
     use HasFactory;
     protected $fillable = [
         'group_id',
+        'category_id',
         'user_id',
         'title',
         'content',
         'scheduled_at',
+        'deadline_mode',
+        'deadline_at',
+        'reminder_enabled',
+        'reminder_offset_value',
+        'reminder_offset_unit',
+        'reminder_at',
+        'reminder_sent_at',
+        'reminder_send_status',
         'status',
         'repeat',
         'use_picker',
@@ -27,6 +36,11 @@ class Announcement extends Model
 
     protected $casts = [
         'scheduled_at'     => 'datetime',
+        'deadline_mode'    => 'boolean',
+        'deadline_at'      => 'datetime',
+        'reminder_enabled' => 'boolean',
+        'reminder_at'      => 'datetime',
+        'reminder_sent_at' => 'datetime',
         'use_picker'       => 'boolean',
         'is_pinned' => 'boolean',
         'custom_pick_list' => 'array',
@@ -45,6 +59,11 @@ class Announcement extends Model
     public function group()
     {
         return $this->belongsTo(Group::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(GroupAnnouncementCategory::class, 'category_id');
     }
 
     public function user()

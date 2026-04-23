@@ -1,0 +1,95 @@
+:root {
+    --tasku-deep: #164573;
+    --tasku-primary: #3376A3;
+    --tasku-soft: #95CDE4;
+    --tasku-soft-alt: #b8deed;
+    --tasku-bg: #f3f9fc;
+    --tasku-surface: #ffffff;
+
+    --bs-primary: var(--tasku-primary);
+    --bs-primary-rgb: 51, 118, 163;
+    --bs-link-color: var(--tasku-primary);
+    --bs-link-hover-color: var(--tasku-deep);
+}
+
+body {
+    background-color: var(--tasku-bg);
+}
+
+.text-muted {
+    color: #5a7284 !important;
+}
+
+i[class^="fa"],
+i[class*=" fa"] {
+    color: inherit;
+}
+
+.text-primary {
+    color: var(--tasku-primary) !important;
+}
+
+.bg-primary {
+    background-color: rgba(var(--bs-primary-rgb), var(--bs-bg-opacity, 1)) !important;
+}
+
+.border-primary {
+    border-color: var(--tasku-primary) !important;
+}
+
+.btn-primary {
+    background-color: var(--tasku-primary);
+    border-color: var(--tasku-primary);
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background-color: var(--tasku-deep) !important;
+    border-color: var(--tasku-deep) !important;
+}
+
+.btn-outline-primary {
+    color: var(--tasku-primary);
+    border-color: var(--tasku-primary);
+}
+
+.btn-outline-primary:hover,
+.btn-outline-primary:focus,
+.btn-outline-primary:active {
+    color: #fff !important;
+    background-color: var(--tasku-primary) !important;
+    border-color: var(--tasku-primary) !important;
+}
+
+.badge.bg-primary {
+    background-color: rgba(var(--bs-primary-rgb), var(--bs-bg-opacity, 1)) !important;
+}
+
+.badge.text-primary {
+    --bs-badge-color: var(--tasku-primary);
+}
+
+.badge.text-secondary {
+    --bs-badge-color: #5a7284;
+}
+
+.badge.text-success {
+    --bs-badge-color: #198754;
+}
+
+.badge.text-warning {
+    --bs-badge-color: #9a6a00;
+}
+
+.badge.text-danger {
+    --bs-badge-color: #b02a37;
+}
+
+.theme-surface {
+    background-color: var(--tasku-surface);
+}
+
+.theme-gradient {
+    background: linear-gradient(135deg, var(--tasku-primary) 0%, var(--tasku-deep) 100%);
+}

@@ -38,7 +38,7 @@
         .stat-value {
             font-size: 28px;
             font-weight: 700;
-            color: #7c3aed;
+            color: var(--tasku-primary);
         }
 
         .filter-form {
@@ -69,12 +69,12 @@
         }
 
         .form-control:focus {
-            border-color: #7c3aed;
-            box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+            border-color: var(--tasku-primary);
+            box-shadow: 0 0 0 3px rgba(51, 118, 163, 0.1);
         }
 
         .btn-filter {
-            background: #7c3aed;
+            background: var(--tasku-primary);
             color: white;
             border: none;
             padding: 10px 20px;
@@ -85,11 +85,11 @@
         }
 
         .btn-filter:hover {
-            background: #6d28d9;
+            background: var(--tasku-deep);
         }
 
         .btn-export {
-            background: #10b981;
+            background: var(--tasku-primary);
             color: white;
             border: none;
             padding: 10px 20px;
@@ -100,7 +100,7 @@
         }
 
         .btn-export:hover {
-            background: #059669;
+            background: var(--tasku-deep);
         }
 
         .transactions-table {
@@ -136,7 +136,7 @@
 
         .amount {
             font-weight: 700;
-            color: #10b981;
+            color: var(--tasku-primary);
         }
 
         .order-id {

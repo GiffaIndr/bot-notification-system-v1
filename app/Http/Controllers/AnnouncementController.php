@@ -13,6 +13,7 @@ use App\Models\AnnouncementAttachment;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 
 class AnnouncementController extends Controller
 {
@@ -25,22 +26,65 @@ class AnnouncementController extends Controller
         $request->validate([
             'title'         => 'required|string|max:255',
             'content'       => 'required|string',
-            'scheduled_at'  => 'nullable|date',
+            'category_id'   => [
+                'nullable',
+                Rule::exists('group_announcement_categories', 'id')->where(
+                    fn($query) => $query->where('group_id', $group->id)
+                ),
+            ],
+            'scheduled_at'  => 'required|date',
             'repeat'        => 'required|in:none,daily,weekly,monthly',
+            'deadline_mode' => 'nullable|boolean',
+            'deadline_at' => 'nullable|required_if:deadline_mode,1|date|after:now',
+            'reminder_enabled' => 'nullable|boolean',
+            'reminder_offset_value' => 'nullable|required_if:reminder_enabled,1|integer|min:1|max:365',
+            'reminder_offset_unit' => 'nullable|required_if:reminder_enabled,1|in:hour,day',
             'attachments'   => 'nullable|array|max:3',
             'attachments.*' => 'file|max:20480|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xlsx,xls',
         ]);
 
-        $scheduledAt = $request->filled('scheduled_at')
-            ? Carbon::parse($request->scheduled_at)
-            : now();
+        if ($request->repeat !== 'none' && $request->boolean('deadline_mode')) {
+            return back()->withErrors([
+                'deadline_mode' => 'Mode tenggat hanya bisa dipakai untuk pengumuman yang tidak berulang.',
+            ])->withInput();
+        }
+
+        $scheduledAt = Carbon::parse($request->scheduled_at);
+
+        $deadlineMode = $request->boolean('deadline_mode');
+        $deadlineAt = $deadlineMode && $request->filled('deadline_at')
+            ? Carbon::parse($request->deadline_at)
+            : null;
+
+        $reminderEnabled = $deadlineMode && $request->boolean('reminder_enabled');
+        $reminderOffsetValue = $reminderEnabled ? (int) $request->reminder_offset_value : null;
+        $reminderOffsetUnit = $reminderEnabled ? $request->reminder_offset_unit : null;
+
+        $reminderAt = null;
+        if ($reminderEnabled && $deadlineAt) {
+            $reminderAt = $this->calculateReminderAt($deadlineAt, $reminderOffsetValue, $reminderOffsetUnit);
+            if ($reminderAt->lessThanOrEqualTo(now())) {
+                return back()->withErrors([
+                    'reminder_offset_value' => 'Waktu reminder harus menghasilkan jadwal di masa depan.',
+                ])->withInput();
+            }
+        }
 
         $announcement = Announcement::create([
             'group_id'         => $group->id,
+            'category_id'      => $request->category_id,
             'user_id'          => auth()->id(),
             'title'            => $request->title,
             'content'          => $request->content,
             'scheduled_at'     => $scheduledAt,
+            'deadline_mode'    => $deadlineMode,
+            'deadline_at'      => $deadlineAt,
+            'reminder_enabled' => $reminderEnabled,
+            'reminder_offset_value' => $reminderOffsetValue,
+            'reminder_offset_unit' => $reminderOffsetUnit,
+            'reminder_at'      => $reminderAt,
+            'reminder_sent_at' => null,
+            'reminder_send_status' => $reminderEnabled ? 'pending' : null,
             'status'           => 'pending',
             'repeat'           => $request->repeat,
             'use_picker'       => $request->boolean('use_picker'),
@@ -65,7 +109,7 @@ class AnnouncementController extends Controller
             meta: ['announcement_id' => $announcement->id, 'title' => $announcement->title]
         );
 
-        return back()->with('success', 'Announcement berhasil dibuat.');
+        return back()->with('success', 'Pengumuman berhasil dibuat.');
     }
 
     public function update(Request $request, Group $group, Announcement $announcement)
@@ -76,11 +120,28 @@ class AnnouncementController extends Controller
         $request->validate([
             'title'         => 'required|string|max:255',
             'content'       => 'required|string',
-            'scheduled_at'  => 'nullable|date',
+            'category_id'   => [
+                'nullable',
+                Rule::exists('group_announcement_categories', 'id')->where(
+                    fn($query) => $query->where('group_id', $group->id)
+                ),
+            ],
+            'scheduled_at'  => 'required|date',
             'repeat'        => 'required|in:none,daily,weekly,monthly',
+            'deadline_mode' => 'nullable|boolean',
+            'deadline_at' => 'nullable|required_if:deadline_mode,1|date|after:now',
+            'reminder_enabled' => 'nullable|boolean',
+            'reminder_offset_value' => 'nullable|required_if:reminder_enabled,1|integer|min:1|max:365',
+            'reminder_offset_unit' => 'nullable|required_if:reminder_enabled,1|in:hour,day',
             'attachments'   => 'nullable|array',
             'attachments.*' => 'file|max:20480|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xlsx,xls',
         ]);
+
+        if ($request->repeat !== 'none' && $request->boolean('deadline_mode')) {
+            return back()->withErrors([
+                'deadline_mode' => 'Mode tenggat hanya bisa dipakai untuk pengumuman yang tidak berulang.',
+            ])->withInput();
+        }
 
         // Cek total attachment tidak lebih dari 3
         $existingCount = $announcement->attachments()->count();
@@ -92,14 +153,40 @@ class AnnouncementController extends Controller
 
         $oldTitle = $announcement->title;
 
-        $scheduledAt = $request->filled('scheduled_at')
-            ? Carbon::parse($request->scheduled_at)
-            : now();
+        $scheduledAt = Carbon::parse($request->scheduled_at);
+
+        $deadlineMode = $request->boolean('deadline_mode');
+        $deadlineAt = $deadlineMode && $request->filled('deadline_at')
+            ? Carbon::parse($request->deadline_at)
+            : null;
+
+        $reminderEnabled = $deadlineMode && $request->boolean('reminder_enabled');
+        $reminderOffsetValue = $reminderEnabled ? (int) $request->reminder_offset_value : null;
+        $reminderOffsetUnit = $reminderEnabled ? $request->reminder_offset_unit : null;
+
+        $reminderAt = null;
+        if ($reminderEnabled && $deadlineAt) {
+            $reminderAt = $this->calculateReminderAt($deadlineAt, $reminderOffsetValue, $reminderOffsetUnit);
+            if ($reminderAt->lessThanOrEqualTo(now())) {
+                return back()->withErrors([
+                    'reminder_offset_value' => 'Waktu reminder harus menghasilkan jadwal di masa depan.',
+                ])->withInput();
+            }
+        }
 
         $announcement->update([
+            'category_id'      => $request->category_id,
             'title'            => $request->title,
             'content'          => $request->content,
             'scheduled_at'     => $scheduledAt,
+            'deadline_mode'    => $deadlineMode,
+            'deadline_at'      => $deadlineAt,
+            'reminder_enabled' => $reminderEnabled,
+            'reminder_offset_value' => $reminderOffsetValue,
+            'reminder_offset_unit' => $reminderOffsetUnit,
+            'reminder_at'      => $reminderAt,
+            'reminder_sent_at' => $reminderEnabled ? null : $announcement->reminder_sent_at,
+            'reminder_send_status' => $reminderEnabled ? 'pending' : null,
             'status'           => 'pending',
             'repeat'           => $request->repeat,
             'use_picker'       => $request->boolean('use_picker'),
@@ -124,7 +211,14 @@ class AnnouncementController extends Controller
             meta: ['announcement_id' => $announcement->id, 'old_title' => $oldTitle, 'new_title' => $request->title]
         );
 
-        return redirect("/groups/{$group->id}")->with('success', 'Announcement berhasil diupdate.');
+        return redirect("/groups/{$group->id}")->with('success', 'Pengumuman berhasil diperbarui.');
+    }
+
+    private function calculateReminderAt(Carbon $deadlineAt, int $offsetValue, string $offsetUnit): Carbon
+    {
+        return $offsetUnit === 'day'
+            ? $deadlineAt->copy()->subDays($offsetValue)
+            : $deadlineAt->copy()->subHours($offsetValue);
     }
 
     private function saveAttachment($file, Announcement $announcement): void
@@ -210,7 +304,7 @@ class AnnouncementController extends Controller
 
         $announcement->delete();
 
-        return back()->with('success', 'Announcement berhasil dihapus.');
+        return back()->with('success', 'Pengumuman berhasil dihapus.');
     }
     public function pin(Request $request, Group $group, Announcement $announcement)
     {
@@ -221,7 +315,7 @@ class AnnouncementController extends Controller
         $announcement->is_pinned = !$announcement->is_pinned;
         $announcement->save();
 
-        return back()->with('success', $announcement->is_pinned ? 'Announcement berhasil dipin!' : 'Announcement berhasil diunpin!');
+        return back()->with('success', $announcement->is_pinned ? 'Pengumuman berhasil disematkan!' : 'Pengumuman berhasil dilepas dari sematan!');
     }
     public function previewPick(Request $request, Group $group, Announcement $announcement)
     {
@@ -255,6 +349,27 @@ class AnnouncementController extends Controller
         return response()->json([
             'picked' => $picked->toArray(),
         ]);
+    }
+
+    public function updateCategory(Request $request, Group $group, Announcement $announcement)
+    {
+        $role = $this->getRole($group);
+        if (!$role->can_edit_announcement) abort(403);
+
+        $request->validate([
+            'category_id' => [
+                'nullable',
+                Rule::exists('group_announcement_categories', 'id')->where(
+                    fn($query) => $query->where('group_id', $group->id)
+                ),
+            ],
+        ]);
+
+        $announcement->update([
+            'category_id' => $request->category_id,
+        ]);
+
+        return back()->with('success', 'Kategori pengumuman berhasil diperbarui.');
     }
 
     private function getRole(Group $group): GroupRole

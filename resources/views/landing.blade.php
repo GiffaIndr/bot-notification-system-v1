@@ -4,489 +4,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Tasku | Platform Notifikasi Tim</title>
+    <title>Tasku | Akses Grup & Notifikasi Tim Multi-Platform</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Manrope:wght@400;600;700;800&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/tasku-theme.css') }}">
 
     <style>
         :root {
-            --bg: #eef8ff;
-            --ink: #102022;
-            --ink-soft: #52666c;
-            --surface: #ffffff;
-            --line: #cfe6ff;
-            --primary: #00b7ff;
-            --primary-dark: #008fe0;
-            --accent: #f59a2b;
-            --muted-chip: #e6f4ff;
-            --radius-xl: 24px;
-            --radius-lg: 16px;
-            --shadow-soft: 0 20px 40px rgba(9, 55, 44, 0.1);
+            --primary: var(--tasku-primary);
+            --primary-dark: var(--tasku-deep);
+            --slate-900: var(--tasku-deep);
+            --slate-700: #2a5876;
+            --slate-600: #446c85;
+            --slate-400: #7da3b8;
+            --bg-light: var(--tasku-bg);
+            --white: #ffffff;
+            --radius-lg: 24px;
         }
 
-        * {
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
 
         body {
             margin: 0;
-            font-family: 'Manrope', sans-serif;
-            color: var(--ink);
-            background:
-                radial-gradient(circle at 6% 6%, #c8ebff 0, transparent 34%),
-                radial-gradient(circle at 92% 15%, #ffe6c8 0, transparent 24%),
-                radial-gradient(circle at 80% 86%, #bde3ff 0, transparent 30%),
-                var(--bg);
-            min-height: 100vh;
-        }
-
-        .container {
-            width: min(1120px, calc(100% - 40px));
-            margin: 0 auto;
-        }
-
-        .topbar {
-            padding: 16px 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .topbar-inner {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid #ffffff;
-            border-radius: 999px;
-            box-shadow: 0 10px 24px rgba(12, 59, 48, 0.1);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 10px 12px 10px 18px;
-            gap: 14px;
-        }
-
-        .brand {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-weight: 700;
-            letter-spacing: 0.01em;
-            text-decoration: none;
-            color: #112b26;
-        }
-
-        .brand .logo {
-            width: 34px;
-            height: 34px;
-            border-radius: 11px;
-            background: linear-gradient(145deg, var(--primary), #4dd2ff);
-            color: #fff;
-            display: grid;
-            place-items: center;
-            box-shadow: 0 8px 16px rgba(8, 120, 90, 0.35);
-        }
-
-        .main-menu {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-
-        .main-menu a {
-            text-decoration: none;
-            color: #274449;
-            font-weight: 700;
-            font-size: 0.87rem;
-            padding: 8px 12px;
-            border-radius: 999px;
-            transition: background 0.2s ease, color 0.2s ease;
-        }
-
-        .main-menu a:hover {
-            background: #e9f4ee;
-            color: var(--primary-dark);
-        }
-
-        .topbar-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .hamburger-btn {
-            display: none;
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            border: 1px solid #d1e2d8;
-            background: #fff;
-            color: var(--primary-dark);
-            font-size: 1rem;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-
-        .mobile-nav {
-            display: none;
-            margin-top: 10px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border: 1px solid #e0ece5;
-            border-radius: 18px;
-            box-shadow: 0 14px 28px rgba(14, 52, 44, 0.12);
-            padding: 12px;
-        }
-
-        .mobile-nav.show {
-            display: block;
-        }
-
-        .mobile-links {
-            display: grid;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-
-        .mobile-links a {
-            text-decoration: none;
-            color: #274449;
-            font-weight: 700;
-            font-size: 0.9rem;
-            padding: 10px 12px;
-            border-radius: 10px;
-            background: #f2f8f5;
-            border: 1px solid #e0ece5;
-        }
-
-        .mobile-auth {
-            display: grid;
-            gap: 8px;
-        }
-
-        .mobile-auth .btn {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .btn {
-            border: 0;
-            text-decoration: none;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-            font-weight: 700;
-            font-size: 0.92rem;
-            border-radius: 999px;
-            padding: 10px 16px;
-        }
-
-        .btn-ghost {
-            color: var(--ink);
-            background: #fff;
-            border: 1px solid #d1e2d8;
-        }
-
-        .btn-primary {
-            color: #fff;
-            background: linear-gradient(145deg, var(--primary), #0096ff);
-            box-shadow: 0 10px 24px rgba(0, 151, 255, 0.35);
-        }
-
-        .hero {
-            padding: 56px 0 48px;
-        }
-
-        .hero-layout {
-            display: grid;
-            grid-template-columns: 1.1fr 0.9fr;
-            gap: 22px;
-            align-items: stretch;
-        }
-
-        .hero-copy {
-            padding: 8px 6px;
-        }
-
-        .hero-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            border-radius: 999px;
-            background: #e6f4ff;
-            color: #0b78c7;
-            border: 1px solid #b9dcfb;
-            padding: 7px 12px;
-            font-size: 0.76rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        h1 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(2.2rem, 5vw, 4.1rem);
-            line-height: 1;
-            margin: 18px 0 16px;
-            letter-spacing: -0.02em;
-            max-width: 16ch;
-        }
-
-        .lead {
-            color: var(--ink-soft);
-            font-size: 1.04rem;
-            line-height: 1.72;
-            margin: 0 0 24px;
-            max-width: 58ch;
-        }
-
-        .hero-actions {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .hero-points {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px;
-        }
-
-        .hero-point {
-            border-radius: 12px;
-            background: var(--muted-chip);
-            border: 1px solid #c7e3ff;
-            padding: 10px 12px;
-        }
-
-        .hero-point strong {
-            display: block;
-            font-size: 1.1rem;
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        .hero-point span {
-            color: #4d7ea8;
-            font-size: 0.78rem;
-            font-weight: 600;
-        }
-
-        .hero-visual {
-            border-radius: 28px;
-            background: linear-gradient(165deg, #003b73 0%, #0066cc 62%, #00b7ff 100%);
-            color: #eaf7ff;
-            box-shadow: var(--shadow-soft);
-            padding: 28px;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.08);
-        }
-
-        .visual-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
-            padding: 6px 10px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.14);
-            border: 1px solid rgba(255, 255, 255, 0.16);
-            margin-bottom: 14px;
-        }
-
-        .visual-title {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.5rem;
-            line-height: 1.2;
-            margin: 0 0 20px;
-        }
-
-        .flow {
-            display: grid;
-            gap: 10px;
-        }
-
-        .flow-item {
-            background: rgba(255, 255, 255, 0.11);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            border-radius: 12px;
-            padding: 11px 12px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .flow-number {
-            width: 30px;
-            height: 30px;
-            border-radius: 9px;
-            flex-shrink: 0;
-            display: grid;
-            place-items: center;
-            font-size: 0.82rem;
-            font-weight: 800;
-            background: #9fe6ff;
-            color: #004b8f;
-        }
-
-        .flow-item p {
-            margin: 0;
-            color: #eaf7ff;
-            font-size: 0.9rem;
-            line-height: 1.45;
-        }
-
-        .section {
-            padding: 28px 0;
-        }
-
-        .section h2 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: clamp(1.5rem, 2.8vw, 2.2rem);
-            margin: 0 0 8px;
-            letter-spacing: -0.01em;
-        }
-
-        .section p.section-lead {
-            margin: 0;
-            color: var(--ink-soft);
-            max-width: 68ch;
-        }
-
-        .feature-grid {
-            margin-top: 18px;
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 14px;
-        }
-
-        .feature-card {
-            background: var(--surface);
-            border: 1px solid var(--line);
-            border-radius: var(--radius-lg);
-            padding: 18px;
-            box-shadow: 0 10px 24px rgba(18, 53, 44, 0.07);
-        }
-
-        .feature-icon {
-            width: 42px;
-            height: 42px;
-            border-radius: 12px;
-            display: grid;
-            place-items: center;
-            font-size: 1rem;
-            background: #e6f4ff;
-            color: var(--primary);
-            margin-bottom: 12px;
-        }
-
-        .feature-card h3 {
-            margin: 0 0 8px;
-            font-size: 1rem;
-            font-family: 'Space Grotesk', sans-serif;
-        }
-
-        .feature-card p {
-            margin: 0;
-            color: #5b6d74;
-            font-size: 0.9rem;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--slate-900);
+            background-color: var(--bg-light);
             line-height: 1.6;
         }
 
-        .cta {
-            margin: 24px 0 42px;
-            border-radius: var(--radius-xl);
-            border: 1px solid #d6e8df;
-            background: linear-gradient(110deg, #f0faf5 0%, #fff8ee 100%);
-            padding: 26px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
+        .container {
+            width: min(1200px, calc(100% - 40px));
+            margin: 0 auto;
         }
 
-        .cta h3 {
-            margin: 0 0 6px;
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.4rem;
-        }
+        /* --- NAVIGASI --- */
+        .topbar { padding: 20px 0; position: sticky; top: 0; z-index: 1000; background: rgba(248, 250, 252, 0.8); backdrop-filter: blur(12px); }
+        .topbar-inner { display: flex; align-items: center; justify-content: space-between; background: var(--white); padding: 8px 10px 8px 20px; border-radius: 999px; border: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 20px rgba(0,0,0,0.03); }
+        .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: var(--slate-900); font-size: 1.2rem; }
+        .brand img { display: block; }
 
-        .cta p {
-            margin: 0;
-            color: #4f6369;
-        }
+        .nav-links { display: flex; gap: 25px; }
+        .nav-links a { text-decoration: none; color: var(--slate-600); font-weight: 600; font-size: 0.9rem; transition: 0.2s; }
+        .nav-links a:hover { color: var(--primary); }
 
-        .footer {
-            text-align: center;
-            color: #6e8288;
-            font-size: 0.86rem;
-            padding-bottom: 30px;
-        }
+        /* --- TOMBOL --- */
+        .btn { padding: 12px 24px; border-radius: 999px; font-weight: 700; font-size: 0.9rem; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; cursor: pointer; border: none; }
+        .btn-primary { background: var(--primary); color: var(--white); }
+        .btn-primary:hover { transform: translateY(-2px); background: var(--primary-dark); box-shadow: 0 10px 20px rgba(51, 118, 163, 0.2); }
+        .btn-outline { background: transparent; border: 1px solid #e2e8f0; color: var(--slate-700); }
 
-        @media (max-width: 1024px) {
-            .hero-layout {
-                grid-template-columns: 1fr;
-            }
+        /* --- HERO --- */
+        .hero { padding: 80px 0; text-align: center; }
+        .hero-badge { background: #e9f4fa; color: var(--primary); padding: 6px 16px; border-radius: 99px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; display: inline-block; margin-bottom: 24px; }
+        .hero h1 { font-family: 'Space Grotesk', sans-serif; font-size: clamp(2.5rem, 6vw, 4rem); line-height: 1.1; margin: 0 auto 24px; letter-spacing: -2px; }
+        .hero p { font-size: 1.15rem; color: var(--slate-600); max-width: 60ch; margin: 0 auto 40px; }
 
-            h1 {
-                max-width: 100%;
-            }
+        /* --- MOCKUP VISUAL --- */
+        .mockup-container { margin-top: 50px; background: #fff; border-radius: var(--radius-lg); padding: 10px; border: 1px solid #e2e8f0; box-shadow: 0 40px 100px rgba(0,0,0,0.06); }
+        .mockup-header { height: 40px; background: #f1f5f9; border-radius: 16px 16px 0 0; display: flex; align-items: center; padding: 0 20px; gap: 8px; }
+        .dot { width: 10px; height: 10px; border-radius: 50%; background: #cbd5e1; }
+        .mockup-body { padding: 40px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        .mock-card { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 16px; padding: 24px; text-align: left; }
+        .mock-card.center { border: 2px solid var(--primary); background: #f5f7ff; transform: scale(1.05); z-index: 2; }
 
-            .feature-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-        }
+        /* --- PENGINGAT (REMINDER) --- */
+        .reminder-section { padding: 100px 0; background: var(--white); border-top: 1px solid #f1f5f9; }
+        .reminder-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+        .reminder-preview { background: #f8fafc; border: 1px solid var(--primary); border-radius: 24px; padding: 32px; position: relative; box-shadow: 0 20px 40px rgba(51, 118, 163, 0.08); }
+        .reminder-ad-badge { position: absolute; top: -15px; right: 20px; background: #ef4444; color: #fff; padding: 4px 14px; border-radius: 99px; font-size: 0.7rem; font-weight: 800; }
 
-        @media (max-width: 768px) {
-            .container {
-                width: min(1120px, calc(100% - 28px));
-            }
+        /* --- HARGA (PRICING) --- */
+        .pricing { padding: 100px 0; background-color: var(--bg-light); }
+        .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 50px; }
+        .p-card { background: #fff; border: 1px solid #e2e8f0; padding: 40px 30px; border-radius: var(--radius-lg); display: flex; flex-direction: column; transition: 0.3s; }
+        .p-card:hover { border-color: var(--primary); transform: translateY(-5px); }
+        .p-card.featured { background: var(--slate-900); color: #fff; border: none; position: relative; }
+        .p-card.featured .price { color: var(--primary); }
+        .p-card.featured::after { content: "REKOMENDASI"; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--primary); color: #fff; font-size: 0.65rem; font-weight: 800; padding: 4px 12px; border-radius: 99px; }
 
-            .topbar-inner {
-                border-radius: 18px;
-                justify-content: space-between;
-                padding: 14px;
-            }
+        .price { font-size: 2.8rem; font-weight: 800; font-family: 'Space Grotesk', sans-serif; margin-bottom: 5px; }
+        .price span { font-size: 1rem; font-weight: 400; color: var(--slate-600); }
+        .p-card.featured .price span { color: #94a3b8; }
+        .feature-list { list-style: none; padding: 0; margin: 25px 0; flex-grow: 1; text-align: left; }
+        .feature-list li { margin-bottom: 12px; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+        .feature-list i { color: #22c55e; }
 
-            .main-menu,
-            .topbar-actions {
-                display: none;
-            }
-
-            .hamburger-btn {
-                display: inline-flex;
-            }
-
-            .hero-points,
-            .feature-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .cta {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 20px;
-            }
-
-            h1 {
-                font-size: clamp(2rem, 9vw, 2.8rem);
-            }
+        @media (max-width: 991px) {
+            .mockup-body, .reminder-layout, .pricing-grid { grid-template-columns: 1fr; }
+            .reminder-layout { text-align: center; gap: 40px; }
         }
     </style>
 </head>
@@ -496,38 +105,16 @@
         <div class="container">
             <div class="topbar-inner">
                 <a href="#" class="brand">
-                    <span class="logo"><i class="fa-solid fa-bullhorn"></i></span>
-                    <span>Tasku</span>
+                    <img src="{{ asset('logos/tasku_transparan_dengan_nama.png') }}" alt="Tasku"
+                        style="height: 32px; width: auto; object-fit: contain;">
                 </a>
-                <nav class="main-menu">
+                <nav class="nav-links d-none d-md-flex">
                     <a href="#fitur">Fitur</a>
-                    <a href="#cara-kerja">Cara Kerja</a>
-                    <a href="#mulai">Mulai</a>
+                    <a href="#pricing">Harga</a>
                 </nav>
                 <div class="topbar-actions">
-                    <a href="{{ route('login') }}" class="btn btn-ghost">Masuk</a>
-                    <a href="{{ route('register') }}" class="btn btn-primary">
-                        <i class="fa-solid fa-rocket"></i>
-                        Daftar Gratis
-                    </a>
-                </div>
-                <button class="hamburger-btn" id="hamburgerBtn" aria-label="Buka menu" aria-controls="mobileNav"
-                    aria-expanded="false">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
-            </div>
-            <div class="mobile-nav" id="mobileNav">
-                <nav class="mobile-links">
-                    <a href="#fitur">Fitur</a>
-                    <a href="#cara-kerja">Cara Kerja</a>
-                    <a href="#mulai">Mulai</a>
-                </nav>
-                <div class="mobile-auth">
-                    <a href="{{ route('login') }}" class="btn btn-ghost">Masuk</a>
-                    <a href="{{ route('register') }}" class="btn btn-primary">
-                        <i class="fa-solid fa-rocket"></i>
-                        Daftar Gratis
-                    </a>
+                    <a href="{{ route('login') }}" class="btn btn-outline">Masuk</a>
+                    <a href="{{ route('register') }}" class="btn btn-primary">Daftar Gratis</a>
                 </div>
             </div>
         </div>
@@ -535,151 +122,139 @@
 
     <main>
         <section class="hero">
-            <div class="container hero-layout">
-                <article class="hero-copy">
-                    <span class="hero-tag"><i class="fa-solid fa-sparkles"></i> Platform Notifikasi Multi-Channel</span>
-                    <h1>Tasku Bantu Tim Kirim Pengumuman Lebih Cepat dan Rapi</h1>
-                    <p class="lead">
-                        Kelola pengumuman, polling, role anggota, dan aktivitas grup untuk WhatsApp, Discord, dan
-                        Telegram dari satu sistem yang praktis.
-                    </p>
-                    <div class="hero-actions">
-                        <a href="{{ route('register') }}" class="btn btn-primary">
-                            <i class="fa-solid fa-circle-play"></i>
-                            Coba Sekarang
-                        </a>
-                        <a href="{{ route('login') }}" class="btn btn-ghost">
-                            <i class="fa-solid fa-right-to-bracket"></i>
-                            Saya Sudah Punya Akun
-                        </a>
-                    </div>
-                    <div class="hero-points">
-                        <div class="hero-point">
-                            <strong>3+</strong>
-                            <span>Integrasi Platform</span>
-                        </div>
-                        <div class="hero-point">
-                            <strong>24/7</strong>
-                            <span>Scheduler Aktif</span>
-                        </div>
-                        <div class="hero-point">
-                            <strong>100%</strong>
-                            <span>Kontrol dari Tasku</span>
-                        </div>
-                    </div>
-                </article>
-
-                <aside class="hero-visual" id="cara-kerja">
-                    <div class="visual-chip">
-                        <i class="fa-solid fa-signal"></i>
-                        Automation Ready
-                    </div>
-                    <h2 class="visual-title">Alur penggunaan yang sederhana</h2>
-                    <div class="flow">
-                        <div class="flow-item">
-                            <span class="flow-number">1</span>
-                            <p>Buat grup notifikasi dan atur role sesuai kebutuhan tim.</p>
-                        </div>
-                        <div class="flow-item">
-                            <span class="flow-number">2</span>
-                            <p>Hubungkan bot WhatsApp, Discord, atau Telegram ke channel tujuan.</p>
-                        </div>
-                        <div class="flow-item">
-                            <span class="flow-number">3</span>
-                            <p>Kirim announcement terjadwal, polling, dan pantau log aktivitas.</p>
-                        </div>
-                    </div>
-                </aside>
-            </div>
-        </section>
-
-        <section class="section" id="fitur">
             <div class="container">
-                <h2>Fitur utama Tasku</h2>
-                <p class="section-lead">
-                    Dirancang untuk operasional komunitas, kelas, dan tim kerja yang butuh notifikasi konsisten dan
-                    terukur.
-                </p>
+                <span class="hero-badge">⚡ Platform Siaran Tim No. 1</span>
+                <h1>Satu Klik, Semua Grup Terupdate.<br>Tanpa Info yang Terlewat.</h1>
+                <p>Tasku adalah pusat kendali informasi tim Anda. Kirim pengumuman serentak ke WhatsApp, Discord, dan Telegram tanpa perlu menyalin pesan satu per satu.</p>
+                <a href="{{ route('register') }}" class="btn btn-primary" style="padding: 18px 48px; font-size: 1.1rem;">Mulai Sekarang — Gratis</a>
 
-                <div class="feature-grid">
-                    <article class="feature-card">
-                        <div class="feature-icon"><i class="fa-solid fa-users-gear"></i></div>
-                        <h3>Role dan Permission</h3>
-                        <p>Atur siapa yang boleh membuat announcement, mengelola member, dan membuat polling.</p>
-                    </article>
-
-                    <article class="feature-card">
-                        <div class="feature-icon"><i class="fa-solid fa-calendar-check"></i></div>
-                        <h3>Jadwal Berulang</h3>
-                        <p>Dukung pengumuman sekali kirim atau berulang harian, mingguan, dan bulanan.</p>
-                    </article>
-
-                    <article class="feature-card">
-                        <div class="feature-icon"><i class="fa-solid fa-file-circle-check"></i></div>
-                        <h3>Lampiran File</h3>
-                        <p>Kirim teks, gambar, dan dokumen dengan alur broadcast yang lebih efisien.</p>
-                    </article>
-
-                    <article class="feature-card">
-                        <div class="feature-icon"><i class="fa-solid fa-square-poll-vertical"></i></div>
-                        <h3>Polling Interaktif</h3>
-                        <p>Buat voting untuk meningkatkan engagement anggota di setiap grup.</p>
-                    </article>
-
-                    <article class="feature-card">
-                        <div class="feature-icon"><i class="fa-solid fa-shuffle"></i></div>
-                        <h3>Random Picker</h3>
-                        <p>Pilih peserta secara acak dari daftar member maupun list custom.</p>
-                    </article>
-
-                    <article class="feature-card">
-                        <div class="feature-icon"><i class="fa-solid fa-chart-line"></i></div>
-                        <h3>Activity Log</h3>
-                        <p>Lacak aksi penting sebagai audit trail operasional tim secara real-time.</p>
-                    </article>
+                <div class="mockup-container">
+                    <div class="mockup-header">
+                        <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                    </div>
+                    <div class="mockup-body">
+                        <div class="mock-card">
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                                <i class="fa-brands fa-whatsapp" style="color: #25D366; font-size: 1.5rem;"></i>
+                                <span style="font-size:10px; font-weight:800; color:#22c55e;">BERHASIL</span>
+                            </div>
+                            <h6 style="font-weight:700; margin-bottom:5px;">Grup WhatsApp</h6>
+                            <p style="font-size:0.8rem; color:var(--slate-600);">"Halo tim, info rapat hari ini diundur ke jam 2 ya!"</p>
+                        </div>
+                        <div class="mock-card center">
+                            <span class="badge" style="background:var(--primary); color:#fff; font-size:10px; padding:4px 10px; border-radius:5px; margin-bottom:15px; display:inline-block;">SISTEM UTAMA</span>
+                            <h5 style="font-weight:800; margin-bottom:10px;">Menyiarkan...</h5>
+                            <p style="font-size:0.85rem; font-weight:600;">Mengirim ke 3 Platform sekaligus secara instan.</p>
+                        </div>
+                        <div class="mock-card">
+                            <div style="display:flex; align-items:center; gap:10px; margin-bottom:15px;">
+                                <i class="fa-brands fa-discord" style="color: #5865f2; font-size: 1.5rem;"></i>
+                                <span style="font-size:10px; font-weight:800; color:var(--primary);">DITERIMA</span>
+                            </div>
+                            <h6 style="font-weight:700; margin-bottom:5px;">Kanal #info</h6>
+                            <p style="font-size:0.8rem; color:var(--slate-600);">"Halo tim, info rapat hari ini diundur ke jam 2 ya!"</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="container" id="mulai">
-            <div class="cta">
-                <div>
-                    <h3>Siap mulai pakai Tasku?</h3>
-                    <p>Daftar akun, hubungkan bot, lalu kirim pengumuman pertamamu dalam hitungan menit.</p>
+        <section class="reminder-section" id="fitur">
+            <div class="container">
+                <div class="reminder-layout">
+                    <div>
+                        <span style="color:var(--primary); font-weight:800; font-size:0.85rem; letter-spacing:1px; text-transform:uppercase;">Fitur Unggulan</span>
+                        <h2 style="font-family:'Space Grotesk', sans-serif; font-size:2.5rem; line-height:1.2; margin:20px 0;">Tugas Penting,<br>Takkan Terlewat Lagi.</h2>
+                        <p style="color:var(--slate-600); margin-bottom:30px;">Kini Anda bisa memasang <b>Tenggat Waktu</b> pada setiap pengumuman. Aktifkan fitur <b>Pengingat Pintar</b> untuk kirim ulang notifikasi secara otomatis di H-1.</p>
+                        <div style="display:grid; gap:15px;">
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                <div style="background:#eef2ff; color:var(--primary); width:40px; height:40px; border-radius:50%; display:grid; place-items:center;"><i class="fa fa-bell"></i></div>
+                                <span style="font-weight:700; font-size:0.95rem;">Pengingat Otomatis H-1 & H-3</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:15px;">
+                                <div style="background:#f0fdf4; color:#22c55e; width:40px; height:40px; border-radius:50%; display:grid; place-items:center;"><i class="fa fa-tags"></i></div>
+                                <span style="font-weight:700; font-size:0.95rem;">Kategorisasi Berdasarkan Prioritas</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="reminder-preview">
+                        <div class="reminder-ad-badge">PENGINGAT AKTIF</div>
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:20px;">
+                            <span class="badge" style="background:var(--slate-900); color:#fff; padding:5px 12px; border-radius:5px; font-size:10px;">TUGAS MENDESAK</span>
+                            <i class="fa fa-sync fa-spin" style="color:var(--primary);"></i>
+                        </div>
+                        <h4 style="font-weight:800; margin-bottom:10px;">Laporan Progres Mingguan</h4>
+                        <p style="font-size:0.9rem; color:var(--slate-600); margin-bottom:25px;">Jangan lupa kumpulkan tautan dokumen ke tabel sebelum besok malam.</p>
+                        <div style="background:#fff; border-radius:12px; padding:15px; border:1px solid #e2e8f0; display:flex; justify-content:space-between;">
+                            <div>
+                                <small style="display:block; color:var(--slate-400); font-weight:700; font-size:9px; text-transform:uppercase;">Tenggat Waktu</small>
+                                <span style="font-weight:800; color:#ef4444; font-size:0.95rem;">Besok, 23:59 WIB</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <small style="display:block; color:var(--slate-400); font-weight:700; font-size:9px; text-transform:uppercase;">Status</small>
+                                <span class="badge" style="background:#eef2ff; color:var(--primary); font-size:10px;">KIRIM ULANG H-1</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <a href="{{ route('register') }}" class="btn btn-primary">
-                    <i class="fa-solid fa-arrow-right"></i>
-                    Buat Akun
-                </a>
+            </div>
+        </section>
+
+        <section class="pricing" id="pricing">
+            <div class="container" style="text-align:center;">
+                <h2 style="font-family:'Space Grotesk', sans-serif; font-size:2.5rem; margin-bottom:15px;">Investasi Sesuai Kebutuhan</h2>
+                <p style="color:var(--slate-600);">Pilih paket yang paling sesuai dengan skala tim Anda saat ini.</p>
+
+                <div class="pricing-grid">
+                    <div class="p-card">
+                        <h4>Paket Dasar</h4>
+                        <div class="price">Rp 15rb <span>/bln</span></div>
+                        <ul class="feature-list">
+                            <li><i class="fa-solid fa-circle-check"></i> Maksimal 10 Anggota</li>
+                            <li><i class="fa-solid fa-circle-check"></i> 1 Grup Terdedikasi</li>
+                            <li><i class="fa-solid fa-circle-check"></i> Dasbor Manajemen</li>
+                        </ul>
+                        <a href="{{ route('register') }}" class="btn btn-outline w-100" style="justify-content:center;">Pilih Dasar</a>
+                    </div>
+
+                    <div class="p-card featured">
+                        <h4>Paket Kustom</h4>
+                        <div class="price" style="font-size:2.2rem;">Bangun Sendiri</div>
+                        <ul class="feature-list">
+                            <li><i class="fa-solid fa-plus" style="color:var(--primary)"></i> Tambah per 5 Anggota</li>
+                            <li><i class="fa-solid fa-plus" style="color:var(--primary)"></i> Pengingat Pintar Aktif</li>
+                            <li><i class="fa-solid fa-plus" style="color:var(--primary)"></i> Pajak PPN 10% Transparan</li>
+                        </ul>
+                        <a href="{{ route('register') }}" class="btn btn-primary w-100" style="justify-content:center; background:var(--primary);">Cek Kalkulator</a>
+                    </div>
+
+                    <div class="p-card">
+                        <h4>Integrasi Bot</h4>
+                        <div class="price">Rp 10rb<span>-an</span></div>
+                        <ul class="feature-list">
+                            <li><i class="fa-brands fa-whatsapp" style="color:#25d366"></i> WhatsApp (Segera Hadir)</li>
+                            <li><i class="fa-brands fa-discord" style="color:#5865f2"></i> Discord (Rp 10rb)</li>
+                            <li><i class="fa-brands fa-telegram" style="color:#0088cc"></i> Telegram (Rp 10rb)</li>
+                        </ul>
+                        <a href="{{ route('register') }}" class="btn btn-outline w-100" style="justify-content:center;">Lihat Detail</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section style="padding: 100px 0; text-align: center; background: var(--slate-900); color: #fff;">
+            <div class="container">
+                <h2 style="font-family:'Space Grotesk', sans-serif; font-size:2.5rem; margin-bottom:20px;">Siap Mengelola Tim Lebih Cepat?</h2>
+                <p style="color:var(--slate-400); margin-bottom:40px;">Daftar sekarang dan nikmati kemudahan koordinasi tanpa hambatan.</p>
+                <a href="{{ route('register') }}" class="btn btn-primary" style="padding: 20px 60px; font-size: 1.2rem; background:var(--primary);">Daftar Akun Tasku Sekarang</a>
             </div>
         </section>
     </main>
 
-    <footer class="footer">
-        Tasku Notification Platform
+    <footer style="padding:60px 0; text-align:center; border-top:1px solid #e2e8f0; color:var(--slate-400); font-size:0.85rem;">
+        <div class="container">
+            <p>&copy; 2026 Platform Notifikasi Tasku. Dibuat untuk Kecepatan dan Produktivitas.</p>
+        </div>
     </footer>
-
-    <script>
-        const hamburgerBtn = document.getElementById('hamburgerBtn');
-        const mobileNav = document.getElementById('mobileNav');
-
-        if (hamburgerBtn && mobileNav) {
-            hamburgerBtn.addEventListener('click', function() {
-                const isOpen = mobileNav.classList.toggle('show');
-                hamburgerBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
-                hamburgerBtn.innerHTML = isOpen ? '<i class="fa-solid fa-xmark"></i>' :
-                    '<i class="fa-solid fa-bars"></i>';
-            });
-
-            mobileNav.querySelectorAll('a').forEach(function(link) {
-                link.addEventListener('click', function() {
-                    mobileNav.classList.remove('show');
-                    hamburgerBtn.setAttribute('aria-expanded', 'false');
-                    hamburgerBtn.innerHTML = '<i class="fa-solid fa-bars"></i>';
-                });
-            });
-        }
-    </script>
 </body>
-
 </html>

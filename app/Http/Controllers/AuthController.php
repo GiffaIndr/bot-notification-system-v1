@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\PricingComponent;
 use App\Models\GroupMember;
+use App\Models\Announcement;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -24,11 +25,36 @@ class AuthController extends Controller
             ->exists();
     }
 
+    private function buildHomePayload(User $user): array
+    {
+        $groups = $user->groups()
+            ->withPivot('role_id')
+            ->withCount('announcements')
+            ->latest()
+            ->get();
+
+        $groupIds = $groups->pluck('id');
+
+        $groupMemberships = GroupMember::with('role')
+            ->where('user_id', $user->id)
+            ->whereIn('group_id', $groupIds)
+            ->get()
+            ->keyBy('group_id');
+
+        $latestAnnouncement = Announcement::with('group')
+            ->whereIn('group_id', $groupIds)
+            ->latest()
+            ->first();
+
+        return compact('groups', 'groupMemberships', 'latestAnnouncement');
+    }
+
     public function home()
     {
         // Jika belum login, tampilkan landing page
         if (!auth()->check()) {
-            return view('landing');
+            $pricing = PricingComponent::pluck('price', 'key');
+            return view('landing', compact('pricing'));
         }
 
         // Jika sudah login dan punya akses manage, ke dashboard
@@ -38,19 +64,13 @@ class AuthController extends Controller
 
         // Jika sudah login tapi bukan owner, tampilkan home page dengan groups
         /** @var \App\Models\User $user */
-        $user = auth()->user();
-        $groups = $user->groups()->withPivot('role_id')->latest()->get();
-
-        return view('pages.home', compact('groups'));
+        return view('pages.home', $this->buildHomePayload(auth()->user()));
     }
 
     public function homePage()
     {
         /** @var \App\Models\User $user */
-        $user = auth()->user();
-        $groups = $user->groups()->withPivot('role_id')->latest()->get();
-
-        return view('pages.home', compact('groups'));
+        return view('pages.home', $this->buildHomePayload(auth()->user()));
     }
 
     /**

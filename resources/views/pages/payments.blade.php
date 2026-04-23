@@ -194,20 +194,41 @@
                     <div class="config-card mb-3">
                         <label class="field-title">Pilih Platform Bot</label>
                         <div class="d-flex flex-column gap-2">
-                            @foreach (['whatsapp' => ['fa-whatsapp', 'text-success', 'chk_wa'], 'discord' => ['fa-discord', 'text-primary', 'chk_discord'], 'telegram' => ['fa-telegram', 'text-info', 'chk_telegram']] as $key => $info)
-                                <div class="custom-checkbox-card">
-                                    <input class="form-check-input d-none" type="checkbox" id="{{ $info[2] }}"
-                                        onchange="calculatePrice()" {{ $subscription?->{'has_' . $key} ? 'checked' : '' }}>
-                                    <label
-                                        class="d-flex align-items-center justify-content-between p-2 border rounded-3 pointer mb-0"
-                                        for="{{ $info[2] }}">
-                                        <span class="d-flex align-items-center gap-2">
-                                            <i class="fab {{ $info[0] }} {{ $info[1] }}"></i>
-                                            <span class="fw-bold text-dark small">{{ ucfirst($key) }}</span>
-                                        </span>
-                                    </label>
-                                </div>
-                            @endforeach
+                            <div class="custom-checkbox-card">
+                                <input class="form-check-input d-none" type="checkbox" id="chk_wa" disabled>
+                                <label class="d-flex align-items-center justify-content-between p-2 border rounded-3 mb-0"
+                                    for="chk_wa">
+                                    <span class="d-flex align-items-center gap-2">
+                                        <i class="fab fa-whatsapp text-success"></i>
+                                        <span class="fw-bold text-dark small">Whatsapp</span>
+                                    </span>
+                                    <span class="badge bg-secondary-subtle text-secondary border">Segera Hadir</span>
+                                </label>
+                            </div>
+
+                            <div class="custom-checkbox-card">
+                                <input class="form-check-input d-none" type="checkbox" id="chk_discord"
+                                    onchange="calculatePrice()" {{ $subscription?->has_discord ? 'checked' : '' }}>
+                                <label class="d-flex align-items-center justify-content-between p-2 border rounded-3 pointer mb-0"
+                                    for="chk_discord">
+                                    <span class="d-flex align-items-center gap-2">
+                                        <i class="fab fa-discord text-primary"></i>
+                                        <span class="fw-bold text-dark small">Discord</span>
+                                    </span>
+                                </label>
+                            </div>
+
+                            <div class="custom-checkbox-card">
+                                <input class="form-check-input d-none" type="checkbox" id="chk_telegram"
+                                    onchange="calculatePrice()" {{ $subscription?->has_telegram ? 'checked' : '' }}>
+                                <label class="d-flex align-items-center justify-content-between p-2 border rounded-3 pointer mb-0"
+                                    for="chk_telegram">
+                                    <span class="d-flex align-items-center gap-2">
+                                        <i class="fab fa-telegram text-info"></i>
+                                        <span class="fw-bold text-dark small">Telegram</span>
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -345,7 +366,7 @@
         }
 
         function calculatePrice() {
-            const hasWa = document.getElementById('chk_wa')?.checked ?? false;
+            const hasWa = false;
             const hasDiscord = document.getElementById('chk_discord')?.checked ?? false;
             const hasTelegram = document.getElementById('chk_telegram')?.checked ?? false;
 
@@ -415,15 +436,15 @@
         }
 
         function pay() {
-            const hasWa = document.getElementById('chk_wa')?.checked ?? false;
+            const hasWa = false;
             const hasDiscord = document.getElementById('chk_discord')?.checked ?? false;
             const hasTelegram = document.getElementById('chk_telegram')?.checked ?? false;
             const maxGroups = 1; // Fixed: 1 group per purchase
             const maxMembers = document.getElementById('input_members')?.value ?? 10;
             const durationMonths = document.getElementById('input_duration')?.value ?? 6;
 
-            if (!hasWa && !hasDiscord && !hasTelegram) {
-                showToast('Pilih minimal 1 bot notifikasi!', 'warning');
+            if (!hasDiscord && !hasTelegram) {
+                showToast('Pilih minimal 1 bot notifikasi (Discord atau Telegram)!', 'warning');
                 return;
             }
 

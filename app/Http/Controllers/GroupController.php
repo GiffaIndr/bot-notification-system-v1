@@ -6,10 +6,12 @@ use App\Models\Group;
 use App\Models\GroupBot;
 use App\Models\GroupRole;
 use App\Models\GroupMember;
+use App\Models\GroupAnnouncementCategory;
 use App\Services\ActivityLogService;
 use App\Services\NotificationService;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class GroupController extends Controller
 {
@@ -352,8 +354,9 @@ class GroupController extends Controller
         $role    = $member->role;
         $members = GroupMember::where('group_id', $group->id)->with(['user', 'role'])->get();
         $roles   = $group->roles;
+        $categories = $group->announcementCategories()->orderBy('name')->get();
         $announcements = $group->announcements()
-            ->with(['user', 'reactions', 'attachments'])
+            ->with(['user', 'reactions', 'attachments', 'category'])
             ->orderByRaw('is_pinned DESC')
             ->orderByDesc('created_at')
             ->get();
@@ -397,6 +400,7 @@ class GroupController extends Controller
             'role',
             'members',
             'roles',
+            'categories',
             'announcements',
             'announcementsPreview',
             'announcementsMore',
@@ -409,7 +413,7 @@ class GroupController extends Controller
         ));
     }
 
-    public function allAnnouncements(Group $group)
+    public function allAnnouncements(Request $request, Group $group)
     {
         $member = GroupMember::where('group_id', $group->id)
             ->where('user_id', auth()->id())
@@ -418,14 +422,136 @@ class GroupController extends Controller
 
         if (!$member) abort(403, 'Anda bukan anggota group ini.');
 
-        $role    = $member->role;
-        $announcements = $group->announcements()
-            ->with(['user', 'reactions', 'attachments'])
-            ->orderByRaw('is_pinned DESC')
-            ->orderByDesc('created_at')
-            ->get();
+        $role = $member->role;
+        $categories = $group->announcementCategories()->orderBy('name')->get();
 
-        return view('pages.announcements', compact('group', 'role', 'announcements'));
+        $search = trim((string) $request->query('q', ''));
+        $sort = (string) $request->query('sort', 'latest');
+        $filter = (string) $request->query('filter', 'all');
+        $categoryId = $request->query('category_id');
+
+        $announcementsQuery = $group->announcements()
+            ->with(['user', 'reactions', 'attachments', 'category']);
+
+        if ($search !== '') {
+            $announcementsQuery->where(function ($query) use ($search) {
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%")
+                    ->orWhereHas('user', fn($userQuery) => $userQuery->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($filter === 'pinned') {
+            $announcementsQuery->where('is_pinned', true);
+        } elseif ($filter === 'scheduled') {
+            $announcementsQuery->whereNotNull('scheduled_at');
+        } elseif ($filter === 'repeat') {
+            $announcementsQuery->where('repeat', '!=', 'none');
+        } elseif ($filter === 'attachment') {
+            $announcementsQuery->whereHas('attachments');
+        }
+
+        if (!empty($categoryId)) {
+            $announcementsQuery->where('category_id', $categoryId);
+        }
+
+        if ($sort === 'oldest') {
+            $announcementsQuery->orderBy('created_at');
+        } elseif ($sort === 'pinned') {
+            $announcementsQuery->orderByDesc('is_pinned')->orderByDesc('created_at');
+        } else {
+            $announcementsQuery->orderByDesc('created_at');
+        }
+
+        $announcements = $announcementsQuery->paginate(10)->withQueryString();
+
+        return view('pages.announcements', compact('group', 'role', 'announcements', 'search', 'sort', 'filter', 'categories', 'categoryId'));
+    }
+
+    public function storeAnnouncementCategory(Request $request, Group $group)
+    {
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
+
+        if (!$member || !$member->role->can_edit_announcement) {
+            abort(403);
+        }
+
+        if ($group->announcementCategories()->count() >= 5) {
+            return back()->with('error', 'Maksimal 5 kategori per grup.');
+        }
+
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('group_announcement_categories', 'name')->where(
+                    fn($query) => $query->where('group_id', $group->id)
+                ),
+            ],
+        ]);
+
+        $group->announcementCategories()->create([
+            'name' => trim($request->name),
+        ]);
+
+        return back()->with('success', 'Kategori berhasil ditambahkan.');
+    }
+
+    public function updateAnnouncementCategory(Request $request, Group $group, GroupAnnouncementCategory $category)
+    {
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
+
+        if (!$member || !$member->role->can_edit_announcement) {
+            abort(403);
+        }
+
+        if ((int) $category->group_id !== (int) $group->id) {
+            abort(404);
+        }
+
+        $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('group_announcement_categories', 'name')
+                    ->where(fn($query) => $query->where('group_id', $group->id))
+                    ->ignore($category->id),
+            ],
+        ]);
+
+        $category->update([
+            'name' => trim($request->name),
+        ]);
+
+        return back()->with('success', 'Kategori berhasil diperbarui.');
+    }
+
+    public function destroyAnnouncementCategory(Group $group, GroupAnnouncementCategory $category)
+    {
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
+
+        if (!$member || !$member->role->can_edit_announcement) {
+            abort(403);
+        }
+
+        if ((int) $category->group_id !== (int) $group->id) {
+            abort(404);
+        }
+
+        $category->delete();
+
+        return back()->with('success', 'Kategori berhasil dihapus.');
     }
 
     public function generateCode(Request $request, Group $group)

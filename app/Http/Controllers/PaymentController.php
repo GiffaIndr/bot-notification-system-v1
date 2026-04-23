@@ -239,12 +239,13 @@ class PaymentController extends Controller
         $durationMonths = $this->resolveDurationMonths($request->duration_months ?? 6);
 
         // Hitung berdasarkan konfigurasi paket final agar total lebih konsisten dan mudah dipahami user.
-        $hasWhatsapp = (bool) $request->has_whatsapp || ($existing?->has_whatsapp ?? false);
+        // WhatsApp sementara belum dijual.
+        $hasWhatsapp = false;
         $hasDiscord  = (bool) $request->has_discord  || ($existing?->has_discord ?? false);
         $hasTelegram = (bool) $request->has_telegram || ($existing?->has_telegram ?? false);
 
-        if (!$hasWhatsapp && !$hasDiscord && !$hasTelegram) {
-            return response()->json(['error' => 'Pilih minimal 1 bot notifikasi!'], 422);
+        if (!$hasDiscord && !$hasTelegram) {
+            return response()->json(['error' => 'Pilih minimal 1 bot notifikasi (Discord atau Telegram)!'], 422);
         }
 
         $targetGroups = 1;
@@ -265,7 +266,6 @@ class PaymentController extends Controller
         }
 
         // Bot integration costs
-        if ($hasWhatsapp) $monthlyBaseCost += $pricing['whatsapp'];
         if ($hasDiscord)  $monthlyBaseCost += $pricing['discord'];
         if ($hasTelegram) $monthlyBaseCost += $pricing['telegram'];
 

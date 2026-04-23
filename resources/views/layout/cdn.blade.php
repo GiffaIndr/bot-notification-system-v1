@@ -9,24 +9,25 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/tasku-theme.css') }}">
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap');
 
         :root {
-            --sidebar-bg: #ffffff;
-            --text-main: #2d3748;
-            --text-muted: #718096;
-            --hover-bg: #f7fafc;
+            --sidebar-bg: var(--tasku-surface);
+            --text-main: var(--tasku-deep);
+            --text-muted: #587286;
+            --hover-bg: #edf7fb;
             /* Icon Colors */
-            --color-dashboard: #6366f1;
-            --color-groups: #ec4899;
-            --color-payments: #10b981;
-            --color-logout: #f43f5e;
+            --color-dashboard: var(--tasku-primary);
+            --color-groups: var(--tasku-deep);
+            --color-payments: var(--tasku-primary);
+            --color-logout: #a03d3d;
         }
 
         body {
-            background-color: #f3f4f6;
+            background-color: var(--tasku-bg);
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
@@ -59,24 +60,24 @@
             gap: 12px;
         }
 
-        .sidebar-brand i {
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 1.5rem;
+        .sidebar-brand img {
+            width: 28px;
+            height: 28px;
+            object-fit: contain;
         }
 
         .user-section {
-            background: #f8fafc;
-            padding: 1rem;
-            border-radius: 16px;
+            background: transparent; /* Hilangkan warna latar */
+            padding: 0.5rem 1rem;
             margin-bottom: 2rem;
-            border: 1px solid #f1f5f9;
+            border: none; /* Hilangkan garis pinggir */
         }
 
         .user-section strong {
             color: var(--text-main);
             display: block;
+            font-size: 1.1rem;
+            font-weight: 800;
         }
 
         .nav-item {
@@ -108,18 +109,18 @@
 
         /* Active States */
         .link-dashboard.active {
-            background: #eef2ff !important;
+            background: #e9f4fa !important;
             color: var(--color-dashboard) !important;
         }
 
         .link-groups.active {
-            background: #fdf2f8 !important;
+            background: #e6f2f8 !important;
             color: var(--color-groups) !important;
         }
 
         .link-payments.active {
-            background: #ecfdf5 !important;
-            color: var(--color-payments) !important;
+            background: #e7f4fa !important;
+            color: var(--tasku-deep) !important;
         }
 
         /* Icon Colors per Menu */
