@@ -9,6 +9,9 @@ use App\Models\Announcement;
 use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -139,7 +142,7 @@ class AuthController extends Controller
         $request->validate(
             [
                 'name' => 'required',
-                'email' => 'required|email:dns',
+                'email' => 'required|email:dns|unique:users,email',
                 'password' => 'required|min:6|confirmed',
                 'phone' => 'required|string|regex:/^62[0-9]{9,13}$/'
             ],
@@ -159,16 +162,131 @@ class AuthController extends Controller
             $phone = '62' . substr($phone, 1);
         }
 
-        $user = User::create([
+        $verificationCode = (string) random_int(100000, 999999);
+
+        $request->session()->put('pending_registration', [
             'name' => $request->name,
-            'email' => $request->email,
-            'password' => bcrypt($request->password),
+            'email' => strtolower(trim($request->email)),
+            'password' => Hash::make($request->password),
             'phone' => $phone,
         ]);
+        $request->session()->put('register_email_verification', [
+            'code' => $verificationCode,
+            'expires_at' => now()->addMinutes(10)->toDateTimeString(),
+        ]);
+
+        $this->sendRegistrationVerificationCode(
+            strtolower(trim($request->email)),
+            $verificationCode,
+            $request->name
+        );
+
+        return redirect()->route('register.verify.form')
+            ->with('success', 'Kode verifikasi telah dikirim ke email kamu.');
+    }
+
+    public function showVerifyEmailForm(Request $request)
+    {
+        $pending = $request->session()->get('pending_registration');
+
+        if (!$pending) {
+            return redirect()->route('register')
+                ->with('failed', 'Sesi pendaftaran tidak ditemukan. Silakan isi formulir lagi.');
+        }
+
+        return view('auth.verify-email-code', [
+            'email' => $pending['email'],
+        ]);
+    }
+
+    public function verifyEmailCode(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|digits:6',
+        ], [
+            'code.required' => 'Kode verifikasi wajib diisi.',
+            'code.digits' => 'Kode verifikasi harus 6 digit.',
+        ]);
+
+        $pending = $request->session()->get('pending_registration');
+        $verification = $request->session()->get('register_email_verification');
+
+        if (!$pending || !$verification) {
+            return redirect()->route('register')
+                ->with('failed', 'Sesi verifikasi tidak ditemukan. Silakan daftar ulang.');
+        }
+
+        if (now()->greaterThan($verification['expires_at'])) {
+            return back()->withErrors([
+                'code' => 'Kode verifikasi sudah kedaluwarsa. Kirim ulang kode baru.',
+            ]);
+        }
+
+        if ((string) $request->code !== (string) $verification['code']) {
+            return back()->withErrors([
+                'code' => 'Kode verifikasi tidak sesuai.',
+            ]);
+        }
+
+        if (User::where('email', $pending['email'])->exists()) {
+            $request->session()->forget(['pending_registration', 'register_email_verification']);
+            return redirect()->route('login')
+                ->with('failed', 'Email sudah terdaftar. Silakan login.');
+        }
+
+        $user = User::create([
+            'name' => $pending['name'],
+            'email' => $pending['email'],
+            'password' => $pending['password'],
+            'phone' => $pending['phone'],
+            'email_verified_at' => now(),
+        ]);
+
+        $request->session()->forget(['pending_registration', 'register_email_verification']);
 
         Auth::login($user);
 
-        return redirect()->route('home.pages')->with('success', 'Akun berhasil dibuat. Selamat datang!');
+        return redirect()->route('home.pages')
+            ->with('success', 'Registrasi berhasil. Email kamu sudah terverifikasi.');
+    }
+
+    public function resendVerificationCode(Request $request)
+    {
+        $pending = $request->session()->get('pending_registration');
+
+        if (!$pending) {
+            return redirect()->route('register')
+                ->with('failed', 'Sesi pendaftaran tidak ditemukan. Silakan daftar ulang.');
+        }
+
+        $verificationCode = (string) random_int(100000, 999999);
+
+        $request->session()->put('register_email_verification', [
+            'code' => $verificationCode,
+            'expires_at' => now()->addMinutes(10)->toDateTimeString(),
+        ]);
+
+        $this->sendRegistrationVerificationCode(
+            $pending['email'],
+            $verificationCode,
+            $pending['name']
+        );
+
+        return back()->with('success', 'Kode verifikasi baru sudah dikirim ke email kamu.');
+    }
+
+    private function sendRegistrationVerificationCode(string $email, string $code, string $name): void
+    {
+        $subject = 'Kode Verifikasi Registrasi Tasku';
+        $body = "Halo {$name},\n\n" .
+            "Berikut kode verifikasi registrasi akun Tasku kamu:\n\n" .
+            "Kode: {$code}\n\n" .
+            "Kode berlaku 10 menit. Jangan bagikan kode ini ke siapa pun.\n\n" .
+            "Salam,\nTim Tasku";
+
+        Mail::raw($body, function ($message) use ($email, $subject) {
+            $message->to($email)->subject($subject);
+        });
     }
 
     /**

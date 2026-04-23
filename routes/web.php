@@ -15,6 +15,9 @@ Route::get('/login', [AuthController::class, 'index'])->name('login');
 Route::get('/register', [AuthController::class, 'register'])->name('register');
 Route::post('/login/auth', [AuthController::class, 'Auth'])->name('auth');
 Route::post('/register/create', [AuthController::class, 'registration'])->name('register.auth');
+Route::get('/register/verify-email', [AuthController::class, 'showVerifyEmailForm'])->name('register.verify.form');
+Route::post('/register/verify-email', [AuthController::class, 'verifyEmailCode'])->name('register.verify.submit');
+Route::post('/register/verify-email/resend', [AuthController::class, 'resendVerificationCode'])->name('register.verify.resend');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 Route::middleware('auth')->group(function () {
