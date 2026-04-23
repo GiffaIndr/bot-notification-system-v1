@@ -209,7 +209,8 @@
                             <div class="custom-checkbox-card">
                                 <input class="form-check-input d-none" type="checkbox" id="chk_discord"
                                     onchange="calculatePrice()" {{ $subscription?->has_discord ? 'checked' : '' }}>
-                                <label class="d-flex align-items-center justify-content-between p-2 border rounded-3 pointer mb-0"
+                                <label
+                                    class="d-flex align-items-center justify-content-between p-2 border rounded-3 pointer mb-0"
                                     for="chk_discord">
                                     <span class="d-flex align-items-center gap-2">
                                         <i class="fab fa-discord text-primary"></i>
@@ -221,7 +222,8 @@
                             <div class="custom-checkbox-card">
                                 <input class="form-check-input d-none" type="checkbox" id="chk_telegram"
                                     onchange="calculatePrice()" {{ $subscription?->has_telegram ? 'checked' : '' }}>
-                                <label class="d-flex align-items-center justify-content-between p-2 border rounded-3 pointer mb-0"
+                                <label
+                                    class="d-flex align-items-center justify-content-between p-2 border rounded-3 pointer mb-0"
                                     for="chk_telegram">
                                     <span class="d-flex align-items-center gap-2">
                                         <i class="fab fa-telegram text-info"></i>

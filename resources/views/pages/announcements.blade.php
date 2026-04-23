@@ -60,8 +60,7 @@
                                         class="form-select border rounded-3 py-2 shadow-xs fw-semibold text-secondary">
                                         <option value="">Semua kategori</option>
                                         @foreach ($categories as $category)
-                                            <option value="{{ $category->id }}"
-                                                @selected((string) $categoryId === (string) $category->id)>
+                                            <option value="{{ $category->id }}" @selected((string) $categoryId === (string) $category->id)>
                                                 {{ $category->name }}</option>
                                         @endforeach
                                     </select>
@@ -209,7 +208,8 @@
                                 </div>
                             </div>
                             <form id="deleteForm{{ $announcement->id }}" method="POST"
-                                action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}" class="d-none">
+                                action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}"
+                                class="d-none">
                                 @csrf
                                 @method('DELETE')
                             </form>
@@ -236,7 +236,8 @@
         <div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content border-0 shadow rounded-4">
-                    <form method="POST" action="/groups/{{ $group->id }}/announcements" enctype="multipart/form-data">
+                    <form method="POST" action="/groups/{{ $group->id }}/announcements"
+                        enctype="multipart/form-data">
                         @csrf
                         <div class="modal-header border-bottom-0 pb-0">
                             <h5 class="modal-title fw-bold">Buat Pengumuman Baru</h5>
@@ -308,13 +309,15 @@
                                     <label class="form-label small text-muted">Waktu pengingat sebelum tenggat</label>
                                     <div class="input-group">
                                         <input type="number" name="reminder_offset_value" class="form-control"
-                                            min="1" max="365" placeholder="1" value="{{ old('reminder_offset_value', 1) }}">
+                                            min="1" max="365" placeholder="1"
+                                            value="{{ old('reminder_offset_value', 1) }}">
                                         <select name="reminder_offset_unit" class="form-select">
                                             <option value="day" @selected(old('reminder_offset_unit', 'day') === 'day')>Hari</option>
                                             <option value="hour" @selected(old('reminder_offset_unit') === 'hour')>Jam</option>
                                         </select>
                                     </div>
-                                    <small class="text-muted">Contoh: isi 1 Hari berarti pengingat dikirim 1 hari sebelum tenggat.</small>
+                                    <small class="text-muted">Contoh: isi 1 Hari berarti pengingat dikirim 1 hari sebelum
+                                        tenggat.</small>
                                 </div>
                             </div>
                         </div>

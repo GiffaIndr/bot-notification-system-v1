@@ -67,10 +67,12 @@
         }
 
         .user-section {
-            background: transparent; /* Hilangkan warna latar */
+            background: transparent;
+            /* Hilangkan warna latar */
             padding: 0.5rem 1rem;
             margin-bottom: 2rem;
-            border: none; /* Hilangkan garis pinggir */
+            border: none;
+            /* Hilangkan garis pinggir */
         }
 
         .user-section strong {

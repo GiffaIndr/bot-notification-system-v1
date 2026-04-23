@@ -64,7 +64,8 @@
                                                     </h6>
                                                     @if ($announcement->category)
                                                         <span class="badge bg-light text-primary border mb-2">
-                                                            <i class="fa fa-tag me-1"></i>{{ $announcement->category->name }}
+                                                            <i
+                                                                class="fa fa-tag me-1"></i>{{ $announcement->category->name }}
                                                         </span>
                                                     @endif
                                                     @if ($announcement->deadline_mode && $announcement->deadline_at)
@@ -354,7 +355,8 @@
                             <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
                                 <div class="card-header bg-transparent border-bottom py-3 px-4">
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="fw-bold text-dark m-0"><i class="fa fa-tags text-muted me-2"></i>Kategori
+                                        <h6 class="fw-bold text-dark m-0"><i
+                                                class="fa fa-tags text-muted me-2"></i>Kategori
                                             Pengumuman</h6>
                                         <span class="badge bg-light text-dark border">{{ $categories->count() }}/5</span>
                                     </div>
@@ -389,7 +391,8 @@
                                                 onsubmit="return confirm('Hapus kategori ini?')">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-outline-danger btn-sm">Hapus</button>
+                                                <button type="submit"
+                                                    class="btn btn-outline-danger btn-sm">Hapus</button>
                                             </form>
                                         </div>
                                     @empty
@@ -569,7 +572,8 @@
         <div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content border-0 shadow rounded-4">
-                    <form method="POST" action="/groups/{{ $group->id }}/announcements" enctype="multipart/form-data">
+                    <form method="POST" action="/groups/{{ $group->id }}/announcements"
+                        enctype="multipart/form-data">
                         @csrf
                         <div class="modal-header border-bottom-0 pb-0">
                             <h5 class="modal-title fw-bold">Buat Pengumuman Baru</h5>
@@ -641,13 +645,15 @@
                                     <label class="form-label small text-muted">Waktu pengingat sebelum tenggat</label>
                                     <div class="input-group">
                                         <input type="number" name="reminder_offset_value" class="form-control"
-                                            min="1" max="365" placeholder="1" value="{{ old('reminder_offset_value', 1) }}">
+                                            min="1" max="365" placeholder="1"
+                                            value="{{ old('reminder_offset_value', 1) }}">
                                         <select name="reminder_offset_unit" class="form-select">
                                             <option value="day" @selected(old('reminder_offset_unit', 'day') === 'day')>Hari</option>
                                             <option value="hour" @selected(old('reminder_offset_unit') === 'hour')>Jam</option>
                                         </select>
                                     </div>
-                                    <small class="text-muted">Contoh: isi 1 Hari berarti pengingat dikirim 1 hari sebelum tenggat.</small>
+                                    <small class="text-muted">Contoh: isi 1 Hari berarti pengingat dikirim 1 hari sebelum
+                                        tenggat.</small>
                                 </div>
                             </div>
                         </div>

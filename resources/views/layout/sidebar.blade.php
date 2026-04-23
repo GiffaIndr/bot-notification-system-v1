@@ -11,7 +11,8 @@
             </a>
 
             {{-- Tombol Hamburger Modern --}}
-            <button class="navbar-toggler border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler border-0 p-0" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu"
+                aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
                 <div class="bg-light rounded-3 p-2 text-dark border">
                     <i class="fa-solid fa-bars-staggered"></i>
                 </div>
@@ -66,7 +67,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="/paymentlogs" class="nav-link link-payments {{ Request::is('paymentlogs*') ? 'active' : '' }}">
+                        <a href="/paymentlogs"
+                            class="nav-link link-payments {{ Request::is('paymentlogs*') ? 'active' : '' }}">
                             <i class="fa-solid fa-receipt me-2"></i> Riwayat Pembayaran
                         </a>
                     </li>
@@ -74,13 +76,15 @@
 
                 @auth
                     <div class="mt-4 px-2 pt-4 border-top">
-                        <a href="/home" class="nav-link rounded-4 border-0 shadow-xs mb-3" style="background: #e9f4fa; color: var(--tasku-deep) !important; font-weight: 700;">
+                        <a href="/home" class="nav-link rounded-4 border-0 shadow-xs mb-3"
+                            style="background: #e9f4fa; color: var(--tasku-deep) !important; font-weight: 700;">
                             <i class="fas fa-house me-2"></i> Beranda Utama
                         </a>
 
                         <form action="{{ route('logout') }}" method="POST" class="mt-auto p-0">
                             @csrf
-                            <button type="submit" class="btn btn-logout nav-link w-100 border-0 text-start px-3 py-2 rounded-4">
+                            <button type="submit"
+                                class="btn btn-logout nav-link w-100 border-0 text-start px-3 py-2 rounded-4">
                                 <i class="fas fa-sign-out-alt me-2 text-danger"></i> Keluar Akun
                             </button>
                         </form>
@@ -103,7 +107,8 @@
         @media (max-width: 767.98px) {
             .sidebar {
                 position: fixed;
-                top: 60px; /* Tinggi navbar mobile */
+                top: 60px;
+                /* Tinggi navbar mobile */
                 left: 0;
                 width: 100%;
                 height: calc(100vh - 60px);
@@ -112,15 +117,20 @@
                 background-color: white !important;
                 padding-bottom: 80px;
             }
+
             /* Efek animasi slide down */
             .sidebar.collapse:not(.show) {
                 display: none;
             }
+
             .sidebar.collapsing {
                 height: 0;
                 transition: height 0.3s ease;
             }
         }
-        .shadow-xs { box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+        .shadow-xs {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
     </style>
 @endsection
