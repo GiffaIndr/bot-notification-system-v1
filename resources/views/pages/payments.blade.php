@@ -282,12 +282,8 @@
                             <strong id="selectedMembers">{{ $subscription ? $subscription->max_members : 10 }}</strong>
                         </div>
                         <div class="selected-item">
-                            <span>Subtotal</span>
+                            <span>Total</span>
                             <strong id="subtotalPrice">Rp 0</strong>
-                        </div>
-                        <div class="selected-item">
-                            <span>Pajak 10%</span>
-                            <strong id="taxPrice">Rp 0</strong>
                         </div>
                     </div>
 
@@ -295,14 +291,19 @@
                         <p class="summary-label mb-1">Total Estimasi (<span
                                 id="durationLabel">{{ $subscription?->duration_months ?? 6 }}</span> Bulan)</p>
                         <h4 class="summary-value" id="totalPrice">Rp 0</h4>
-                        <small class="opacity-75">Subtotal + pajak 10% dihitung proporsional terhadap durasi dan
-                            fitur.</small>
+                        <small class="opacity-75">Harga yang tertera adalah harga final tanpa pajak tambahan.</small>
                     </div>
 
                     <button class="btn btn-primary w-100 fw-bold rounded-pill btn-pay pay-cta" onclick="pay()">
                         <i class="fa fa-bolt me-2"></i>
                         Beli Sekarang
                     </button>
+
+                    <div style="text-align: center; margin-top: 16px; font-size: 0.85rem; color: #52666c;">
+                        <p style="margin-bottom: 8px;">Pembayaran melalui</p>
+                        <img src="https://iconape.com/wp-content/files/yh/207674/png/midtrans-logo.png" alt="Midtrans"
+                            style="height: 20px; object-fit: contain;">
+                    </div>
                 </div>
             </div>
         </div>
@@ -411,18 +412,15 @@
             const selectedDuration = document.getElementById('selectedDuration');
             if (selectedDuration) selectedDuration.innerText = duration;
 
-            // Hitung subtotal berdasarkan durasi
+            // Hitung total berdasarkan durasi
             const subtotal = Math.round(monthlyCost * duration);
-            const tax = Math.round(subtotal * 0.10);
-            const total = subtotal + tax;
+            const total = subtotal;
 
             const selectedMembers = document.getElementById('selectedMembers');
             if (selectedMembers) selectedMembers.innerText = members;
 
             const subtotalEl = document.getElementById('subtotalPrice');
-            if (subtotalEl) subtotalEl.innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
-            const taxEl = document.getElementById('taxPrice');
-            if (taxEl) taxEl.innerText = 'Rp ' + tax.toLocaleString('id-ID');
+            if (subtotalEl) subtotalEl.innerText = 'Rp ' + total.toLocaleString('id-ID');
 
             document.getElementById('totalPrice').innerText = 'Rp ' + total.toLocaleString('id-ID');
             return total;

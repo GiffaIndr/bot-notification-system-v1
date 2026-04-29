@@ -72,6 +72,12 @@
                             <i class="fa-solid fa-receipt me-2"></i> Riwayat Pembayaran
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a href="{{ route('about') }}"
+                            class="nav-link link-about {{ Request::is('about*') ? 'active' : '' }}">
+                            <i class="fa-solid fa-circle-info me-2"></i> Tentang Tasku
+                        </a>
+                    </li>
                 </ul>
 
                 @auth

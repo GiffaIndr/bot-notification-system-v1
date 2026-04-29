@@ -20,6 +20,8 @@ Route::post('/register/verify-email', [AuthController::class, 'verifyEmailCode']
 Route::post('/register/verify-email/resend', [AuthController::class, 'resendVerificationCode'])->name('register.verify.resend');
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/about', fn() => view('pages.about'))->name('about');
+
 Route::middleware('auth')->group(function () {
 
     Route::get('/home', [AuthController::class, 'homePage'])->name('home.pages');

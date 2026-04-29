@@ -7,10 +7,8 @@
         <nav class="navbar navbar-expand-lg bg-white border-bottom shadow-sm py-2 mb-0 mb-lg-4">
             <div class="container">
                 <a class="navbar-brand d-flex align-items-center gap-2 fw-bold m-0" href="{{ url('/home') }}">
-                    <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center shadow-sm"
-                        style="width: 32px; height: 32px;">
-                        <i class="fa-solid fa-bolt fs-6"></i>
-                    </div>
+                    <img src="{{ asset('logos/logo_transparan.png') }}" alt="Tasku"
+                        style="height: 32px; width: auto; object-fit: contain;">
                     <span>Tasku</span>
                 </a>
                 <form action="{{ route('logout') }}" method="POST" class="ms-auto">

@@ -271,8 +271,7 @@ class PaymentController extends Controller
 
         // Hitung total berdasarkan durasi
         $subtotal = (int) round($monthlyBaseCost * $durationMonths);
-        $tax = (int) round($subtotal * 0.10);
-        $total = $subtotal + $tax;
+        $total = $subtotal;
 
         if ($total <= 0) {
             return response()->json(['error' => 'Tidak ada perubahan dari langganan saat ini!'], 422);

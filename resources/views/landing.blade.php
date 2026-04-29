@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tasku | Akses Grup & Notifikasi Tim Multi-Platform</title>
 
+    <link rel="icon" type="image/png" href="{{ asset('logos/logo_transparan.png') }}" sizes="32x32">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -131,6 +133,79 @@
             background: transparent;
             border: 1px solid #e2e8f0;
             color: var(--slate-700);
+        }
+
+        .btn-outline:hover {
+            background: #f8fafc;
+        }
+
+        .topbar-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        @media (min-width: 992px) {
+            .hamburger {
+                display: none !important;
+            }
+
+            .nav-links {
+                gap: 25px !important;
+                font-size: 0.9rem !important;
+                order: unset !important;
+                width: auto !important;
+                flex-direction: row !important;
+                max-height: none !important;
+                overflow: visible !important;
+                background: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                display: flex !important;
+            }
+
+            .nav-links a {
+                padding: 0 !important;
+                display: inline !important;
+            }
+
+            .topbar-inner {
+                flex-wrap: nowrap;
+            }
+        }
+
+        .hamburger {
+            display: none;
+            width: 32px;
+            height: 32px;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            order: 2;
+        }
+
+        .hamburger span {
+            display: block;
+            width: 20px;
+            height: 2px;
+            background: var(--slate-900);
+            border-radius: 1px;
+            transition: 0.3s;
+        }
+
+        .hamburger.active span:nth-child(1) {
+            transform: rotate(45deg) translate(8px, 8px);
+        }
+
+        .hamburger.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active span:nth-child(3) {
+            transform: rotate(-45deg) translate(7px, -7px);
         }
 
         /* --- HERO --- */
@@ -342,6 +417,64 @@
         }
 
         @media (max-width: 991px) {
+            .hamburger {
+                display: flex;
+            }
+
+            .topbar-inner {
+                gap: 12px;
+                padding: 8px;
+                border-radius: 12px;
+                flex-wrap: wrap;
+            }
+
+            .brand {
+                gap: 8px;
+                font-size: 1rem;
+                flex: 1;
+            }
+
+            .brand img {
+                height: 24px;
+            }
+
+            .nav-links {
+                gap: 15px;
+                font-size: 0.85rem;
+                order: 3;
+                width: 100%;
+                flex-direction: column;
+                gap: 8px;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
+                background: rgba(255, 255, 255, 0.95);
+                padding: 0;
+                margin: 0;
+                border-radius: 8px;
+                display: flex !important;
+            }
+
+            .nav-links.active {
+                max-height: 300px;
+                padding: 12px 0;
+            }
+
+            .nav-links a {
+                padding: 8px 16px;
+                display: block;
+            }
+
+            .topbar-actions {
+                gap: 8px;
+                order: 2;
+            }
+
+            .btn {
+                padding: 8px 16px;
+                font-size: 0.8rem;
+                white-space: nowrap;
+            }
 
             .mockup-body,
             .reminder-layout,
@@ -354,6 +487,46 @@
                 gap: 40px;
             }
         }
+
+        @media (max-width: 640px) {
+            .topbar {
+                padding: 12px 0;
+            }
+
+            .topbar-inner {
+                padding: 8px;
+                gap: 8px;
+            }
+
+            .brand {
+                gap: 6px;
+                font-size: 0.9rem;
+                flex-shrink: 0;
+            }
+
+            .brand img {
+                height: 20px;
+            }
+
+            .btn {
+                padding: 6px 12px;
+                font-size: 0.75rem;
+            }
+
+            .topbar-actions {
+                gap: 6px;
+            }
+
+            .hamburger {
+                width: 28px;
+                height: 28px;
+            }
+
+            .hamburger span {
+                width: 18px;
+                height: 1.5px;
+            }
+        }
     </style>
 </head>
 
@@ -361,13 +534,20 @@
     <header class="topbar">
         <div class="container">
             <div class="topbar-inner">
-                <a href="#" class="brand">
+                <a href="/" class="brand">
                     <img src="{{ asset('logos/tasku_transparan_dengan_nama.png') }}" alt="Tasku"
                         style="height: 32px; width: auto; object-fit: contain;">
                 </a>
-                <nav class="nav-links d-none d-md-flex">
+                <button class="hamburger" id="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <nav class="nav-links" id="navLinks">
+                    <a href="/">Beranda</a>
                     <a href="#fitur">Fitur</a>
                     <a href="#pricing">Harga</a>
+                    <a href="{{ route('about') }}">Tentang</a>
                 </nav>
                 <div class="topbar-actions">
                     <a href="{{ route('login') }}" class="btn btn-outline">Masuk</a>
@@ -437,20 +617,22 @@
                             Tugas Penting,<br>Takkan Terlewat Lagi.</h2>
                         <p style="color:var(--slate-600); margin-bottom:30px;">Kini Anda bisa memasang <b>Tenggat
                                 Waktu</b> pada setiap pengumuman. Aktifkan fitur <b>Pengingat Pintar</b> untuk kirim
-                            ulang notifikasi secara otomatis di H-1.</p>
+                            ulang notifikasi secara otomatis di waktu yang telah ditentukan.</p>
                         <div style="display:grid; gap:15px;">
                             <div style="display:flex; align-items:center; gap:15px;">
                                 <div
                                     style="background:#eef2ff; color:var(--primary); width:40px; height:40px; border-radius:50%; display:grid; place-items:center;">
-                                    <i class="fa fa-bell"></i></div>
-                                <span style="font-weight:700; font-size:0.95rem;">Pengingat Otomatis H-1 & H-3</span>
+                                    <i class="fa fa-bell"></i>
+                                </div>
+                                <span style="font-weight:700; font-size:0.95rem;">Pengingat Otomatis yang bisa di kustomisasi</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:15px;">
                                 <div
                                     style="background:#f0fdf4; color:#22c55e; width:40px; height:40px; border-radius:50%; display:grid; place-items:center;">
-                                    <i class="fa fa-tags"></i></div>
+                                    <i class="fa fa-tags"></i>
+                                </div>
                                 <span style="font-weight:700; font-size:0.95rem;">Kategorisasi Berdasarkan
-                                    Prioritas</span>
+                                    Prioritas atau Kebutuhan</span>
                             </div>
                         </div>
                     </div>
@@ -556,6 +738,32 @@
             <p>&copy; 2026 Platform Notifikasi Tasku. Dibuat untuk Kecepatan dan Produktivitas.</p>
         </div>
     </footer>
+
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('navLinks');
+
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+
+        // Close menu when a link is clicked
+        document.querySelectorAll('.nav-links a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+            });
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.topbar-inner')) {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+            }
+        });
+    </script>
 </body>
 
 </html>
