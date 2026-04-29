@@ -624,7 +624,8 @@
                                     style="background:#eef2ff; color:var(--primary); width:40px; height:40px; border-radius:50%; display:grid; place-items:center;">
                                     <i class="fa fa-bell"></i>
                                 </div>
-                                <span style="font-weight:700; font-size:0.95rem;">Pengingat Otomatis yang bisa di kustomisasi</span>
+                                <span style="font-weight:700; font-size:0.95rem;">Pengingat Otomatis yang bisa di
+                                    kustomisasi</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:15px;">
                                 <div
