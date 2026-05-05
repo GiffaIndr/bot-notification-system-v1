@@ -228,9 +228,9 @@ class PaymentController extends Controller
     public function snapToken(Request $request)
     {
         Config::$serverKey    = config('midtrans.server_key');
-        Config::$isProduction = false;
-        Config::$isSanitized  = true;
-        Config::$is3ds        = true;
+        Config::$isProduction = config('midtrans.is_production');
+        Config::$isSanitized  = config('midtrans.is_sanitized');
+        Config::$is3ds        = config('midtrans.is_3ds');
 
         /** @var \App\Models\User $user */
         $user = auth()->user();
@@ -290,7 +290,19 @@ class PaymentController extends Controller
             ],
         ];
 
-        $snapToken = Snap::getSnapToken($params);
+        try {
+            $snapToken = Snap::getSnapToken($params);
+        } catch (\Throwable $e) {
+            Log::error('Midtrans snap token generation failed', [
+                'message' => $e->getMessage(),
+                'order_id' => $orderId,
+                'is_production' => config('midtrans.is_production'),
+            ]);
+
+            return response()->json([
+                'error' => 'Gagal membuat token Midtrans. Cek server key, client key, dan mode production/sandbox.',
+            ], 422);
+        }
 
         // Merge dengan subscription yang ada
         $subscriptionPayload = [
