@@ -40,6 +40,25 @@ class PricingComponentSeeder extends Seeder
                 'price'       => 10000,
                 'description' => 'Notifikasi via Telegram ke group pilihan',
             ],
+            // Upgrade pricing components
+            [
+                'key'         => 'upgrade_extend_month',
+                'name'        => 'Perpanjangan Langganan (Per Bulan)',
+                'price'       => 10000,
+                'description' => 'Harga untuk perpanjangan langganan group per 1 bulan',
+            ],
+            [
+                'key'         => 'upgrade_member_slot',
+                'name'        => 'Slot Tambahan Member (Per 5 Orang)',
+                'price'       => 5000,
+                'description' => 'Harga untuk menambah kapasitas member sebanyak 5 orang',
+            ],
+            [
+                'key'         => 'upgrade_bot',
+                'name'        => 'Tambahan Bot Integrasi',
+                'price'       => 75000,
+                'description' => 'Harga untuk menambah 1 bot integrasi (Discord/Telegram/WhatsApp)',
+            ],
         ];
 
         foreach ($components as $component) {

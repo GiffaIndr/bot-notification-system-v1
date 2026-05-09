@@ -6,28 +6,14 @@ use App\Models\User;
 use App\Models\PricingComponent;
 use App\Models\GroupMember;
 use App\Models\Announcement;
-use App\Models\Plan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class AuthController extends Controller
 {
-    private function hasManageAccess(?User $user = null): bool
-    {
-        $userId = $user?->id ?? auth()->id();
-
-        if (!$userId) {
-            return false;
-        }
-
-        return GroupMember::where('user_id', $userId)
-            ->whereHas('role', fn($q) => $q->where('is_owner', true))
-            ->exists();
-    }
-
     private function buildHomePayload(User $user): array
     {
         $groups = $user->groups()
@@ -54,31 +40,15 @@ class AuthController extends Controller
 
     public function home()
     {
-        // Jika belum login, tampilkan landing page
         if (!auth()->check()) {
-            $pricing = PricingComponent::pluck('price', 'key');
+            $pricing = PricingComponent::cachedPrices();
+
             return view('landing', compact('pricing'));
         }
 
-        // Jika sudah login dan punya akses manage, ke dashboard
-        if ($this->hasManageAccess(auth()->user())) {
-            return redirect()->route('dashboard.pages');
-        }
-
-        // Jika sudah login tapi bukan owner, tampilkan home page dengan groups
-        /** @var \App\Models\User $user */
-        return view('pages.home', $this->buildHomePayload(auth()->user()));
+        return redirect()->route('groups.index');
     }
 
-    public function homePage()
-    {
-        /** @var \App\Models\User $user */
-        return view('pages.home', $this->buildHomePayload(auth()->user()));
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         return view('auth.login');
@@ -86,57 +56,33 @@ class AuthController extends Controller
 
     public function dashboard()
     {
-        /** @var \App\Models\User $user */
-        $user = auth()->user();
-
-        $plans        = Plan::orderBy('price')->get();
-        $pricing      = PricingComponent::pluck('price', 'key');
-        $groups       = $user->groups()->withPivot('role_id')->take(4)->get();
-        $totalGroups  = $user->groups()->count();
-        $subscription = $user->activeSubscription()->first();
-        $groupCount   = GroupMember::where('user_id', auth()->id())
-            ->whereHas('role', fn($q) => $q->where('is_owner', true))
-            ->count();
-        $maxGroup     = $subscription ? $subscription->max_groups : 0;
-
-        return view('pages.dashboard', compact(
-            'plans',
-            'pricing',
-            'groups',
-            'totalGroups',
-            'subscription',
-            'groupCount',
-            'maxGroup'
-        ));
+        return redirect()->route('groups.index');
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function register()
     {
         return view('auth.register');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function Auth(Request $request)
     {
         $request->validate([
             'email' => 'required|exists:users,email',
-            'password' =>  'required'
+            'password' => 'required'
         ], [
             'email.exists' => 'email tidak tersedia',
             'password.required' => 'password tidak tersedia',
         ]);
-        $users = $request->Only('email', 'password');
+
+        $users = $request->only('email', 'password');
+
         if (Auth::attempt($users)) {
-            return redirect()->route('home.pages')->with('success', 'berhasil login!');
-        } else {
-            return redirect()->back()->with('failed', 'gagal login, silahkan cek kembali');
+            return redirect()->route('groups.index')->with('success', 'berhasil login!');
         }
+
+        return redirect()->back()->with('failed', 'gagal login, silahkan cek kembali');
     }
+
     public function registration(Request $request)
     {
         $request->validate(
@@ -157,6 +103,7 @@ class AuthController extends Controller
                 'password.confirmed' => 'Konfirmasi password tidak sesuai',
             ]
         );
+
         $phone = $request->phone;
         if (str_starts_with($phone, '0')) {
             $phone = '62' . substr($phone, 1);
@@ -230,6 +177,7 @@ class AuthController extends Controller
 
         if (User::where('email', $pending['email'])->exists()) {
             $request->session()->forget(['pending_registration', 'register_email_verification']);
+
             return redirect()->route('login')
                 ->with('failed', 'Email sudah terdaftar. Silakan login.');
         }
@@ -246,7 +194,7 @@ class AuthController extends Controller
 
         Auth::login($user);
 
-        return redirect()->route('home.pages')
+        return redirect()->route('groups.index')
             ->with('success', 'Registrasi berhasil. Email kamu sudah terverifikasi.');
     }
 
@@ -289,9 +237,185 @@ class AuthController extends Controller
         });
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+    private function sendProfileUpdateVerificationCode(string $email, string $code, string $name): void
+    {
+        $subject = 'Kode OTP Verifikasi Perubahan Akun Tasku';
+        $body = "Halo {$name},\n\n" .
+            "Berikut kode OTP verifikasi perubahan data akun Tasku kamu:\n\n" .
+            "Kode: {$code}\n\n" .
+            "Kode berlaku 10 menit. Abaikan email ini jika kamu tidak melakukan perubahan akun.\n\n" .
+            "Salam,\nTim Tasku";
+
+        Mail::raw($body, function ($message) use ($email, $subject) {
+            $message->to($email)->subject($subject);
+        });
+    }
+
+    public function profile(Request $request)
+    {
+        $pendingUpdate = $request->session()->get('pending_profile_update');
+        $verification = $request->session()->get('profile_update_verification');
+
+        return view('pages.account-profile', [
+            'user' => auth()->user(),
+            'pendingUpdate' => $pendingUpdate,
+            'verification' => $verification,
+        ]);
+    }
+
+    public function requestProfileUpdateOtp(Request $request)
+    {
+        $user = User::findOrFail(auth()->id());
+
+        $request->validate([
+            'name' => 'required|string|max:100',
+            'email' => [
+                'required',
+                'email:dns',
+                Rule::unique('users', 'email')->ignore($user->id),
+            ],
+            'phone' => 'required|string|regex:/^62[0-9]{9,13}$/',
+            'new_password' => 'nullable|string|min:6|confirmed',
+            'current_password' => 'required_with:new_password|string',
+        ], [
+            'name.required' => 'Nama wajib diisi.',
+            'email.required' => 'Email wajib diisi.',
+            'email.email' => 'Format email tidak valid.',
+            'email.unique' => 'Email sudah digunakan.',
+            'phone.required' => 'Nomor WhatsApp wajib diisi.',
+            'phone.regex' => 'Nomor WhatsApp harus diawali 62 dan formatnya valid.',
+            'new_password.min' => 'Password baru minimal 6 karakter.',
+            'new_password.confirmed' => 'Konfirmasi password baru tidak sesuai.',
+            'current_password.required_with' => 'Password saat ini wajib diisi untuk ganti password.',
+        ]);
+
+        if ($request->filled('new_password') && !Hash::check($request->current_password, $user->password)) {
+            return back()->withErrors([
+                'current_password' => 'Password saat ini tidak sesuai.',
+            ])->withInput();
+        }
+
+        $normalizedEmail = strtolower(trim((string) $request->email));
+        $phone = (string) $request->phone;
+        if (str_starts_with($phone, '0')) {
+            $phone = '62' . substr($phone, 1);
+        }
+
+        $hasIdentityChange =
+            $request->name !== $user->name ||
+            $normalizedEmail !== strtolower((string) $user->email) ||
+            $phone !== (string) $user->phone;
+        $hasPasswordChange = $request->filled('new_password');
+
+        if (!$hasIdentityChange && !$hasPasswordChange) {
+            return back()->with('info', 'Tidak ada perubahan data untuk disimpan.');
+        }
+
+        $verificationCode = (string) random_int(100000, 999999);
+        $otpTargetEmail = $normalizedEmail !== strtolower((string) $user->email)
+            ? $normalizedEmail
+            : (string) $user->email;
+
+        $request->session()->put('pending_profile_update', [
+            'name' => $request->name,
+            'email' => $normalizedEmail,
+            'phone' => $phone,
+            'password' => $hasPasswordChange ? Hash::make((string) $request->new_password) : null,
+        ]);
+
+        $request->session()->put('profile_update_verification', [
+            'code' => $verificationCode,
+            'target_email' => $otpTargetEmail,
+            'expires_at' => now()->addMinutes(10)->toDateTimeString(),
+        ]);
+
+        $this->sendProfileUpdateVerificationCode(
+            $otpTargetEmail,
+            $verificationCode,
+            $user->name
+        );
+
+        return back()->with('success', 'Kode OTP verifikasi perubahan akun telah dikirim ke email tujuan.');
+    }
+
+    public function verifyProfileUpdateOtp(Request $request)
+    {
+        $request->validate([
+            'code' => 'required|digits:6',
+        ], [
+            'code.required' => 'Kode OTP wajib diisi.',
+            'code.digits' => 'Kode OTP harus 6 digit.',
+        ]);
+
+        $pendingUpdate = $request->session()->get('pending_profile_update');
+        $verification = $request->session()->get('profile_update_verification');
+
+        if (!$pendingUpdate || !$verification) {
+            return back()->with('failed', 'Sesi verifikasi perubahan akun tidak ditemukan. Silakan kirim ulang OTP.');
+        }
+
+        if (now()->greaterThan($verification['expires_at'])) {
+            return back()->withErrors([
+                'code' => 'Kode OTP sudah kedaluwarsa. Silakan kirim ulang OTP.',
+            ]);
+        }
+
+        if ((string) $request->code !== (string) $verification['code']) {
+            return back()->withErrors([
+                'code' => 'Kode OTP tidak sesuai.',
+            ]);
+        }
+
+        $user = User::findOrFail(auth()->id());
+
+        if ($pendingUpdate['email'] !== $user->email && User::where('email', $pendingUpdate['email'])->exists()) {
+            $request->session()->forget(['pending_profile_update', 'profile_update_verification']);
+
+            return back()->with('failed', 'Email tujuan sudah digunakan akun lain.');
+        }
+
+        $user->name = $pendingUpdate['name'];
+        $user->email = $pendingUpdate['email'];
+        $user->phone = $pendingUpdate['phone'];
+
+        if (!empty($pendingUpdate['password'])) {
+            $user->password = $pendingUpdate['password'];
+        }
+
+        $user->save();
+
+        $request->session()->forget(['pending_profile_update', 'profile_update_verification']);
+
+        return back()->with('success', 'Profil berhasil diperbarui dan diverifikasi OTP.');
+    }
+
+    public function resendProfileUpdateOtp(Request $request)
+    {
+        $pendingUpdate = $request->session()->get('pending_profile_update');
+        $verification = $request->session()->get('profile_update_verification');
+
+        if (!$pendingUpdate || !$verification) {
+            return back()->with('failed', 'Tidak ada permintaan perubahan akun yang menunggu verifikasi.');
+        }
+
+        $verificationCode = (string) random_int(100000, 999999);
+        $targetEmail = (string) ($verification['target_email'] ?? auth()->user()->email);
+
+        $request->session()->put('profile_update_verification', [
+            'code' => $verificationCode,
+            'target_email' => $targetEmail,
+            'expires_at' => now()->addMinutes(10)->toDateTimeString(),
+        ]);
+
+        $this->sendProfileUpdateVerificationCode(
+            $targetEmail,
+            $verificationCode,
+            auth()->user()->name
+        );
+
+        return back()->with('success', 'Kode OTP baru sudah dikirim ke email tujuan.');
+    }
+
     public function logout(Request $request)
     {
         Auth::logout();
@@ -302,17 +426,11 @@ class AuthController extends Controller
         return redirect('/');
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, auth $auth)
     {
         //
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(auth $auth)
     {
         //

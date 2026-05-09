@@ -23,77 +23,79 @@
     <div class="container-fluid">
         <div class="row">
             {{-- 2. SIDEBAR (Sekarang punya ID 'sidebarMenu' agar bisa dibuka-tutup) --}}
-            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse bg-white border-end">
+            <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
 
                 {{-- Brand Logo (Hidden on Mobile because already in Top Nav) --}}
-                <div class="sidebar-brand d-none d-md-flex">
+                <div class="sidebar-brand d-none d-md-flex align-items-center gap-2">
                     <img src="{{ asset('logos/logo_transparan.png') }}" alt="Tasku">
                     <span>Tasku</span>
                 </div>
 
-                {{-- Area Profil --}}
-                <div class="d-flex align-items-center gap-3 px-3 mb-4 mt-4 mt-md-2">
-                    @auth
-                        <div class="rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center border border-primary border-opacity-25 shadow-xs"
-                            style="width: 42px; height: 42px;">
-                            <i class="fas fa-user text-primary"></i>
-                        </div>
-                        <div class="lh-sm text-start">
-                            <small class="text-muted d-block" style="font-size: 0.7rem;">Selamat datang,</small>
-                            <strong class="text-dark">{{ Auth::user()->name }}</strong>
-                        </div>
-                    @endauth
-                    @guest
-                        <a href="{{ route('login') }}" class="btn btn-primary btn-sm w-100 rounded-pill fw-bold">
-                            Masuk Akun
-                        </a>
-                    @endguest
-                </div>
+
+                @auth
+                    <a href="{{ route('account.profile') }}"
+                        class="d-flex align-items-center justify-content-between gap-2 px-2 py-2 mb-2 rounded-3 text-decoration-none"
+                        style="background:#f7faff;color:#1f2937;border:1px solid #e5eefc;">
+                        <span class="d-flex align-items-center gap-2 min-w-0">
+                            <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                                style="width:30px;height:30px;background:#e6f0ff;color:#0c66e4;">
+                                <i class="fa-solid fa-user"></i>
+                            </span>
+                            <strong class="text-truncate" style="max-width:120px;">{{ Auth::user()->name }}</strong>
+                        </span>
+                        <i class="fa-solid fa-chevron-right" style="font-size:0.7rem;"></i>
+                    </a>
+                @endauth
+                <div class="sidebar-section-title px-2 mb-2">Menu</div>
+
 
                 <ul class="nav flex-column gap-1">
                     <li class="nav-item">
-                        <a href="/dashboard" class="nav-link link-dashboard {{ Request::is('dashboard') ? 'active' : '' }}">
-                            <i class="fas fa-chart-pie me-2"></i> Dashboard
+                        <a href="/groups" class="nav-link link-dashboard {{ Request::is('groups') ? 'active' : '' }}">
+                            <i class="fa-solid fa-layer-group"></i> Daftar Grup
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/payments" class="nav-link link-payments {{ Request::is('payments*') ? 'active' : '' }}">
-                            <i class="fa-solid fa-wallet me-2"></i> Beli Akses Grup
+                            <i class="fa-solid fa-wallet"></i> Beli Akses
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a href="/groups" class="nav-link link-groups {{ Request::is('groups*') ? 'active' : '' }}">
-                            <i class="fa-solid fa-layer-group me-2"></i> Daftar Grup
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/paymentlogs"
-                            class="nav-link link-payments {{ Request::is('paymentlogs*') ? 'active' : '' }}">
-                            <i class="fa-solid fa-receipt me-2"></i> Riwayat Pembayaran
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="{{ route('about') }}"
-                            class="nav-link link-about {{ Request::is('about*') ? 'active' : '' }}">
-                            <i class="fa-solid fa-circle-info me-2"></i> Tentang Tasku
-                        </a>
-                    </li>
+
                 </ul>
 
-                @auth
-                    <div class="mt-4 px-2 pt-4 border-top">
-                        <a href="/home" class="nav-link rounded-4 border-0 shadow-xs mb-3"
-                            style="background: #e9f4fa; color: var(--tasku-deep) !important; font-weight: 700;">
-                            <i class="fas fa-house me-2"></i> Beranda Utama
-                        </a>
 
-                        <form action="{{ route('logout') }}" method="POST" class="mt-auto p-0">
-                            @csrf
-                            <button type="submit"
-                                class="btn btn-logout nav-link w-100 border-0 text-start px-3 py-2 rounded-4">
-                                <i class="fas fa-sign-out-alt me-2 text-danger"></i> Keluar Akun
-                            </button>
-                        </form>
+
+                @auth
+                    <div class="sidebar-section-title px-2 mt-4 mb-2">Grup Aktif</div>
+                    <div class="workspace-group-list mx-2 mb-3">
+                        @php
+                            $userGroups = Auth::user()->groups()->orderBy('name')->get();
+                        @endphp
+                        @if ($userGroups->isEmpty())
+                            <div class="text-muted small px-2 py-2">Belum ada grup.<br><a href="/groups"
+                                    class="text-primary">Buat atau join grup</a></div>
+                        @else
+                            <ul class="list-unstyled mb-0">
+                                @foreach ($userGroups as $group)
+                                    @php
+                                        $isActive =
+                                            Request::is('groups/' . $group->id) ||
+                                            Request::is('groups/' . $group->id . '/*');
+                                    @endphp
+                                    <li class="mb-1">
+                                        <a href="{{ route('groups.show', $group) }}"
+                                            class="d-flex align-items-center gap-2 px-2 py-2 rounded-3 sidebar-group-link {{ $isActive ? 'active' : '' }}"
+                                            style="transition:background 0.15s, color 0.15s; text-decoration:none; {{ $isActive ? 'background:#e6f0ff;color:#0c66e4;font-weight:600;' : 'color:#222;' }}">
+                                            <span class="workspace-avatar"
+                                                style="background:{{ $isActive ? '#d0e6ff' : '#eef4ff' }};color:#0c66e4;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:50%;font-weight:600;">
+                                                {{ strtoupper(mb_substr($group->name, 0, 1)) }}
+                                            </span>
+                                            <span class="text-truncate" style="max-width:120px;">{{ $group->name }}</span>
+                                        </a>
+                                    </li>
+                                @endforeach
+                            </ul>
+                        @endif
                     </div>
                 @endauth
             </nav>
@@ -114,17 +116,15 @@
             .sidebar {
                 position: fixed;
                 top: 60px;
-                /* Tinggi navbar mobile */
                 left: 0;
                 width: 100%;
                 height: calc(100vh - 60px);
                 z-index: 1000;
                 overflow-y: auto;
-                background-color: white !important;
+                background-color: var(--sidebar-bg) !important;
                 padding-bottom: 80px;
             }
 
-            /* Efek animasi slide down */
             .sidebar.collapse:not(.show) {
                 display: none;
             }

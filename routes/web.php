@@ -8,6 +8,7 @@ use App\Http\Controllers\GroupController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\AnnouncementController;
 use App\Http\Controllers\GroupRoleController;
+use App\Http\Controllers\GroupUpgradeController;
 use App\Http\Controllers\PollController;
 
 Route::get('/', [AuthController::class, 'home'])->name('landing');
@@ -24,20 +25,29 @@ Route::get('/about', fn() => view('pages.about'))->name('about');
 
 Route::middleware('auth')->group(function () {
 
-    Route::get('/home', [AuthController::class, 'homePage'])->name('home.pages');
+    Route::get('/home', fn() => redirect()->route('groups.index'));
+    Route::get('/account', [AuthController::class, 'profile'])->name('account.profile');
+    Route::post('/account/request-otp', [AuthController::class, 'requestProfileUpdateOtp'])->name('account.request-otp');
+    Route::post('/account/verify-otp', [AuthController::class, 'verifyProfileUpdateOtp'])->name('account.verify-otp');
+    Route::post('/account/resend-otp', [AuthController::class, 'resendProfileUpdateOtp'])->name('account.resend-otp');
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::get('/subscribe/{plan}', [SubscriptionController::class, 'subscribe']);
     Route::post('/groups', [GroupController::class, 'store']);
     Route::post('/invite/{group}/{role}', [InvitationController::class, 'generate']);
     Route::post('/join', [InvitationController::class, 'join']);
-    Route::get('/dashboard', [AuthController::class, 'dashboard'])->name('dashboard.pages');
+    Route::get('/dashboard', fn() => redirect()->route('groups.index'))->name('dashboard.pages');
     Route::post('/payment/snap-token', [PaymentController::class, 'snapToken']);
-    Route::get('/groups/{group}', [GroupController::class, 'show']);
-    Route::get('/groups', [GroupController::class, 'index']);
+    Route::get('/groups/{group}', [GroupController::class, 'show'])->name('groups.show');
+    Route::get('/groups/{group}/members', [GroupController::class, 'members'])->name('groups.members.index');
+    Route::get('/groups/{group}/settings', [GroupController::class, 'showSettings'])->name('groups.settings');
+    Route::get('/groups/{group}/upgrade', [GroupUpgradeController::class, 'cart'])->name('groups.upgrade.cart');
+    Route::post('/groups/{group}/upgrade/checkout', [GroupUpgradeController::class, 'checkout'])->name('groups.upgrade.checkout');
+    Route::get('/groups/{group}/upgrade/callback', [GroupUpgradeController::class, 'callback'])->name('groups.upgrade.callback');
+    Route::get('/groups', [GroupController::class, 'index'])->name('groups.index');
     Route::post('/groups/{group}/generate-code', [GroupController::class, 'generateCode']);
     Route::post('/payment/sync-bots', [PaymentController::class, 'syncBotsManual']);
     Route::post('/groups/{group}/announcements', [AnnouncementController::class, 'store']);
-    Route::get('/groups/{group}/announcements', [GroupController::class, 'allAnnouncements'])->name('groups.announcements.index');
+    // Route::get('/groups/{group}/announcements', [GroupController::class, 'allAnnouncements'])->name('groups.announcements.index'); // Disabled: announcements fokus di group view saja
     Route::get('/groups/{group}/announcements/{announcement}/edit', [AnnouncementController::class, 'edit']);
     Route::put('/groups/{group}/announcements/{announcement}', [AnnouncementController::class, 'update']);
     Route::delete('/groups/{group}/announcements/{announcement}', [AnnouncementController::class, 'destroy']);
@@ -50,9 +60,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/groups/{group}/bots/{bot}/fetch-telegram-chat', [GroupController::class, 'fetchTelegramChat']);
 
     Route::post('/groups/{group}/roles/assign', [GroupRoleController::class, 'assignRole']);
-    Route::post('/groups/{group}/roles', [GroupRoleController::class, 'store']);
-    Route::put('/groups/{group}/roles/{role}', [GroupRoleController::class, 'update']);
-    Route::delete('/groups/{group}/roles/{role}', [GroupRoleController::class, 'destroy']);
+    Route::post('/groups/{group}/roles', [GroupRoleController::class, 'store'])->name('groups.roles.store');
+    Route::put('/groups/{group}/roles/{role}', [GroupRoleController::class, 'update'])->name('groups.roles.update');
+    Route::delete('/groups/{group}/roles/{role}', [GroupRoleController::class, 'destroy'])->name('groups.roles.destroy');
     Route::get('/groups/{group}/logs', [GroupController::class, 'logs']);
 
     Route::get('/payment/receipt/{orderId}', [PaymentController::class, 'receipt']);
@@ -60,7 +70,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/paymentlogs', [PaymentController::class, 'logs']);
     Route::delete('/groups/{group}/members/{member}', [GroupController::class, 'kickMember']);
     Route::post('/payment/check-pending', [PaymentController::class, 'checkPending']);
-    Route::put('/groups/{group}', [GroupController::class, 'update']);
+    Route::put('/groups/{group}', [GroupController::class, 'update'])->name('groups.update');
 
     Route::post('/groups/{group}/polls', [PollController::class, 'store']);
     Route::post('/groups/{group}/polls/{poll}/vote', [PollController::class, 'vote']);

@@ -7,6 +7,7 @@ use App\Models\GroupBot;
 use App\Models\GroupRole;
 use App\Models\GroupMember;
 use App\Models\GroupAnnouncementCategory;
+use App\Models\Subscription;
 use App\Services\ActivityLogService;
 use App\Services\NotificationService;
 use Illuminate\Support\Str;
@@ -15,10 +16,44 @@ use Illuminate\Validation\Rule;
 
 class GroupController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $groups = auth()->user()->groups()->withPivot('role_id')->get();
-        return view('pages.groupshow', compact('groups'));
+        $search = $request->get('search', '');
+        $filter = $request->get('filter', 'all'); // all, owner, member
+        $sort = $request->get('sort', 'newest'); // newest, oldest, name
+
+        $query = auth()->user()->groups()->withPivot('role_id');
+
+        // Search by group name
+        if ($search) {
+            $query->where('name', 'like', "%{$search}%");
+        }
+
+        // Filter by role
+        if ($filter === 'owner') {
+            $query->whereHas('members', function ($q) {
+                $q->where('user_id', auth()->id())
+                    ->whereHas('role', fn($r) => $r->where('is_owner', true));
+            });
+        } elseif ($filter === 'member') {
+            $query->whereHas('members', function ($q) {
+                $q->where('user_id', auth()->id())
+                    ->whereHas('role', fn($r) => $r->where('is_owner', false));
+            });
+        }
+
+        // Sort
+        if ($sort === 'oldest') {
+            $query->oldest();
+        } elseif ($sort === 'name') {
+            $query->orderBy('name', 'asc');
+        } else { // newest
+            $query->latest();
+        }
+
+        $groups = $query->paginate(12);
+
+        return view('pages.groupshow', compact('groups', 'search', 'filter', 'sort'));
     }
     public function logs(Group $group)
     {
@@ -344,6 +379,9 @@ class GroupController extends Controller
 
     public function show(Group $group)
     {
+        // Eager load relasi yang diperlukan untuk hindari N+1 query
+        $group->load(['roles', 'announcementCategories', 'bots']);
+
         $member = GroupMember::where('group_id', $group->id)
             ->where('user_id', auth()->id())
             ->with('role')
@@ -352,17 +390,55 @@ class GroupController extends Controller
         if (!$member) abort(403, 'Anda bukan anggota group ini.');
 
         $role    = $member->role;
-        $members = GroupMember::where('group_id', $group->id)->with(['user', 'role'])->get();
+        $memberCount = GroupMember::where('group_id', $group->id)->count();
         $roles   = $group->roles;
-        $categories = $group->announcementCategories()->orderBy('name')->get();
-        $announcements = $group->announcements()
-            ->with(['user', 'reactions', 'attachments', 'category'])
-            ->orderByRaw('is_pinned DESC')
-            ->orderByDesc('created_at')
-            ->get();
 
-        $announcementsPreview = $announcements->take(2);
-        $announcementsMore = $announcements->skip(2);
+        $groupSubscription = Subscription::where('user_id', $group->owner_id)
+            ->whereNotNull('expires_at')
+            ->orderByDesc('expires_at')
+            ->first();
+        $groupActiveUntil = $groupSubscription?->expires_at;
+        $isGroupActive = $groupActiveUntil ? $groupActiveUntil->isFuture() : false;
+
+        $categories = $group->announcementCategories()->orderBy('name')->get();
+        $search = trim((string) request()->query('q', ''));
+        $sort = (string) request()->query('sort', 'latest');
+        $filter = (string) request()->query('filter', 'all');
+
+        $announcementsQuery = $group->announcements()
+            ->with(['user', 'reactions', 'attachments', 'category']);
+
+        if ($search !== '') {
+            $announcementsQuery->where(function ($query) use ($search) {
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('content', 'like', "%{$search}%")
+                    ->orWhereHas('user', fn($userQuery) => $userQuery->where('name', 'like', "%{$search}%"));
+            });
+        }
+
+        if ($filter === 'pinned') {
+            $announcementsQuery->where('is_pinned', true);
+        } elseif ($filter === 'scheduled') {
+            $announcementsQuery->whereNotNull('scheduled_at');
+        } elseif ($filter === 'repeat') {
+            $announcementsQuery->where('repeat', '!=', 'none');
+        } elseif ($filter === 'deadline_passed') {
+            $announcementsQuery->whereNotNull('deadline_at')
+                ->where('deadline_at', '<', now());
+        } elseif ($filter === 'deadline_upcoming') {
+            $announcementsQuery->whereNotNull('deadline_at')
+                ->where('deadline_at', '>=', now());
+        }
+
+        if ($sort === 'oldest') {
+            $announcementsQuery->orderBy('created_at');
+        } elseif ($sort === 'pinned') {
+            $announcementsQuery->orderByDesc('is_pinned')->orderByDesc('created_at');
+        } else {
+            $announcementsQuery->orderByRaw('is_pinned DESC')->orderByDesc('created_at');
+        }
+
+        $announcements = $announcementsQuery->paginate(5)->withQueryString();
 
         $discordServerName   = null;
         $discordChannelName  = null;
@@ -393,17 +469,20 @@ class GroupController extends Controller
                 $telegramGroupName = $notification->getTelegramChatName($telegramBot->telegram_chat_id) ?: $group->name;
             }
         }
-        $polls = $group->polls()->with(['options.votes', 'votes', 'user'])->get();
+        $polls = $group->polls;
 
         return view('pages.group', compact(
             'group',
             'role',
-            'members',
+            'memberCount',
             'roles',
             'categories',
             'announcements',
-            'announcementsPreview',
-            'announcementsMore',
+            'search',
+            'sort',
+            'filter',
+            'groupActiveUntil',
+            'isGroupActive',
             'discordGuildId',
             'discordServerName',
             'discordChannelName',
@@ -411,6 +490,91 @@ class GroupController extends Controller
             'polls',
             'telegramGroupName',
         ));
+    }
+
+    public function showSettings(Group $group)
+    {
+        // Load relasi yang diperlukan untuk settings page
+        $group->load(['roles', 'announcementCategories', 'bots']);
+
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
+
+        if (!$member) abort(403, 'Anda bukan anggota group ini.');
+
+        $role       = $member->role;
+        $categories = $group->announcementCategories()->orderBy('name')->get();
+
+        // Bot information untuk discord dan telegram
+        $discordServerName   = null;
+        $discordChannelName  = null;
+        $telegramGroupName   = null;
+
+        if ($role->can_manage_bot) {
+            $notification = new NotificationService();
+            $discordBot   = $group->bots->where('type', 'discord')->first();
+            $telegramBot  = $group->bots->where('type', 'telegram')->first();
+
+            if ($discordBot?->discord_channel_id) {
+                $discordServerName = $discordBot->discord_server_name;
+                $discordChannelName = $discordBot->discord_channel_name;
+
+                if (!$discordServerName || !$discordChannelName) {
+                    $discordInfo = $notification->getDiscordChannelInfo($discordBot->discord_channel_id);
+                    $discordData = $discordInfo['data'] ?? [];
+
+                    $discordServerName = $discordServerName ?: ($discordData['server_name'] ?? null);
+                    $discordChannelName = $discordChannelName ?: ($discordData['channel_name'] ?? null);
+                }
+            }
+
+            if ($telegramBot?->telegram_chat_id) {
+                $telegramGroupName = $notification->getTelegramChatName($telegramBot->telegram_chat_id) ?: $group->name;
+            }
+        }
+
+        return view('pages.group-settings', compact(
+            'group',
+            'role',
+            'categories',
+            'discordServerName',
+            'discordChannelName',
+            'telegramGroupName',
+        ));
+    }
+
+    public function members(Request $request, Group $group)
+    {
+        $member = GroupMember::where('group_id', $group->id)
+            ->where('user_id', auth()->id())
+            ->with('role')
+            ->first();
+
+        if (!$member) {
+            abort(403, 'Anda bukan anggota group ini.');
+        }
+
+        $role = $member->role;
+        $search = trim((string) $request->query('q', ''));
+
+        $membersQuery = GroupMember::where('group_id', $group->id)
+            ->with(['user', 'role']);
+
+        if ($search !== '') {
+            $membersQuery->whereHas('user', function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $members = $membersQuery
+            ->orderByDesc('id')
+            ->paginate(15)
+            ->withQueryString();
+
+        return view('pages.group-members', compact('group', 'role', 'members', 'search'));
     }
 
     public function allAnnouncements(Request $request, Group $group)
@@ -447,8 +611,12 @@ class GroupController extends Controller
             $announcementsQuery->whereNotNull('scheduled_at');
         } elseif ($filter === 'repeat') {
             $announcementsQuery->where('repeat', '!=', 'none');
-        } elseif ($filter === 'attachment') {
-            $announcementsQuery->whereHas('attachments');
+        } elseif ($filter === 'deadline_passed') {
+            $announcementsQuery->whereNotNull('deadline_at')
+                ->where('deadline_at', '<', now());
+        } elseif ($filter === 'deadline_upcoming') {
+            $announcementsQuery->whereNotNull('deadline_at')
+                ->where('deadline_at', '>=', now());
         }
 
         if (!empty($categoryId)) {

@@ -39,8 +39,6 @@ class AnnouncementController extends Controller
             'reminder_enabled' => 'nullable|boolean',
             'reminder_offset_value' => 'nullable|required_if:reminder_enabled,1|integer|min:1|max:365',
             'reminder_offset_unit' => 'nullable|required_if:reminder_enabled,1|in:hour,day',
-            'attachments'   => 'nullable|array|max:3',
-            'attachments.*' => 'file|max:20480|mimes:jpg,jpeg,png,gif,pdf,doc,docx,xlsx,xls',
         ]);
 
         if ($request->repeat !== 'none' && $request->boolean('deadline_mode')) {
@@ -95,12 +93,6 @@ class AnnouncementController extends Controller
                 ? array_filter(explode("\n", $request->custom_pick_list))
                 : null,
         ]);
-
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $this->saveAttachment($file, $announcement);
-            }
-        }
 
         ActivityLogService::log(
             groupId: $group->id,

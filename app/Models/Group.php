@@ -4,11 +4,42 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Crypt;
+use Throwable;
 
 class Group extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
+
+    public function getRouteKey(): mixed
+    {
+        $encrypted = Crypt::encryptString((string) $this->getKey());
+
+        return rtrim(strtr(base64_encode($encrypted), '+/', '-_'), '=');
+    }
+
+    public function resolveRouteBinding($value, $field = null): ?Model
+    {
+        // Backward-compatible: still accept numeric IDs from old links.
+        if (is_numeric($value)) {
+            return $this->where($field ?? $this->getRouteKeyName(), $value)->first();
+        }
+
+        try {
+            $decoded = base64_decode(strtr((string) $value, '-_', '+/'), true);
+            if ($decoded === false) {
+                return null;
+            }
+
+            $id = Crypt::decryptString($decoded);
+
+            return $this->where($field ?? $this->getRouteKeyName(), $id)->first();
+        } catch (Throwable) {
+            return null;
+        }
+    }
+
     public function members()
     {
         return $this->belongsToMany(User::class, 'group_members')
@@ -57,5 +88,10 @@ class Group extends Model
     public function bots()
     {
         return $this->hasMany(GroupBot::class);
+    }
+
+    public function subscription()
+    {
+        return $this->hasOne(GroupSubscription::class);
     }
 }

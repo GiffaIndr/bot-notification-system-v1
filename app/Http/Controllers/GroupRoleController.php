@@ -27,6 +27,7 @@ class GroupRoleController extends Controller
             'can_edit_announcement'   => $request->boolean('can_edit_announcement'),
             'can_manage_member'       => $request->boolean('can_manage_member'),
             'can_generate_code'       => $request->boolean('can_generate_code'),
+            'can_create_poll'         => $request->boolean('can_create_poll'),
             'can_manage_bot'          => $request->boolean('can_manage_bot'),
             'is_owner'                => false,
         ]);
@@ -39,18 +40,28 @@ class GroupRoleController extends Controller
     {
         $this->checkPermission($group, 'can_manage_member');
 
+        if ((int) $role->group_id !== (int) $group->id) {
+            abort(404);
+        }
+
+        // Proteksi: owner role tidak boleh diubah permissionnya
+        if ($role->is_owner) {
+            return back()->with('error', 'Permission role owner tidak bisa diubah!');
+        }
+
         $request->validate([
-            'name'  => 'required|string|max:50',
-            'color' => 'required|string',
+            'name'  => 'nullable|string|max:50',
+            'color' => 'nullable|string',
         ]);
 
         $role->update([
-            'name'                    => $request->name,
-            'color'                   => $request->color,
+            'name'                    => $request->filled('name') ? $request->name : $role->name,
+            'color'                   => $request->filled('color') ? $request->color : $role->color,
             'can_create_announcement' => $request->boolean('can_create_announcement'),
             'can_edit_announcement'   => $request->boolean('can_edit_announcement'),
             'can_manage_member'       => $request->boolean('can_manage_member'),
             'can_generate_code'       => $request->boolean('can_generate_code'),
+            'can_create_poll'         => $role->can_create_poll,
             'can_manage_bot'          => $request->boolean('can_manage_bot'),
         ]);
 
@@ -61,6 +72,10 @@ class GroupRoleController extends Controller
     public function destroy(Group $group, GroupRole $role)
     {
         $this->checkPermission($group, 'can_manage_member');
+
+        if ((int) $role->group_id !== (int) $group->id) {
+            abort(404);
+        }
 
         if ($role->is_owner) {
             return back()->with('error', 'Role owner tidak bisa dihapus!');
@@ -91,7 +106,11 @@ class GroupRoleController extends Controller
         }
 
         // Proteksi: tidak bisa assign ke role owner
-        $targetRole = GroupRole::find($request->role_id);
+        $targetRole = GroupRole::where('group_id', $group->id)->find($request->role_id);
+        if (!$targetRole) {
+            return back()->with('error', 'Role tujuan tidak ditemukan.');
+        }
+
         if ($targetRole->is_owner) {
             return back()->with('error', 'Tidak bisa assign role owner ke member lain!');
         }

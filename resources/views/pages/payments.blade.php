@@ -169,7 +169,9 @@
                     <h4 class="fw-bold mb-1 text-primary">Pembelian Akses Group</h4>
                     <p class="mb-0 text-muted">Atur dan beli Akses Group kamu dari halaman ini.</p>
                 </div>
-                <a href="/paymentlogs" class="btn btn-outline-secondary rounded-pill">Riwayat Pembayaran</a>
+                <a href="/paymentlogs" class="btn btn-outline-secondary rounded-pill mt-3">
+                    <i class="fa-solid fa-receipt"></i> Lihat Riwayat Pembayaran
+                </a>
             </div>
         </div>
 

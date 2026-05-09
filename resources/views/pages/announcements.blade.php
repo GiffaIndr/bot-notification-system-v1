@@ -9,7 +9,7 @@
                 <div
                     class="bg-white p-4 rounded-4 shadow-sm mb-4 border d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                     <div class="d-flex align-items-center">
-                        <a href="/groups/{{ $group->id }}"
+                        <a href="/groups/{{ $group->getRouteKey() }}"
                             class="btn btn-light btn-sm rounded-circle border me-3 d-flex align-items-center justify-content-center shadow-xs"
                             style="width: 40px; height: 40px;">
                             <i class="fa fa-arrow-left text-secondary"></i>
@@ -74,8 +74,8 @@
                                         <option value="pinned" @selected($sort === 'pinned')>Prioritas Pin</option>
                                     </select>
                                 </div>
-                                <div class="col-6 col-lg-1 d-grid">
-                                    <button type="submit" class="btn btn-primary">Terapkan</button>
+                                <div class="col-6 col-lg-auto">
+                                    <button type="submit" class="btn btn-primary w-100">Terapkan</button>
                                 </div>
                             </div>
                         </form>
@@ -89,7 +89,7 @@
                             <div class="card-body p-4">
                                 <div class="d-flex justify-content-between align-items-start gap-3">
                                     <div class="flex-grow-1 min-w-0">
-                                        <div class="d-flex align-items-center gap-2 mb-2">
+                                        <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
                                             @if ($announcement->is_pinned)
                                                 <span
                                                     class="badge bg-warning bg-opacity-10 text-warning-emphasis border border-warning-subtle rounded-pill px-2 py-1"
@@ -129,7 +129,9 @@
                                         </div>
 
                                         <h5 class="fw-bold text-dark mb-2">{{ $announcement->title }}</h5>
-                                        <p class="text-secondary mb-3 lh-base">{{ $announcement->content }}</p>
+                                        <p class="text-secondary mb-3 lh-base"
+                                            style="display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;">
+                                            {{ $announcement->content }}</p>
 
                                         @if ($announcement->attachments->isNotEmpty())
                                             <div class="d-flex flex-wrap gap-2 mb-3">
@@ -177,7 +179,7 @@
 
                                     {{-- Action Dropdown --}}
                                     @if ($role->can_edit_announcement)
-                                        <div class="dropdown">
+                                        <div class="dropdown flex-shrink-0 position-relative">
                                             <button class="btn btn-light btn-sm rounded-3 border shadow-xs"
                                                 data-bs-toggle="dropdown">
                                                 <i class="fa fa-ellipsis-v text-muted"></i>
@@ -185,7 +187,7 @@
                                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3">
                                                 <li>
                                                     <form method="POST"
-                                                        action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}/pin">
+                                                        action="/groups/{{ $group->getRouteKey() }}/announcements/{{ $announcement->id }}/pin">
                                                         @csrf
                                                         <button class="dropdown-item small">
                                                             <i class="fa fa-thumbtack me-2 text-warning"></i>
@@ -208,7 +210,7 @@
                                 </div>
                             </div>
                             <form id="deleteForm{{ $announcement->id }}" method="POST"
-                                action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}"
+                                action="/groups/{{ $group->getRouteKey() }}/announcements/{{ $announcement->id }}"
                                 class="d-none">
                                 @csrf
                                 @method('DELETE')
@@ -236,7 +238,7 @@
         <div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content border-0 shadow rounded-4">
-                    <form method="POST" action="/groups/{{ $group->id }}/announcements"
+                    <form method="POST" action="/groups/{{ $group->getRouteKey() }}/announcements"
                         enctype="multipart/form-data">
                         @csrf
                         <div class="modal-header border-bottom-0 pb-0">

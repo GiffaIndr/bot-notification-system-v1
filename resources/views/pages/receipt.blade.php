@@ -268,8 +268,8 @@
                 </div>
 
                 <div class="receipt-actions">
-                    <a href="/dashboard" class="btn btn-receipt-primary w-100">
-                        <i class="fa fa-house me-1"></i>Ke Dashboard
+                    <a href="/groups" class="btn btn-receipt-primary w-100">
+                        <i class="fa fa-layer-group me-1"></i>Ke Groups
                     </a>
                     <a href="/payment/receipt/{{ $payment->order_id }}/print" class="btn btn-receipt-outline w-100">
                         <i class="fa fa-file-pdf me-1"></i>Download PDF

@@ -700,7 +700,7 @@
                     <p style="color: var(--slate-600); margin-bottom: 24px; font-size: 1.1rem;">
                         Siap untuk memulai kolaborasi yang lebih baik?
                     </p>
-                    <a href="{{ route('home.pages') }}" class="cta-button">
+                    <a href="{{ route('dashboard.pages') }}" class="cta-button">
                         <i class="fas fa-arrow-right"></i> Mulai Sekarang
                     </a>
                 </div>

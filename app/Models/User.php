@@ -15,6 +15,8 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
+    private ?Subscription $activeSubscriptionCache = null;
+
     /**
      * The attributes that are mass assignable.
      *
@@ -35,6 +37,19 @@ class User extends Authenticatable implements MustVerifyEmail
             ->whereNotNull('starts_at')
             ->whereNotNull('expires_at')
             ->latest('expires_at');
+    }
+
+    private function resolveActiveSubscription(bool $withPlan = false): ?Subscription
+    {
+        if ($this->activeSubscriptionCache === null) {
+            $this->activeSubscriptionCache = $this->activeSubscription()->first();
+        }
+
+        if ($withPlan && $this->activeSubscriptionCache) {
+            $this->activeSubscriptionCache->loadMissing('plan');
+        }
+
+        return $this->activeSubscriptionCache;
     }
     public function groupMembers()
     {
@@ -62,18 +77,18 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function isSubscribed(): bool
     {
-        return $this->activeSubscription()->exists();
+        return $this->resolveActiveSubscription() !== null;
     }
 
     public function hasWhatsapp(): bool
     {
-        $sub = $this->activeSubscription()->with('plan')->first();
+        $sub = $this->resolveActiveSubscription(true);
         return $sub ? $sub->plan->whatsapp : false;
     }
 
     public function hasDiscord(): bool
     {
-        $sub = $this->activeSubscription()->with('plan')->first();
+        $sub = $this->resolveActiveSubscription(true);
         return $sub ? $sub->plan->discord : false;
     }
     public function subscriptions()

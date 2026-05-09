@@ -14,11 +14,19 @@
                             <i class="fa fa-users fs-5"></i>
                         </div>
                         <div>
-                            <a href="/dashboard"
-                                class="btn btn-light btn-sm text-secondary fw-semibold rounded-3 mb-1 border">
-                                <i class="fa fa-arrow-left me-2"></i> Dashboard
-                            </a>
                             <h2 class="fs-4 fw-bold mb-0 text-dark">{{ $group->name }}</h2>
+                            <p class="small mb-0 mt-1 {{ $isGroupActive ? 'text-success' : 'text-muted' }}">
+                                <i class="fa fa-calendar-check me-1"></i>
+                                Masa aktif grup:
+                                @if ($groupActiveUntil)
+                                    {{ $groupActiveUntil->format('d M Y, H:i') }}
+                                    @if (!$isGroupActive)
+                                        <span class="text-danger">(sudah berakhir)</span>
+                                    @endif
+                                @else
+                                    Tidak tersedia
+                                @endif
+                            </p>
                         </div>
                     </div>
 
@@ -31,7 +39,14 @@
                 </div>
 
                 <div class="row g-4">
-                    {{-- KOLOM KIRI: Daftar Pengumuman (Limit 5) --}}
+                    @php
+                        $canAccessManagement =
+                            $role->can_manage_bot ||
+                            $role->can_manage_member ||
+                            $role->can_generate_code ||
+                            $role->can_edit_announcement;
+                    @endphp
+                    {{-- KOLOM KIRI: Daftar Pengumuman --}}
                     <div class="col-12 col-lg-8">
                         <div class="card border-0 shadow-sm rounded-4 bg-white">
                             <div
@@ -39,8 +54,10 @@
                                 <h5 class="fw-bold text-dark m-0"><i class="fa fa-bullhorn text-primary me-2"></i>Pengumuman
                                 </h5>
                                 <div class="d-flex gap-2">
-                                    <a href="/groups/{{ $group->id }}/logs"
-                                        class="btn btn-sm btn-light border fw-bold px-3">Log</a>
+                                    @if ($canAccessManagement)
+                                        <a href="/groups/{{ $group->getRouteKey() }}/logs"
+                                            class="btn btn-sm btn-light border fw-bold px-3">Log</a>
+                                    @endif
                                     @if ($role->can_create_announcement)
                                         <button class="btn btn-sm btn-primary fw-bold px-3 shadow-sm" data-bs-toggle="modal"
                                             data-bs-target="#modalCreate">
@@ -50,9 +67,52 @@
                                 </div>
                             </div>
                             <div class="card-body p-4">
-                                @forelse ($announcements->take(5) as $announcement)
-                                    <div
-                                        class="card mb-3 border shadow-none rounded-4 {{ $announcement->is_pinned ? 'border-warning bg-warning-subtle bg-opacity-10' : '' }}">
+                                <div class="mb-3">
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <button type="button" data-category-tab="" class="btn btn-sm btn-primary">
+                                            Semua
+                                        </button>
+                                        @foreach ($categories as $category)
+                                            <button type="button" data-category-tab="{{ $category->id }}"
+                                                class="btn btn-sm btn-light border">
+                                                {{ $category->name }}
+                                            </button>
+                                        @endforeach
+                                    </div>
+                                </div>
+
+                                <form method="GET" action="{{ route('groups.show', $group) }}" class="row g-2 mb-4">
+                                    <div class="col-12 col-md-5">
+                                        <input type="text" name="q" value="{{ $search }}"
+                                            class="form-control" placeholder="Cari judul, konten, atau pembuat...">
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <select name="filter" class="form-select">
+                                            <option value="all" @selected($filter === 'all')>Semua status</option>
+                                            <option value="pinned" @selected($filter === 'pinned')>Hanya pinned</option>
+                                            <option value="scheduled" @selected($filter === 'scheduled')>Terjadwal</option>
+                                            <option value="repeat" @selected($filter === 'repeat')>Berulang</option>
+                                            <option value="deadline_upcoming" @selected($filter === 'deadline_upcoming')>Masih dalam
+                                                tenggat</option>
+                                            <option value="deadline_passed" @selected($filter === 'deadline_passed')>Sudah lewat tenggat
+                                            </option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6 col-md-2">
+                                        <select name="sort" class="form-select">
+                                            <option value="latest" @selected($sort === 'latest')>Terbaru</option>
+                                            <option value="oldest" @selected($sort === 'oldest')>Terlama</option>
+                                            <option value="pinned" @selected($sort === 'pinned')>Pinned dulu</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-2 d-grid">
+                                        <button type="submit" class="btn btn-primary">Terapkan</button>
+                                    </div>
+                                </form>
+
+                                @forelse ($announcements as $announcement)
+                                    <div class="card mb-3 border shadow-none rounded-4 js-announcement-item {{ $announcement->is_pinned ? 'border-warning bg-warning-subtle bg-opacity-10' : '' }}"
+                                        data-category-id="{{ $announcement->category_id ?? '' }}">
                                         <div class="card-body p-3">
                                             <div class="d-flex justify-content-between align-items-start gap-3">
                                                 <div class="flex-grow-1 min-w-0">
@@ -68,23 +128,26 @@
                                                                 class="fa fa-tag me-1"></i>{{ $announcement->category->name }}
                                                         </span>
                                                     @endif
-                                                    @if ($announcement->deadline_mode && $announcement->deadline_at)
-                                                        <span class="badge bg-light text-danger border mb-2 ms-1">
-                                                            <i class="fa fa-hourglass-half me-1"></i>Tenggat:
-                                                            {{ $announcement->deadline_at->format('d M Y, H:i') }}
+                                                    <div class="d-flex flex-wrap gap-2 mb-2">
+                                                        @if ($announcement->deadline_mode && $announcement->deadline_at)
+                                                            <span class="badge bg-light text-danger border">
+                                                                <i class="fa fa-hourglass-half me-1"></i>Tenggat:
+                                                                {{ $announcement->deadline_at->format('d M Y, H:i') }}
+                                                            </span>
+                                                        @endif
+                                                        <span class="badge bg-light text-secondary border">
+                                                            <i class="fa fa-paper-plane me-1"></i>Kirim pertama:
+                                                            {{ $announcement->scheduled_at?->format('d M Y, H:i') }}
                                                         </span>
-                                                    @endif
-                                                    <span class="badge bg-light text-secondary border mb-2 ms-1">
-                                                        <i class="fa fa-paper-plane me-1"></i>Kirim pertama:
-                                                        {{ $announcement->scheduled_at?->format('d M Y, H:i') }}
-                                                    </span>
-                                                    @if ($announcement->reminder_enabled && $announcement->reminder_at)
-                                                        <span class="badge bg-light text-warning border mb-2 ms-1">
-                                                            <i class="fa fa-bell me-1"></i>Pengingat:
-                                                            {{ $announcement->reminder_at->format('d M Y, H:i') }}
-                                                        </span>
-                                                    @endif
-                                                    <p class="text-secondary small mb-2 text-truncate">
+                                                        @if ($announcement->reminder_enabled && $announcement->reminder_at)
+                                                            <span class="badge bg-light text-warning border">
+                                                                <i class="fa fa-bell me-1"></i>Pengingat:
+                                                                {{ $announcement->reminder_at->format('d M Y, H:i') }}
+                                                            </span>
+                                                        @endif
+                                                    </div>
+                                                    <p class="text-secondary small mb-2"
+                                                        style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word;">
                                                         {{ $announcement->content }}</p>
                                                     <div class="d-flex gap-2 text-muted" style="font-size: 10px;">
                                                         <span><i
@@ -94,14 +157,14 @@
                                                     </div>
                                                 </div>
                                                 @if ($role->can_edit_announcement)
-                                                    <div class="dropdown">
+                                                    <div class="dropdown flex-shrink-0 position-relative">
                                                         <button class="btn btn-light btn-sm border"
                                                             data-bs-toggle="dropdown"><i
                                                                 class="fa fa-ellipsis-v"></i></button>
                                                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0">
                                                             <li>
                                                                 <form method="POST"
-                                                                    action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}/pin">
+                                                                    action="/groups/{{ $group->getRouteKey() }}/announcements/{{ $announcement->id }}/pin">
                                                                     @csrf<button
                                                                         class="dropdown-item small">{{ $announcement->is_pinned ? 'Lepas Pin' : 'Sematkan' }}</button>
                                                                 </form>
@@ -136,7 +199,7 @@
                                         </div>
                                     </div>
                                     <form id="deleteForm{{ $announcement->id }}" method="POST"
-                                        action="/groups/{{ $group->id }}/announcements/{{ $announcement->id }}"
+                                        action="/groups/{{ $group->getRouteKey() }}/announcements/{{ $announcement->id }}"
                                         class="d-none">
                                         @csrf
                                         @method('DELETE')
@@ -144,304 +207,75 @@
                                 @empty
                                     <div class="text-center py-5 text-muted small">Belum ada pengumuman.</div>
                                 @endforelse
-                            </div>
-                            @if ($announcements->count() > 5)
-                                <div class="card-footer bg-light border-0 p-3 text-center rounded-bottom-4">
-                                    <a href="{{ route('groups.announcements.index', $group) }}"
-                                        class="fw-bold text-primary text-decoration-none small">
-                                        Lihat Semua Pengumuman ({{ $announcements->count() }}) <i
-                                            class="fa fa-chevron-right ms-1"></i>
-                                    </a>
+
+                                <div id="categoryEmptyState" class="text-center py-4 text-muted small d-none">
+                                    Tidak ada pengumuman pada kategori ini di halaman saat ini.
                                 </div>
-                            @endif
+
+                                @if ($announcements->hasPages())
+                                    <div class="mt-4">
+                                        {{ $announcements->onEachSide(1)->links('pagination::bootstrap-5') }}
+                                    </div>
+                                @endif
+                            </div>
                         </div>
                     </div>
 
                     {{-- KOLOM KANAN: Integrasi & Kode --}}
                     <div class="col-12 col-lg-4">
 
-                        {{-- BOT INTEGRATION --}}
-                        @if ($role->can_manage_bot)
+                        @if ($canAccessManagement)
+                            {{-- SETTINGS BUTTON --}}
                             <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
-                                <div class="card-header bg-transparent border-bottom py-3 px-4">
-                                    <h6 class="fw-bold text-dark m-0"><i class="fa fa-robot text-primary me-2"></i>Integrasi
-                                        Bot</h6>
-                                </div>
-                                <div class="card-body p-0">
-                                    @foreach ($group->bots as $bot)
-                                        <div class="p-3 border-bottom">
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span class="badge bg-light border text-dark text-uppercase"
-                                                    style="font-size: 10px;">{{ $bot->type }}</span>
-                                                @php $isActive = $bot->type === 'whatsapp' || ($bot->type === 'discord' && $bot->discord_channel_id) || ($bot->type === 'telegram' && $bot->telegram_chat_id); @endphp
-                                                <span
-                                                    class="badge {{ $isActive ? 'bg-success' : 'bg-warning' }} rounded-pill"
-                                                    style="font-size: 9px;">{{ $isActive ? 'Aktif' : 'Setup' }}</span>
-                                            </div>
-
-                                            @if ($bot->type === 'whatsapp')
-                                                <p class="small text-muted mb-2">
-                                                    Pengumuman akan dikirim ke semua nomor anggota
-                                                    <strong>{{ $group->name }}</strong>.
-                                                </p>
-                                            @elseif($bot->type === 'discord')
-                                                @if ($bot->discord_channel_id)
-                                                    <div class="small text-muted mb-2">
-                                                        <div><i class="fa fa-server me-1"></i> Server:
-                                                            <strong>{{ $bot->discord_server_name ?? ($discordServerName ?? '-') }}</strong>
-                                                        </div>
-                                                        <div><i class="fa fa-hashtag me-1"></i> Channel:
-                                                            <strong>{{ $bot->discord_channel_name ?? ($discordChannelName ?? '-') }}</strong>
-                                                        </div>
-                                                    </div>
-                                                @else
-                                                    <p class="small text-muted mb-2">Hubungkan Discord ke channel target
-                                                        untuk grup <strong>{{ $group->name }}</strong>.</p>
-                                                @endif
-
-                                                @if (session('discord_connect_command') && (int) session('discord_connect_bot_id') === (int) $bot->id)
-                                                    <div class="bg-light p-3 rounded border small mb-2">
-                                                        @php
-                                                            $discordCommand = session('discord_connect_command');
-                                                            $discordInviteLink =
-                                                                session('discord_invite_link') ?:
-                                                                $discordInviteUrl ?? null;
-                                                        @endphp
-                                                        <div class="fw-semibold mb-2">Langkah koneksi bot Discord</div>
-                                                        <ol class="mb-2 ps-3" style="font-size: 11px;">
-                                                            <li>Invite bot ke server Discord kamu.</li>
-                                                            <li>Jalankan command berikut di channel target:</li>
-                                                        </ol>
-                                                        <label class="small text-muted mb-1 d-block">Command</label>
-                                                        <div class="input-group input-group-sm mb-2">
-                                                            <input type="text" class="form-control bg-white"
-                                                                id="discord_command_{{ $bot->id }}"
-                                                                value="{{ $discordCommand }}" readonly>
-                                                            <button type="button" class="btn btn-outline-secondary"
-                                                                onclick="copyCode('discord_command_{{ $bot->id }}')">Salin</button>
-                                                        </div>
-
-                                                        @if (!empty($discordInviteLink))
-                                                            <label class="small text-muted mb-1 d-block">Link invite
-                                                                bot</label>
-                                                            <div class="input-group input-group-sm mb-2">
-                                                                <input type="text" class="form-control bg-white"
-                                                                    id="discord_invite_{{ $bot->id }}"
-                                                                    value="{{ $discordInviteLink }}" readonly>
-                                                                <button type="button" class="btn btn-outline-secondary"
-                                                                    onclick="copyCode('discord_invite_{{ $bot->id }}')">Salin</button>
-                                                                <a href="{{ $discordInviteLink }}" target="_blank"
-                                                                    class="btn btn-outline-primary">Buka</a>
-                                                            </div>
-                                                        @endif
-
-                                                        <button type="button"
-                                                            class="btn btn-success btn-sm w-100 fw-semibold mt-1"
-                                                            onclick="claimDiscordConnect({{ $bot->id }})">Cek Ulang
-                                                            Koneksi Discord</button>
-                                                    </div>
-                                                @endif
-
-                                                <form method="POST"
-                                                    action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/discord-connect">
-                                                    @csrf
-                                                    <button type="submit"
-                                                        class="btn {{ $bot->discord_channel_id ? 'btn-outline-primary' : 'btn-primary' }} btn-sm w-100 fw-bold py-2">
-                                                        {{ $bot->discord_channel_id ? 'Koneksikan Ulang Discord' : 'Mulai Koneksi Discord' }}
-                                                    </button>
-                                                </form>
-                                            @elseif($bot->type === 'telegram')
-                                                @if ($bot->telegram_chat_id)
-                                                    <div class="small text-muted mb-2">
-                                                        <div><i class="fa fa-comments me-1"></i> Grup Telegram:
-                                                            <strong>{{ $telegramGroupName ?? $group->name }}</strong>
-                                                        </div>
-                                                    </div>
-                                                @else
-                                                    <p class="small text-muted mb-2">Hubungkan Telegram agar bot bisa kirim
-                                                        pengumuman ke grup <strong>{{ $group->name }}</strong>.</p>
-                                                @endif
-
-                                                @if (session('telegram_connect_link') && (int) session('telegram_connect_bot_id') === (int) $bot->id)
-                                                    <div class="bg-light p-3 rounded border small mb-2">
-                                                        @php $telegramConnectLink = session('telegram_connect_link'); @endphp
-                                                        <div class="fw-semibold mb-2">Langkah koneksi bot Telegram</div>
-                                                        <ol class="mb-2 ps-3" style="font-size: 11px;">
-                                                            <li>Buka link koneksi Telegram.</li>
-                                                            <li>Tambahkan bot ke grup target.</li>
-                                                            <li>Kembali ke halaman ini dan klik Cek Ulang Koneksi.</li>
-                                                        </ol>
-                                                        <label class="small text-muted mb-1 d-block">Link koneksi
-                                                            Telegram</label>
-                                                        <div class="input-group input-group-sm mb-2">
-                                                            <input type="text" class="form-control bg-white"
-                                                                id="telegram_link_{{ $bot->id }}"
-                                                                value="{{ $telegramConnectLink }}" readonly>
-                                                            <button type="button" class="btn btn-outline-secondary"
-                                                                onclick="copyCode('telegram_link_{{ $bot->id }}')">Salin</button>
-                                                            <a href="{{ $telegramConnectLink }}" target="_blank"
-                                                                class="btn btn-outline-primary">Buka</a>
-                                                        </div>
-
-                                                        <button type="button"
-                                                            class="btn btn-success btn-sm w-100 fw-semibold mt-1"
-                                                            onclick="claimTelegramConnect({{ $bot->id }})">Cek Ulang
-                                                            Koneksi Telegram</button>
-                                                    </div>
-                                                @endif
-
-                                                <form method="POST"
-                                                    action="/groups/{{ $group->id }}/bots/{{ $bot->id }}/telegram-connect">
-                                                    @csrf
-                                                    <button type="submit"
-                                                        class="btn {{ $bot->telegram_chat_id ? 'btn-outline-primary' : 'btn-primary' }} btn-sm w-100 fw-bold py-2">
-                                                        {{ $bot->telegram_chat_id ? 'Koneksikan Ulang Telegram' : 'Mulai Koneksi Telegram' }}
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        </div>
-                                    @endforeach
+                                <div class="card-body p-4 text-center">
+                                    <i class="fa fa-cog text-primary mb-3" style="font-size: 32px;"></i>
+                                    <h6 class="fw-bold text-dark mb-2">Pengaturan Grup</h6>
+                                    <p class="small text-muted mb-3">Kelola bot integrasi, roles, kode undangan, dan
+                                        kategori pengumuman.</p>
+                                    <a href="{{ route('groups.settings', $group) }}"
+                                        class="btn btn-primary btn-sm w-100 fw-bold px-3">
+                                        <i class="fa fa-gear me-2"></i> Buka Pengaturan
+                                    </a>
                                 </div>
                             </div>
                         @endif
 
-                        {{-- INVITATION CODES --}}
-                        @if ($role->can_generate_code)
-                            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
-                                <div class="card-header bg-transparent border-bottom py-3 px-4">
-                                    <h6 class="fw-bold text-dark m-0"><i class="fa fa-key text-muted me-2"></i>Kode
-                                        Undangan</h6>
-                                </div>
-                                <div class="card-body p-4">
-                                    <div class="mb-4">
-                                        <label
-                                            class="small fw-bold text-warning-emphasis text-uppercase mb-2 d-block">Editor
-                                            Access (PJ)</label>
-                                        <div class="input-group input-group-sm mb-2 shadow-xs">
-                                            <input type="text" class="form-control text-center fw-bold bg-light"
-                                                value="{{ $group->invitation_code_pj }}" id="code_pj" readonly>
-                                            <button class="btn btn-warning text-white" onclick="copyCode('code_pj')"><i
-                                                    class="fa fa-copy"></i></button>
-                                        </div>
-                                        <form method="POST" action="/groups/{{ $group->id }}/generate-code">
-                                            @csrf <input type="hidden" name="type" value="pj">
-                                            <button
-                                                class="btn btn-link btn-sm text-warning p-0 fw-bold text-decoration-none"
-                                                style="font-size: 11px;">Perbarui Kode PJ</button>
-                                        </form>
-                                    </div>
-
-                                    <div>
-                                        <label class="small fw-bold text-secondary text-uppercase mb-2 d-block">Member
-                                            Access</label>
-                                        <div class="input-group input-group-sm mb-2 shadow-xs">
-                                            <input type="text" class="form-control text-center fw-bold bg-light"
-                                                value="{{ $group->invitation_code_member }}" id="code_member" readonly>
-                                            <button class="btn btn-secondary" onclick="copyCode('code_member')"><i
-                                                    class="fa fa-copy"></i></button>
-                                        </div>
-                                        <form method="POST" action="/groups/{{ $group->id }}/generate-code">
-                                            @csrf <input type="hidden" name="type" value="member">
-                                            <button
-                                                class="btn btn-link btn-sm text-secondary p-0 fw-bold text-decoration-none"
-                                                style="font-size: 11px;">Perbarui Kode Member</button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        @if ($role->can_edit_announcement)
-                            <div class="card border-0 shadow-sm rounded-4 mb-4 bg-white">
-                                <div class="card-header bg-transparent border-bottom py-3 px-4">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h6 class="fw-bold text-dark m-0"><i
-                                                class="fa fa-tags text-muted me-2"></i>Kategori
-                                            Pengumuman</h6>
-                                        <span class="badge bg-light text-dark border">{{ $categories->count() }}/5</span>
-                                    </div>
-                                </div>
-                                <div class="card-body p-4">
-                                    @if ($categories->count() < 5)
-                                        <form method="POST" action="{{ route('groups.categories.store', $group) }}"
-                                            class="mb-3">
-                                            @csrf
-                                            <label class="small text-muted mb-2">Tambah kategori baru</label>
-                                            <div class="input-group input-group-sm">
-                                                <input type="text" name="name" class="form-control"
-                                                    placeholder="Contoh: Perkuliahan" maxlength="50" required>
-                                                <button type="submit" class="btn btn-primary">Tambah</button>
-                                            </div>
-                                        </form>
-                                    @endif
-
-                                    @forelse ($categories as $category)
-                                        <div class="d-flex align-items-center gap-2 mb-2">
-                                            <form method="POST"
-                                                action="{{ route('groups.categories.update', [$group, $category]) }}"
-                                                class="d-flex align-items-center gap-2 flex-grow-1">
-                                                @csrf
-                                                @method('PUT')
-                                                <input type="text" name="name" class="form-control form-control-sm"
-                                                    value="{{ $category->name }}" maxlength="50" required>
-                                                <button type="submit" class="btn btn-light btn-sm border">Simpan</button>
-                                            </form>
-                                            <form method="POST"
-                                                action="{{ route('groups.categories.destroy', [$group, $category]) }}"
-                                                onsubmit="return confirm('Hapus kategori ini?')">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit"
-                                                    class="btn btn-outline-danger btn-sm">Hapus</button>
-                                            </form>
-                                        </div>
-                                    @empty
-                                        <p class="text-muted small mb-0">Belum ada kategori. Tambahkan untuk mengelola
-                                            pengumuman lebih rapi.</p>
-                                    @endforelse
-                                </div>
-                            </div>
-                        @endif
-                        {{-- Daftar Anggota (Kualitas Enterprise) --}}
+                        {{-- Daftar anggota terpisah --}}
                         <div class="card border-0 shadow-sm rounded-4 bg-white">
-                            <div class="card-header bg-transparent border-bottom p-4">
-                                <h6 class="fw-bold text-dark m-0"><i class="fa fa-users text-muted me-2"></i>Anggota
-                                    ({{ $members->count() }})</h6>
+                            <div class="card-header bg-transparent border-bottom p-4 d-flex align-items-center gap-2">
+                                <i class="fa fa-users text-muted"></i>
+                                <h6 class="fw-bold text-dark m-0">Daftar Anggota</h6>
                             </div>
-                            <div class="card-body p-0">
-                                <div class="list-group list-group-flush">
-                                    @foreach ($members->take(10) as $m)
-                                        <div
-                                            class="list-group-item px-4 py-3 border-0 border-bottom d-flex align-items-center justify-content-between">
-                                            <div class="d-flex align-items-center gap-3">
-                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold"
-                                                    style="width: 32px; height: 32px; font-size: 10px;">
-                                                    {{ strtoupper(substr($m->user->name, 0, 1)) }}
-                                                </div>
-                                                <div class="min-w-0">
-                                                    <div class="fw-bold text-dark small text-truncate"
-                                                        style="max-width: 120px;">{{ $m->user->name }}</div>
-                                                    <span class="badge rounded-pill p-0 text-primary"
-                                                        style="font-size: 9px;">{{ $m->role->name }}</span>
-                                                </div>
-                                            </div>
-                                            @if ($role->can_manage_member && !$m->role->is_owner)
-                                                <form method="POST"
-                                                    action="/groups/{{ $group->id }}/members/{{ $m->id }}"
-                                                    onsubmit="return confirm('Kick member ini?')">
-                                                    @csrf @method('DELETE')
-                                                    <button type="submit" class="btn btn-link text-danger p-0"><i
-                                                            class="fa fa-user-xmark small"></i></button>
-                                                </form>
-                                            @endif
-                                        </div>
-                                    @endforeach
-                                </div>
+                            <div class="card-body p-4">
+                                <p class="small text-muted mb-3">
+                                    Lihat seluruh anggota grup pada halaman khusus daftar anggota.
+                                </p>
+                                <a href="{{ route('groups.members.index', $group) }}"
+                                    class="btn btn-light border btn-sm w-100 fw-bold">
+                                    <i class="fa fa-arrow-right me-2"></i>Lihat Daftar Anggota
+                                </a>
                             </div>
                             <div class="card-footer bg-transparent border-0 p-3 text-center">
-                                <small class="text-muted fw-semibold">Kelola Anggota Secara Penuh di Dashboard</small>
+                                <small class="text-muted fw-semibold">Total anggota saat ini:
+                                    {{ $memberCount }}</small>
                             </div>
                         </div>
+
+                        @if ($role->is_owner)
+                            {{-- Upgrade Card --}}
+                            <div class="card border-0 shadow-sm rounded-4 mt-4 bg-white">
+                                <div class="card-body p-4 text-center">
+                                    <i class="fa fa-rocket text-warning mb-3" style="font-size: 32px;"></i>
+                                    <h6 class="fw-bold text-dark mb-2">Upgrade Grup</h6>
+                                    <p class="small text-muted mb-3">Tambah masa aktif, kuota member, atau bot integrasi
+                                    </p>
+                                    <a href="{{ route('groups.upgrade.cart', $group) }}"
+                                        class="btn btn-primary btn-sm w-100 fw-bold">
+                                        <i class="fa fa-shopping-cart me-2"></i> Upgrade Sekarang
+                                    </a>
+                                </div>
+                            </div>
+                        @endif
 
                     </div>
                 </div>
@@ -495,6 +329,42 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.modal form').forEach(bindDeadlineReminderForm);
+
+            const categoryTabs = document.querySelectorAll('[data-category-tab]');
+            const announcementItems = document.querySelectorAll('.js-announcement-item');
+            const categoryEmptyState = document.getElementById('categoryEmptyState');
+
+            const setActiveCategory = (categoryId) => {
+                let visibleCount = 0;
+
+                announcementItems.forEach((item) => {
+                    const itemCategoryId = item.dataset.categoryId || '';
+                    const shouldShow = categoryId === '' || itemCategoryId === categoryId;
+                    item.classList.toggle('d-none', !shouldShow);
+                    if (shouldShow) {
+                        visibleCount++;
+                    }
+                });
+
+                categoryTabs.forEach((tab) => {
+                    const isActive = (tab.dataset.categoryTab || '') === categoryId;
+                    tab.classList.toggle('btn-primary', isActive);
+                    tab.classList.toggle('btn-light', !isActive);
+                    tab.classList.toggle('border', !isActive);
+                });
+
+                if (categoryEmptyState) {
+                    categoryEmptyState.classList.toggle('d-none', visibleCount > 0);
+                }
+            };
+
+            categoryTabs.forEach((tab) => {
+                tab.addEventListener('click', () => {
+                    setActiveCategory(tab.dataset.categoryTab || '');
+                });
+            });
+
+            setActiveCategory('');
         });
 
         function notify(message, type = 'info') {
@@ -503,62 +373,6 @@
                 return;
             }
             alert(message);
-        }
-
-        function copyCode(id) {
-            const el = document.getElementById(id);
-            navigator.clipboard.writeText(el.value);
-            notify('Kode disalin!', 'success');
-        }
-
-        async function claimDiscordConnect(botId) {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const groupId = {{ $group->id }};
-
-            try {
-                const response = await fetch(`/groups/${groupId}/bots/${botId}/discord-connect/claim`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json',
-                    },
-                });
-
-                const payload = await response.json();
-                notify(payload.message || (response.ok ? 'Discord berhasil diklaim.' : 'Gagal cek claim Discord.'),
-                    response.ok ? 'success' : 'warning');
-
-                if (response.ok) {
-                    window.location.reload();
-                }
-            } catch (error) {
-                notify('Terjadi error saat cek claim Discord.', 'danger');
-            }
-        }
-
-        async function claimTelegramConnect(botId) {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-            const groupId = {{ $group->id }};
-
-            try {
-                const response = await fetch(`/groups/${groupId}/bots/${botId}/telegram-connect/claim`, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': csrfToken,
-                        'Accept': 'application/json',
-                    },
-                });
-
-                const payload = await response.json();
-                notify(payload.message || (response.ok ? 'Telegram berhasil diklaim.' : 'Gagal cek claim Telegram.'),
-                    response.ok ? 'success' : 'warning');
-
-                if (response.ok) {
-                    window.location.reload();
-                }
-            } catch (error) {
-                notify('Terjadi error saat cek claim Telegram.', 'danger');
-            }
         }
 
         function confirmDelete(id) {
@@ -572,8 +386,7 @@
         <div class="modal fade" id="modalCreate" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content border-0 shadow rounded-4">
-                    <form method="POST" action="/groups/{{ $group->id }}/announcements"
-                        enctype="multipart/form-data">
+                    <form method="POST" action="/groups/{{ $group->getRouteKey() }}/announcements">
                         @csrf
                         <div class="modal-header border-bottom-0 pb-0">
                             <h5 class="modal-title fw-bold">Buat Pengumuman Baru</h5>
@@ -581,12 +394,16 @@
                         </div>
                         <div class="modal-body pt-3">
                             <div class="mb-3">
-                                <label class="form-label small text-muted">Judul</label>
-                                <input type="text" name="title" class="form-control" maxlength="255" required>
+                                <label class="form-label small text-muted">Judul <span class="text-muted"
+                                        style="font-size: 0.8rem;">(Max 100 karakter)</span></label>
+                                <input type="text" name="title" class="form-control" maxlength="100"
+                                    placeholder="Contoh: Pertemuan Minggu Depan" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label small text-muted">Isi Pengumuman</label>
-                                <textarea name="content" class="form-control" rows="4" required></textarea>
+                                <label class="form-label small text-muted">Isi Pengumuman <span class="text-muted"
+                                        style="font-size: 0.8rem;">(Max 1000 karakter)</span></label>
+                                <textarea name="content" class="form-control" rows="4" maxlength="1000"
+                                    placeholder="Tuliskan isi pengumuman di sini..." required></textarea>
                             </div>
                             <div class="row g-3">
                                 <div class="col-md-6">
@@ -612,10 +429,6 @@
                                     <input type="datetime-local" name="scheduled_at" class="form-control"
                                         value="{{ old('scheduled_at', now()->format('Y-m-d\\TH:i')) }}" required>
                                     <small class="text-muted">Ini waktu kirim awal pengumuman, bukan tenggat.</small>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small text-muted">Lampiran (maks. 3)</label>
-                                    <input type="file" name="attachments[]" class="form-control" multiple>
                                 </div>
                                 <div class="col-12">
                                     <div class="form-check form-switch">

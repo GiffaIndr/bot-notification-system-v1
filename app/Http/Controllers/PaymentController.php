@@ -30,13 +30,15 @@ class PaymentController extends Controller
     {
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        $pricing = PricingComponent::pluck('price', 'key');
+        $pricing = PricingComponent::cachedPrices();
         $subscription = $user->activeSubscription()->first();
         $groupCount = GroupMember::where('user_id', auth()->id())
             ->whereHas('role', fn($q) => $q->where('is_owner', true))
             ->count();
+        // Payment logs for the user, order by latest
+        $logs = $user->payments()->with('subscription')->orderByDesc('created_at')->get();
 
-        return view('pages.payments', compact('pricing', 'subscription', 'groupCount'));
+        return view('pages.payments', compact('pricing', 'subscription', 'groupCount', 'logs'));
     }
 
     public function callback(Request $request)
@@ -234,7 +236,7 @@ class PaymentController extends Controller
 
         /** @var \App\Models\User $user */
         $user = auth()->user();
-        $pricing      = PricingComponent::pluck('price', 'key');
+        $pricing      = PricingComponent::cachedPrices();
         $existing     = $user->activeSubscription()->first();
         $durationMonths = $this->resolveDurationMonths($request->duration_months ?? 6);
 

@@ -1,127 +1,222 @@
 @extends('layout.sidebar')
 
 @section('content')
-    <div class="container-fluid pb-5">
-        {{-- Menggunakan fs-4 dan fw-bold untuk judul tanpa CSS --}}
-        <h2 class="fw-bold fs-4 text-dark mb-4">Dashboard</h2>
-
-        <div class="row g-4 mb-4 align-items-stretch">
-
-            {{-- Buat Grup --}}
-            <x-dashboard-action-card title="Buat Grup" icon="fas fa-plus-circle" :icon-disabled="!$subscription">
-                @if (!$subscription)
-                    <div class="text-center mb-3">
-                        <p class="text-muted small mb-0">Fitur ini terkunci. Silakan beli Akses Grup terlebih dahulu.</p>
+    <div class="container-fluid pb-5 dashboard-shell">
+        <div class="dashboard-topbar card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-3 p-lg-4">
+                <div class="row g-3 align-items-center">
+                    <div class="col-12 col-xl-5">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="dashboard-mark rounded-4 d-inline-flex align-items-center justify-content-center">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div>
+                                <h2 class="fw-bold fs-4 mb-1 text-dark">Dashboard</h2>
+                                <p class="text-muted mb-0 small">Satu tempat untuk kelola grup, akses, dan update terbaru.
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <a href="/payments" class="btn btn-primary w-100 py-2 mt-auto fw-medium">Beli Akses Grup</a>
-                @elseif ($groupCount >= $maxGroup)
-                    <div class="text-center mb-3">
-                        <p class="small fw-bold text-dark mb-1 d-flex align-items-center justify-content-center gap-1">
-                            <span class="text-warning fs-6">⚠️</span> Batas grup tercapai ({{ $groupCount }}/{{ $maxGroup }})
-                        </p>
-                        <p class="text-muted small mb-0">Beli akses grup untuk menambah kuota.</p>
-
-                        @php
-                            $pendingUpgrade = \App\Models\Payment::where('user_id', auth()->id())->where('status', 'success')->where('starts_at', '>', now())->with('plan')->latest()->first();
-                        @endphp
-
-                        @if ($pendingUpgrade && $pendingUpgrade->plan->max_group > $maxGroup)
-                            <p class="small mt-2 mb-0 text-primary bg-primary-subtle p-2 rounded-3">
-                                <i class="fa fa-circle-info me-1"></i> Kuota akan jadi <strong>{{ $pendingUpgrade->plan->max_group }}</strong> grup pada <strong>{{ $pendingUpgrade->starts_at->format('d M Y') }}</strong>
-                            </p>
-                        @endif
+                    <div class="col-12 col-xl-4">
+                        <div class="input-group dashboard-search">
+                            <span class="input-group-text bg-white border-end-0"><i
+                                    class="fas fa-search text-muted"></i></span>
+                            <input type="text" id="groupSearch" class="form-control border-start-0 ps-0"
+                                placeholder="Cari grup, role, atau status">
+                        </div>
                     </div>
-
-                    @if (!$pendingUpgrade || $pendingUpgrade->plan->max_group <= $maxGroup)
-                        <a href="/payments" class="btn btn-primary w-100 py-2 mt-auto fw-medium">Upgrade Akses</a>
-                    @endif
-                @else
-                    <div class="text-center mb-3">
-                        <p class="text-muted small mb-0">Sisa kuota grup: <strong>{{ $maxGroup - $groupCount }}</strong></p>
+                    <div class="col-12 col-xl-3 d-flex gap-2 justify-content-xl-end">
+                        <a href="#quick-actions" class="btn btn-outline-secondary rounded-pill fw-semibold px-4">Quick
+                            Actions</a>
+                        <a href="#group-list" class="btn btn-primary rounded-pill fw-semibold px-4">Lihat Grup</a>
                     </div>
-                    <form id="formCreateGroup" method="POST" action="/groups" class="mt-auto d-flex flex-column gap-2">
-                        @csrf
-                        <input type="text" id="inputGroupName" name="name" class="form-control py-2 text-center" placeholder="Nama grup baru">
-                        <button type="button" class="btn btn-primary w-100 py-2 fw-medium" onclick="submitCreateGroup()">Buat Sekarang</button>
-                    </form>
-                @endif
-            </x-dashboard-action-card>
-
-            {{-- Gabung Grup --}}
-            <x-dashboard-action-card title="Gabung Grup" icon="fas fa-link">
-                <div class="text-center mb-3">
-                    <p class="text-muted small mb-0">Masukkan kode undangan untuk bergabung.</p>
                 </div>
-                <form id="formJoinGroup" method="POST" action="/join" class="mt-auto d-flex flex-column gap-2">
-                    @csrf
-                    <input type="text" id="inputJoinCode" name="code" class="form-control py-2 text-center" placeholder="Contoh: ABC-123">
-                    <button type="button" class="btn btn-primary w-100 py-2 fw-medium" onclick="submitJoinGroup()">Gabung Grup</button>
-                </form>
-            </x-dashboard-action-card>
-
+            </div>
         </div>
-        {{-- Grup Saya --}}
-        <div class="row">
-            <div class="col-12">
-                {{-- Mengganti style .card dengan utility classes --}}
-                <div class="card border-0 shadow-sm rounded-4 h-100 d-flex flex-column">
-                    <div class="card-header bg-transparent border-bottom p-4 d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0 fw-semibold fs-5"><i class="fas fa-user-friends me-2 text-muted"></i>Grup Saya</h5>
-                        @if ($totalGroups > 3)
-                            <a href="/groups" class="btn btn-sm btn-outline-secondary fw-medium">Lihat Semua ({{ $totalGroups }})</a>
-                        @endif
-                    </div>
-                    <div class="card-body p-4 d-flex flex-column flex-grow-1">
-                        {{-- Gunakan utilitas grid gap (g-3) sebagai pengganti margin --}}
-                        <div class="row g-3">
-                            @forelse ($groups as $group)
-                                <div class="col-12 col-md-6 col-xl-4 col-xxl-3">
-                                    <div class="card border rounded-3 shadow-none h-100 d-flex flex-column">
-                                        <div class="card-body p-3 d-flex flex-column flex-grow-1">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <h6 class="fw-bold mb-0 text-truncate" style="max-width: 85%;">{{ $group->name }}</h6>
-                                                <button class="btn btn-link p-0 text-muted border-0"><i class="fas fa-ellipsis-v"></i></button>
-                                            </div>
 
-                                            @php
-                                                $memberRole = \App\Models\GroupMember::where('group_id', $group->id)
-                                                    ->where('user_id', auth()->id())
-                                                    ->with('role')
-                                                    ->first();
-                                            @endphp
+        <div class="row g-4">
+            <div class="col-12 col-xl-8">
+                <div class="row g-4 mb-4" id="quick-actions">
+                    <x-dashboard-action-card title="Buat Grup" icon="fas fa-plus" tone="success"
+                        subtitle="Buat ruang kerja baru dan atur anggota tim dari dashboard ini.">
+                        @if (!$subscription)
+                            <a href="/payments" class="btn btn-success w-100 py-2 fw-semibold rounded-pill">Beli Akses
+                                Grup</a>
+                        @elseif ($groupCount >= $maxGroup)
+                            @php
+                                $pendingUpgrade = \App\Models\Payment::where('user_id', auth()->id())
+                                    ->where('status', 'success')
+                                    ->where('starts_at', '>', now())
+                                    ->with('plan')
+                                    ->latest()
+                                    ->first();
+                            @endphp
 
-                                            <div class="mb-3">
-                                                @if ($memberRole?->role)
-                                                    {{-- Pengganti .badge-role dengan px-2 py-1 rounded-pill fw-medium --}}
-                                                    <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis px-2 py-1 fw-medium">
-                                                        {{ strtoupper($memberRole->role->name) === 'OWNER' ? 'Pemilik' : $memberRole->role->name }}
-                                                    </span>
-                                                @endif
-                                            </div>
-
-                                            <a href="/groups/{{ $group->id }}" class="btn btn-light border w-100 d-flex justify-content-between align-items-center rounded-4 py-2 fw-semibold text-dark text-decoration-none">
-                                    <span>Kelola Grup</span>
-                                    <div class="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 26px; height: 26px;">
-                                        <i class="fas fa-chevron-right" style="font-size: 10px;"></i>
+                            <div class="mb-3">
+                                <p class="fw-semibold mb-1">Batas grup tercapai ({{ $groupCount }}/{{ $maxGroup }})
+                                </p>
+                                <p class="text-muted small mb-0">Upgrade akses kalau ingin menambah kuota.</p>
+                                @if ($pendingUpgrade && $pendingUpgrade->plan->max_group > $maxGroup)
+                                    <div class="alert alert-primary py-2 px-3 mt-3 mb-0 small">
+                                        Kuota naik jadi <strong>{{ $pendingUpgrade->plan->max_group }}</strong> grup pada
+                                        <strong>{{ $pendingUpgrade->starts_at->format('d M Y') }}</strong>.
                                     </div>
-                                </a>
+                                @endif
+                            </div>
+
+                            @if (!$pendingUpgrade || $pendingUpgrade->plan->max_group <= $maxGroup)
+                                <a href="/payments" class="btn btn-success w-100 py-2 fw-semibold rounded-pill">Upgrade
+                                    Akses</a>
+                            @endif
+                        @else
+                            <form id="formCreateGroup" method="POST" action="/groups" class="d-flex flex-column gap-2">
+                                @csrf
+                                <input type="text" id="inputGroupName" name="name"
+                                    class="form-control py-2 rounded-pill" placeholder="Nama grup baru">
+                                <button type="button" class="btn btn-success w-100 py-2 fw-semibold rounded-pill"
+                                    onclick="submitCreateGroup()">Buat Sekarang</button>
+                            </form>
+                        @endif
+                    </x-dashboard-action-card>
+
+                    <x-dashboard-action-card title="Gabung Grup" icon="fas fa-link" tone="primary"
+                        subtitle="Masukkan kode undangan dan langsung masuk ke grup yang dituju.">
+                        <form id="formJoinGroup" method="POST" action="/join" class="d-flex flex-column gap-2">
+                            @csrf
+                            <input type="text" id="inputJoinCode" name="code"
+                                class="form-control py-2 rounded-pill text-center" placeholder="Contoh: ABC-123">
+                            <button type="button" class="btn btn-primary w-100 py-2 fw-semibold rounded-pill"
+                                onclick="submitJoinGroup()">Gabung Grup</button>
+                        </form>
+                    </x-dashboard-action-card>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-3 p-lg-4">
+                        <div class="d-flex align-items-center justify-content-between gap-3 mb-3 flex-wrap">
+                            <div>
+                                <h5 class="fw-bold mb-1"><i class="fas fa-layer-group me-2 text-muted"></i>Grup Saya</h5>
+                                <p class="text-muted small mb-0">Cari, filter, lalu buka grup yang ingin kamu kelola.</p>
+                            </div>
+                            <div class="d-inline-flex gap-2 p-1 bg-light rounded-pill border">
+                                <button class="btn btn-sm px-3 rounded-pill fw-semibold active-filter"
+                                    data-group-filter="all">Semua</button>
+                                <button class="btn btn-sm px-3 rounded-pill fw-semibold text-muted"
+                                    data-group-filter="owner">Pemilik</button>
+                                <button class="btn btn-sm px-3 rounded-pill fw-semibold text-muted"
+                                    data-group-filter="member">Anggota</button>
+                            </div>
+                        </div>
+
+                        <div class="row g-3" id="group-list">
+                            @forelse ($groups as $group)
+                                @php
+                                    $membership = $groupMemberships[$group->id] ?? null;
+                                    $isOwner = $membership?->role?->is_owner;
+                                    $initial = strtoupper(substr($group->name, 0, 2));
+                                @endphp
+                                <div class="col-12 col-md-6 col-xxl-4 group-item" data-group-item
+                                    data-name="{{ strtolower($group->name) }}"
+                                    data-role="{{ $isOwner ? 'owner' : 'member' }}">
+                                    <div class="group-card card border-0 shadow-sm rounded-4 h-100">
+                                        <div class="group-card__bar"></div>
+                                        <div class="card-body p-3 d-flex align-items-center gap-3">
+                                            <div
+                                                class="group-avatar rounded-4 d-inline-flex align-items-center justify-content-center flex-shrink-0">
+                                                {{ $initial }}
+                                            </div>
+                                            <div class="flex-grow-1 min-w-0">
+                                                <h6 class="fw-bold mb-1 text-truncate">{{ $group->name }}</h6>
+                                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                                    <span
+                                                        class="badge rounded-pill text-uppercase {{ $isOwner ? 'text-success' : 'text-secondary' }} bg-light border">{{ $isOwner ? 'Pemilik' : 'Anggota' }}</span>
+                                                    @if ($group->announcements_count > 0)
+                                                        <span
+                                                            class="badge rounded-pill text-dark bg-warning-subtle border border-warning-subtle">{{ $group->announcements_count }}
+                                                            update</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <a href="/groups/{{ $group->getRouteKey() }}"
+                                                class="btn btn-light border rounded-pill fw-semibold px-3">Buka</a>
                                         </div>
                                     </div>
                                 </div>
                             @empty
-                                <div class="col-12 text-center py-5">
-                                    <img src="https://illustrations.popsy.co/flat/team-building.svg" alt="empty" style="width: 150px;" class="mb-3 opacity-50">
-                                    <p class="text-muted mb-0">Kamu belum bergabung di grup manapun.</p>
+                                <div class="col-12">
+                                    <div class="empty-state card border-0 shadow-sm rounded-4 text-center p-5">
+                                        <i class="fas fa-inbox fs-1 text-muted mb-3"></i>
+                                        <h6 class="fw-bold mb-2">Belum ada grup yang diikuti</h6>
+                                        <p class="text-muted mb-0">Mulai dengan membuat grup baru atau gabung memakai kode
+                                            undangan.</p>
+                                    </div>
                                 </div>
                             @endforelse
                         </div>
                     </div>
                 </div>
             </div>
+
+            <div class="col-12 col-xl-4">
+                <div class="card border-0 shadow-sm rounded-4 mb-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h5 class="fw-bold mb-0">Ringkasan</h5>
+                            <span class="badge rounded-pill bg-light text-dark border">{{ $totalGroups }} grup</span>
+                        </div>
+
+                        <div class="summary-grid">
+                            <div class="summary-card">
+                                <span class="summary-card__label">Kuota Owner</span>
+                                <strong>{{ $groupCount }}/{{ $maxGroup }}</strong>
+                            </div>
+                            <div class="summary-card">
+                                <span class="summary-card__label">Status</span>
+                                <strong>{{ $subscription ? 'Aktif' : 'Belum aktif' }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="mt-3">
+                            @if ($subscription)
+                                <div class="alert alert-success py-2 px-3 mb-0 small">
+                                    Akses grup aktif. Kamu bisa lanjut mengelola grup dari sini.
+                                </div>
+                            @else
+                                <div class="alert alert-warning py-2 px-3 mb-0 small">
+                                    Kamu belum punya akses grup. Beli akses dulu untuk membuat grup baru.
+                                </div>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm rounded-4">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h5 class="fw-bold mb-0">Update Terbaru</h5>
+                            <i class="fas fa-bullhorn text-muted"></i>
+                        </div>
+
+                        @if ($latestAnnouncement)
+                            <div class="latest-item">
+                                <div class="fw-bold mb-1 text-truncate">{{ $latestAnnouncement->title }}</div>
+                                <div class="text-muted small mb-2">{{ $latestAnnouncement->group->name }} •
+                                    {{ $latestAnnouncement->created_at->diffForHumans() }}</div>
+                                <a href="/groups/{{ $latestAnnouncement->group_id }}"
+                                    class="btn btn-outline-primary rounded-pill btn-sm">Buka grup</a>
+                            </div>
+                        @else
+                            <div class="text-center py-4">
+                                <i class="far fa-bell-slash fs-1 text-muted mb-3"></i>
+                                <p class="text-muted mb-0">Belum ada update terbaru.</p>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    {{-- Toast & Scripts tetap sama --}}
     <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999">
         <div id="toast" class="toast align-items-center text-white border-0 shadow-lg rounded-3" role="alert">
             <div class="d-flex">
@@ -131,24 +226,132 @@
         </div>
     </div>
 
+    <style>
+        .dashboard-shell {
+            --accent: var(--tasku-primary);
+        }
+
+        .dashboard-mark {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, #e9f4fa 0%, #d8edf7 100%);
+            color: var(--tasku-primary);
+            font-size: 1.2rem;
+        }
+
+        .dashboard-search .input-group-text,
+        .dashboard-search .form-control {
+            border-color: #d8e3ec;
+            box-shadow: none;
+        }
+
+        .dashboard-action-card {
+            overflow: hidden;
+            border: 1px solid #e7edf3 !important;
+        }
+
+        .dashboard-action-card__accent {
+            height: 5px;
+        }
+
+        .group-card {
+            overflow: hidden;
+            border: 1px solid #e7edf3 !important;
+        }
+
+        .group-card__bar {
+            height: 4px;
+            background: linear-gradient(90deg, var(--tasku-primary), #67b3d1);
+        }
+
+        .group-avatar {
+            width: 54px;
+            height: 54px;
+            font-weight: 800;
+            color: var(--tasku-deep);
+            background: linear-gradient(135deg, #edf7fb, #e4eef7);
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .summary-card {
+            background: #f8fbfd;
+            border: 1px solid #e7edf3;
+            border-radius: 18px;
+            padding: 14px;
+        }
+
+        .summary-card__label {
+            display: block;
+            font-size: 0.75rem;
+            color: #6a7d8b;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .active-filter {
+            background: var(--tasku-primary) !important;
+            color: #fff !important;
+            box-shadow: 0 8px 16px rgba(51, 118, 163, 0.22);
+        }
+
+        .group-item[style*="display: none"] {
+            display: none !important;
+        }
+    </style>
+
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const searchInput = document.getElementById('groupSearch');
+            const filterBtns = document.querySelectorAll('[data-group-filter]');
+            const groupItems = document.querySelectorAll('[data-group-item]');
+
+            const runFilter = () => {
+                const query = searchInput.value.toLowerCase().trim();
+                const activeFilter = document.querySelector('.active-filter')?.dataset.groupFilter || 'all';
+
+                groupItems.forEach(item => {
+                    const isMatch = item.dataset.name.includes(query) &&
+                        (activeFilter === 'all' || item.dataset.role === activeFilter);
+                    item.style.display = isMatch ? '' : 'none';
+                });
+            };
+
+            filterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filterBtns.forEach(b => b.classList.remove('active-filter', 'text-white'));
+                    btn.classList.add('active-filter');
+                    runFilter();
+                });
+            });
+
+            searchInput.addEventListener('input', runFilter);
+        });
+
         function showToast(message, type = 'danger') {
             const toast = document.getElementById('toast');
             const toastMsg = document.getElementById('toastMessage');
             toast.className = `toast align-items-center text-white border-0 shadow-lg bg-${type} rounded-3`;
             toastMsg.innerText = message;
-            new bootstrap.Toast(toast, { delay: 3000 }).show();
+            new bootstrap.Toast(toast, {
+                delay: 3000
+            }).show();
         }
 
         function submitCreateGroup() {
             const name = document.getElementById('inputGroupName').value.trim();
-            if (!name) return showToast('⚠️ Isi nama grup dulu ya!', 'warning');
+            if (!name) return showToast('Isi nama grup dulu.', 'warning');
             document.getElementById('formCreateGroup').submit();
         }
 
         function submitJoinGroup() {
             const code = document.getElementById('inputJoinCode').value.trim();
-            if (!code) return showToast('⚠️ Masukkan kode undangan dulu ya!', 'warning');
+            if (!code) return showToast('Masukkan kode undangan dulu.', 'warning');
             document.getElementById('formJoinGroup').submit();
         }
     </script>
