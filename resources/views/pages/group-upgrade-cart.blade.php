@@ -19,7 +19,8 @@
                 <div class="row g-4">
                     <!-- Left: Upgrade Options -->
                     <div class="col-lg-8">
-                        <form method="POST" action="{{ route('groups.upgrade.checkout', $group) }}" id="upgradeForm" onsubmit="return submitUpgradePayment(event)">
+                        <form method="POST" action="{{ route('groups.upgrade.checkout', $group) }}" id="upgradeForm"
+                            onsubmit="return submitUpgradePayment(event)">
                             @csrf
 
                             <!-- 1. Extend Duration -->
@@ -202,69 +203,72 @@
             }
 
             fetch(form.action, {
-                method: 'POST',
-                headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json',
-                },
-                body: new FormData(form),
-            })
-            .then(async (response) => {
-                const data = await response.json().catch(() => ({}));
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json',
+                    },
+                    body: new FormData(form),
+                })
+                .then(async (response) => {
+                    const data = await response.json().catch(() => ({}));
 
-                if (!response.ok) {
-                    throw new Error(data.error || 'Gagal membuat token pembayaran.');
-                }
+                    if (!response.ok) {
+                        throw new Error(data.error || 'Gagal membuat token pembayaran.');
+                    }
 
-                return data;
-            })
-            .then((data) => {
-                if (!data.token) {
-                    throw new Error('Token Midtrans tidak ditemukan.');
-                }
+                    return data;
+                })
+                .then((data) => {
+                    if (!data.token) {
+                        throw new Error('Token Midtrans tidak ditemukan.');
+                    }
 
-                snap.pay(data.token, {
-                    onSuccess: function(result) {
-                        fetch(`{{ route('groups.upgrade.callback', $group) }}?order_id=${encodeURIComponent(result.order_id)}`, {
-                            method: 'GET',
-                            headers: {
-                                'X-Requested-With': 'XMLHttpRequest',
-                                'Accept': 'application/json',
+                    snap.pay(data.token, {
+                        onSuccess: function(result) {
+                            fetch(`{{ route('groups.upgrade.callback', $group) }}?order_id=${encodeURIComponent(result.order_id)}`, {
+                                    method: 'GET',
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'Accept': 'application/json',
+                                    }
+                                })
+                                .then(() => {
+                                    window.location.href = `{{ route('groups.show', $group) }}`;
+                                });
+                        },
+                        onPending: function() {
+                            if (submitButton) {
+                                submitButton.disabled = false;
+                                submitButton.innerHTML =
+                                    '<i class="fa fa-credit-card me-2"></i> Lanjut Pembayaran';
                             }
-                        })
-                        .then(() => {
-                            window.location.href = `{{ route('groups.show', $group) }}`;
-                        });
-                    },
-                    onPending: function() {
-                        if (submitButton) {
-                            submitButton.disabled = false;
-                            submitButton.innerHTML = '<i class="fa fa-credit-card me-2"></i> Lanjut Pembayaran';
+                        },
+                        onError: function() {
+                            alert('Pembayaran gagal!');
+                            if (submitButton) {
+                                submitButton.disabled = false;
+                                submitButton.innerHTML =
+                                    '<i class="fa fa-credit-card me-2"></i> Lanjut Pembayaran';
+                            }
+                        },
+                        onClose: function() {
+                            if (submitButton) {
+                                submitButton.disabled = false;
+                                submitButton.innerHTML =
+                                    '<i class="fa fa-credit-card me-2"></i> Lanjut Pembayaran';
+                            }
                         }
-                    },
-                    onError: function() {
-                        alert('Pembayaran gagal!');
-                        if (submitButton) {
-                            submitButton.disabled = false;
-                            submitButton.innerHTML = '<i class="fa fa-credit-card me-2"></i> Lanjut Pembayaran';
-                        }
-                    },
-                    onClose: function() {
-                        if (submitButton) {
-                            submitButton.disabled = false;
-                            submitButton.innerHTML = '<i class="fa fa-credit-card me-2"></i> Lanjut Pembayaran';
-                        }
+                    });
+                })
+                .catch((error) => {
+                    alert(error.message || 'Gagal memproses pembayaran.');
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = '<i class="fa fa-credit-card me-2"></i> Lanjut Pembayaran';
                     }
                 });
-            })
-            .catch((error) => {
-                alert(error.message || 'Gagal memproses pembayaran.');
-                if (submitButton) {
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = '<i class="fa fa-credit-card me-2"></i> Lanjut Pembayaran';
-                }
-            });
 
             return false;
         }
@@ -287,7 +291,7 @@
                 if (price > 0) {
                     cartItems.push(
                         `<div class="small mb-2 pb-2 border-bottom"><strong>${months} Bulan Extend</strong><br><span class="text-muted">Rp${price.toLocaleString('id-ID')}</span></div>`
-                        );
+                    );
                     total += price;
                     document.querySelector('input[name="extend_duration"]').value = '';
                 }
@@ -297,7 +301,7 @@
                     const price = extendValue * PRICES.extend;
                     cartItems.push(
                         `<div class="small mb-2 pb-2 border-bottom"><strong>${extendValue} Bulan Extend</strong><br><span class="text-muted">Rp${price.toLocaleString('id-ID')}</span></div>`
-                        );
+                    );
                     total += price;
                     document.querySelector('#extendPrice').textContent = `+ Rp${price.toLocaleString('id-ID')}`;
                 }
@@ -311,7 +315,7 @@
                 if (price > 0) {
                     cartItems.push(
                         `<div class="small mb-2 pb-2 border-bottom"><strong>+${slots} Member</strong><br><span class="text-muted">Rp${price.toLocaleString('id-ID')}</span></div>`
-                        );
+                    );
                     total += price;
                     document.querySelector('input[name="add_members"]').value = '';
                 }
@@ -321,7 +325,7 @@
                     const price = Math.ceil(membersValue / 5) * PRICES.members;
                     cartItems.push(
                         `<div class="small mb-2 pb-2 border-bottom"><strong>+${membersValue} Member</strong><br><span class="text-muted">Rp${price.toLocaleString('id-ID')}</span></div>`
-                        );
+                    );
                     total += price;
                     document.querySelector('#membersPrice').textContent = `+ Rp${price.toLocaleString('id-ID')}`;
                 }
@@ -333,7 +337,7 @@
                 const label = bot.nextElementSibling.textContent.split(' ')[0];
                 cartItems.push(
                     `<div class="small mb-2 pb-2 border-bottom"><strong>+ ${label} Bot</strong><br><span class="text-muted">Rp${PRICES.bot.toLocaleString('id-ID')}</span></div>`
-                    );
+                );
                 total += PRICES.bot;
             });
 
